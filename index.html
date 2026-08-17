@@ -22,7 +22,7 @@
           <h1>线索跟进工作台</h1>
           <p class="subtitle">集中管理线索信息、跟进动作与客户沟通上下文</p>
         </div>
-        <div class="head-actions"><button class="outline-action" id="precheckBtn">查看预审详情</button><button class="outline-action favorite" id="favoriteBtn">☆ 收藏</button><button class="primary next-action" id="completeBtn">下一条 <span>→</span></button></div>
+        <div class="head-actions"><button class="outline-action" id="precheckBtn">查看预审详情</button><button class="outline-action favorite" id="favoriteBtn">☆ 收藏</button><button class="primary next-action" id="completeBtn">提交 <span>→</span></button></div>
       </div>
 
       <section class="workspace-grid">
@@ -30,7 +30,7 @@
           <section class="card identity-card">
             <div class="card-title-row"><div class="title-with-badge"><h2>用户信息</h2><span class="edited-badge">信息已修改</span></div><button class="text-btn">编辑信息</button></div>
             <div class="identity-grid">
-              <div class="identity-person"><div class="person-avatar">SR</div><div><div class="person-name">Sofia Ramirez</div><div class="muted">WhatsApp 来源</div></div></div>
+              <div class="identity-person"><div class="person-avatar">SR</div><div><div class="person-name" id="currentName">Sofia Ramirez</div><div class="muted">WhatsApp 来源</div></div></div>
               <div class="field"><span>线索类型</span><strong id="currentLeadType">金融</strong></div><div class="field"><span>手机号</span><strong id="currentPhone">5612345454</strong></div>
               <div class="field"><span>品牌</span><strong id="currentBrand">长安</strong></div><div class="field"><span>车系</span><strong id="currentSeries">3 Sedan</strong></div>
               <div class="field"><span>车型</span><strong id="currentModel">I GRAND TOURING MHEV TA</strong></div><div class="field"><span>经销商名</span><strong id="currentDealer">Changan Polanco</strong></div>
@@ -40,8 +40,8 @@
           </section>
 
           <section class="card activity-card">
-            <div class="tabs" role="tablist"><button class="tab active" data-tab="ops" role="tab">操作记录</button><button class="tab" data-tab="notes" role="tab">跟踪记事 <em class="manual"><span id="noteCount">2</span></em></button></div>
-            <div id="opsPanel" class="tab-panel" role="tabpanel">
+            <div class="tabs" role="tablist"><button class="tab" data-tab="ops" role="tab">操作记录</button><button class="tab active" data-tab="notes" role="tab">跟踪记事 <em class="manual"><span id="noteCount">2</span></em></button></div>
+            <div id="opsPanel" class="tab-panel hidden" role="tabpanel">
               <div class="panel-intro"><div><h2>系统操作记录</h2><p>由系统根据线索状态和销售动作自动生成，不可手动修改</p></div><span class="auto-label">AUTO LOG</span></div>
               <div class="timeline auto-timeline" id="opsTimeline">
                 <div class="timeline-item"><span class="timeline-dot gray"></span><div><div class="timeline-head"><b>跟进阶段更新为「未接通」</b><time>07-21 10:35</time></div><p>系统记录阶段变化</p><div class="operator-line">操作人：系统</div></div></div>
@@ -51,7 +51,7 @@
                 <div class="timeline-item"><span class="timeline-dot blue"></span><div><div class="timeline-head"><b>线索已创建</b><time>07-21 10:30</time></div><p>来源：系统自动 · WhatsApp 线索</p><div class="operator-line">操作人：系统</div></div></div>
               </div>
             </div>
-            <div id="notesPanel" class="tab-panel hidden" role="tabpanel">
+            <div id="notesPanel" class="tab-panel" role="tabpanel">
               <div class="panel-intro"><div><h2>跟进记事</h2><p>记录电话、微信或线下沟通中的关键信息</p></div><button class="primary small" id="addNoteBtn">＋ 添加跟踪记事</button></div>
               <form class="note-composer hidden" id="noteForm"><textarea id="noteInput" placeholder="写下本次沟通的关键信息…" required></textarea><div class="composer-actions"><button type="button" class="ghost" id="cancelNote">取消</button><button type="submit" class="primary">保存记事</button></div></form>
               <div class="timeline note-timeline" id="noteTimeline">
