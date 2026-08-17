@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>线索跟进工作台</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">↗</span><span>AUTOCAVA 后台</span></div>
+      <div class="crumbs">线索管理 <span>/</span> 线索详情 <span>/</span> Sofia Ramirez</div>
+      <div class="top-actions"><button class="icon-btn" aria-label="通知">♧</button><label class="role-switch">当前角色<select id="roleSelect"><option value="sales">销售 · sales 001</option><option value="admin">超级管理员</option></select></label><div class="avatar">DY</div></div>
+    </header>
+    <div class="admin-nav"><button>▦</button><button>车辆库</button><button>线索库</button><button class="active">跟进线索</button><button>用户管理</button><button>金融订单</button><button>网站管理</button><button>内容库</button></div>
+    <section class="lead-list hidden" id="leadList"><div class="list-head"><div><div class="eyebrow">CRM · LEAD CENTER</div><h1>跟进线索</h1><p>管理员可查看全部线索；销售登录后仅进入对应工作台</p></div><button class="primary" id="openSalesWorkbench">进入销售工作台</button></div><div class="filters"><input placeholder="姓名 / 手机号 / 线索ID" /><select><option>跟进状态</option><option>待跟进</option><option>跟进中</option><option>订单中</option></select><select><option>线索类型</option><option>金融</option><option>全款</option><option>试驾</option></select><button class="primary small">搜索</button></div><table class="lead-table"><thead><tr><th>状态</th><th>子状态</th><th>姓名</th><th>手机号</th><th>品牌</th><th>车系</th><th>创建时间</th><th>线索来源</th><th>操作</th></tr></thead><tbody><tr><td><span class="table-pill">跟进中</span></td><td>已联系</td><td>Sofia Ramirez</td><td>5899022435</td><td>长安</td><td>CS75 PLUS</td><td>2026-08-05 06:42</td><td>WhatsApp</td><td><button class="table-link" data-open-workbench>查看</button></td></tr><tr><td><span class="table-pill">待跟进</span></td><td>—</td><td>David Chen</td><td>5612345454</td><td>NISSAN</td><td>MAGNITE</td><td>2026-08-05 06:41</td><td>车辆页</td><td><button class="table-link" data-open-workbench>查看</button></td></tr></tbody></table></section>
+    <main class="page" id="workbenchPage">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">LEAD FOLLOW-UP · 1533</div>
+          <h1>线索跟进工作台</h1>
+          <p class="subtitle">集中管理线索信息、跟进动作与客户沟通上下文</p>
+        </div>
+        <div class="head-actions"><button class="outline-action" id="precheckBtn">查看预审详情</button><button class="outline-action favorite" id="favoriteBtn">☆ 收藏</button><button class="primary next-action" id="completeBtn">下一条 <span>→</span></button></div>
+      </div>
+
+      <section class="workspace-grid">
+        <div class="main-column">
+          <section class="card identity-card">
+            <div class="card-title-row"><div class="title-with-badge"><h2>用户信息</h2><span class="edited-badge">信息已修改</span></div><button class="text-btn">编辑信息</button></div>
+            <div class="identity-grid">
+              <div class="identity-person"><div class="person-avatar">SR</div><div><div class="person-name">Sofia Ramirez</div><div class="muted">WhatsApp 来源</div></div></div>
+              <div class="field"><span>线索类型</span><strong id="currentLeadType">金融</strong></div><div class="field"><span>手机号</span><strong id="currentPhone">5612345454</strong></div>
+              <div class="field"><span>品牌</span><strong id="currentBrand">长安</strong></div><div class="field"><span>车系</span><strong id="currentSeries">3 Sedan</strong></div>
+              <div class="field"><span>车型</span><strong id="currentModel">I GRAND TOURING MHEV TA</strong></div><div class="field"><span>经销商名</span><strong id="currentDealer">Changan Polanco</strong></div>
+              <div class="field"><span>地址</span><strong id="currentAddress">Av. Vallarta 1410</strong></div><div class="field"><span>地区</span><strong id="currentRegion">Ciudad de México · CDMX</strong></div>
+            </div>
+            <div class="metrics"><div><span>车价格</span><b>$429,900</b></div><div><span>年利率</span><b>0.1499</b></div><div><span>贷款期数</span><b>72 期</b></div><div><span>创建时间</span><b>07-21 10:30</b></div></div>
+          </section>
+
+          <section class="card activity-card">
+            <div class="tabs" role="tablist"><button class="tab active" data-tab="ops" role="tab">操作记录</button><button class="tab" data-tab="notes" role="tab">跟踪记事 <em class="manual"><span id="noteCount">2</span></em></button></div>
+            <div id="opsPanel" class="tab-panel" role="tabpanel">
+              <div class="panel-intro"><div><h2>系统操作记录</h2><p>由系统根据线索状态和销售动作自动生成，不可手动修改</p></div><span class="auto-label">AUTO LOG</span></div>
+              <div class="timeline auto-timeline" id="opsTimeline">
+                <div class="timeline-item"><span class="timeline-dot gray"></span><div><div class="timeline-head"><b>跟进阶段更新为「未接通」</b><time>07-21 10:35</time></div><p>系统记录阶段变化</p><div class="operator-line">操作人：系统</div></div></div>
+                <div class="timeline-item"><span class="timeline-dot gray"></span><div><div class="timeline-head"><b>销售手动修改用户信息</b><time>07-21 10:34</time></div><p>修改字段：线索类型、手机号、车系、车型、地区</p><div class="operator-line">操作人：sales 001 Deng Yao</div></div></div>
+                <div class="timeline-item"><span class="timeline-dot gray"></span><div><div class="timeline-head"><b>查看预审详情</b><time>07-21 10:33</time></div><p>销售查看了用户预审信息</p><div class="operator-line">操作人：sales 001 Deng Yao</div></div></div>
+                <div class="timeline-item"><span class="timeline-dot gray"></span><div><div class="timeline-head"><b>自动分配给当前销售</b><time>07-21 10:32</time></div><p>销售：Sofia Ramirez</p><div class="operator-line">操作人：系统</div></div></div>
+                <div class="timeline-item"><span class="timeline-dot blue"></span><div><div class="timeline-head"><b>线索已创建</b><time>07-21 10:30</time></div><p>来源：系统自动 · WhatsApp 线索</p><div class="operator-line">操作人：系统</div></div></div>
+              </div>
+            </div>
+            <div id="notesPanel" class="tab-panel hidden" role="tabpanel">
+              <div class="panel-intro"><div><h2>跟进记事</h2><p>记录电话、微信或线下沟通中的关键信息</p></div><button class="primary small" id="addNoteBtn">＋ 添加跟踪记事</button></div>
+              <form class="note-composer hidden" id="noteForm"><textarea id="noteInput" placeholder="写下本次沟通的关键信息…" required></textarea><div class="composer-actions"><button type="button" class="ghost" id="cancelNote">取消</button><button type="submit" class="primary">保存记事</button></div></form>
+              <div class="timeline note-timeline" id="noteTimeline">
+                <div class="timeline-item"><span class="timeline-dot purple"></span><div><div class="timeline-head"><b>客户对 3 Sedan 有兴趣</b><time>今天 10:18</time></div><p>客户希望了解月供方案，已发送车型与金融政策资料。</p><div class="note-meta"><span>销售 · Sofia</span><span class="tag">电话沟通</span></div></div></div>
+                <div class="timeline-item"><span class="timeline-dot purple"></span><div><div class="timeline-head"><b>已发送预审链接</b><time>今天 09:52</time></div><p>客户同意进行金融预审，已通过 WhatsApp 发送预审链接。</p><div class="note-meta"><span>销售 · Sofia</span><span class="tag">WhatsApp</span></div></div></div>
+                <div class="timeline-item"><span class="timeline-dot purple"></span><div><div class="timeline-head"><b>客户关注月供金额</b><time>昨天 17:25</time></div><p>客户预算约为每月 7,000 比索，正在比较金融方案。</p><div class="note-meta"><span>销售 · Sofia</span><span class="tag">电话沟通</span></div></div></div>
+                <div class="timeline-item"><span class="timeline-dot purple"></span><div><div class="timeline-head"><b>记录客户回访时间</b><time>昨天 14:10</time></div><p>客户工作日白天不方便接听，约定次日 10:00 再次联系。</p><div class="note-meta"><span>销售 · Sofia</span><span class="tag">跟进安排</span></div></div></div>
+                <div class="timeline-item"><span class="timeline-dot purple"></span><div><div class="timeline-head"><b>首次联系未接通</b><time>昨天 16:40</time></div><p>已通过 WhatsApp 发送问候，等待客户回复。</p><div class="note-meta"><span>销售 · Sofia</span><span class="tag">WhatsApp</span></div></div></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside class="side-column">
+          <section class="card follow-card">
+            <div class="follow-head"><div><div class="eyebrow">CURRENT ACTION</div><h2>本次跟进</h2><p class="follow-subtitle">根据当前状态选择下一步销售动作</p></div></div>
+            <div class="contact-strip"><span class="contact-icon">↗</span><div><b>最近联系：07-21 10:18</b><span>WhatsApp · 已发送车型资料</span></div></div>
+            <label class="form-label demo-label">切换线索阶段（演示）<select id="leadStateSelect"><option value="pending">待跟进 / —</option><option value="following">跟进中 / 已联系</option><option value="order">订单中 / 预审通过</option><option value="testdrive">暂存 / 试驾</option><option value="cash">暂存 / 确认全款</option><option value="no-intent">暂存 / 无意向购买</option><option value="lost">战败</option></select></label>
+            <div class="state-context"><span>当前状态</span><b id="currentMainState">待跟进</b><i>—</i><b id="currentSubState">—</b></div><div class="form-label-title">跟进结果 <span>*</span></div>
+            <div class="stage-list" id="stageList"></div>
+            <div class="form-row"><label class="form-label-inline"><span>下一次跟进时间 <b>*</b></span><input type="datetime-local" value="2024-07-21T13:02" /></label></div>
+            <div class="form-row lost-reason hidden" id="lostReasonWrap"><label class="form-label">战败原因 <span>*</span><select id="lostReason"><option value="">请选择战败原因</option><option>号码错误</option><option>放弃购买</option><option>预审失败</option><option>未接通电话</option></select></label></div>
+            <div class="action-rule"><span>系统自动执行</span><b id="autoAction">状态 → 跟进中 · 已联系；跟进次数 +1</b><span>下一次跟进</span><b id="nextAction">第2次 +2小时</b></div>
+          </section>
+        </aside>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="modal-backdrop hidden" id="userInfoModal"><section class="user-modal"><div class="modal-head"><div><div class="eyebrow">USER PROFILE</div><h2>编辑用户信息</h2></div><button class="modal-close" id="closeUserModal">×</button></div><div class="info-tabs"><button class="info-tab active" data-info-tab="current">当前信息</button><button class="info-tab" data-info-tab="original">原始线索信息</button><button class="info-tab" data-info-tab="history">信息变更记录</button></div><div id="currentInfoPanel" class="info-panel"><p class="modal-tip">修改后将作为当前用户信息使用，原始线索信息会被保留。</p><div class="edit-grid"><label>线索类型<select id="editType"><option>金融</option><option>全款</option><option>试驾</option></select></label><label>手机号<input id="editPhone" value="5612345454" /></label><label>品牌<input id="editBrand" value="长安" /></label><label>车系<input id="editSeries" value="3 Sedan" /></label><label>车型<input id="editModel" value="I GRAND TOURING MHEV TA" /></label><label>经销商名<input id="editDealer" value="Changan Polanco" /></label><label>地址<input id="editAddress" value="Av. Vallarta 1410" /></label><label>地区<input id="editRegion" value="Ciudad de México · CDMX" /></label></div><label class="change-reason">修改原因（建议填写）<input id="editReason" placeholder="例如：客户电话确认了新的意向车型" /></label><div class="modal-foot"><button class="modal-save" id="saveUserInfo">保存当前信息</button></div></div><div id="originalInfoPanel" class="info-panel hidden"><p class="modal-tip">以下信息为线索首次创建时的原始快照，只读，不会被当前信息修改覆盖。</p><div class="original-grid"><div><span>线索类型</span><b>金融</b></div><div><span>手机号</span><b>5612345454</b></div><div><span>品牌 / 车系 / 车型</span><b>长安 / 3 Sedan / I GRAND TOURING MHEV TA</b></div><div><span>地址 / 地区</span><b>Av. Vallarta 1410 / Ciudad de México · CDMX</b></div><div><span>首次来源</span><b>WhatsApp</b></div><div><span>首次创建时间</span><b>07-21 10:30</b></div></div></div><div id="historyInfoPanel" class="info-panel hidden"><div class="change-list" id="changeList"><div class="change-item"><time>暂无新的变更</time><p>保存当前信息后，系统会在这里记录修改前后内容。</p></div></div></div></section></div>
+  <div class="modal-backdrop hidden" id="precheckModal"><section class="precheck-modal" role="dialog" aria-modal="true" aria-labelledby="precheckTitle"><div class="modal-head"><h2 id="precheckTitle">预审详情</h2><button class="modal-close" id="closePrecheck">×</button></div><div class="precheck-summary"><div><span>用户ID</span><b>—</b></div><div><span>姓名</span><b>—</b></div><div><span>手机号</span><b>5899022435</b></div><div><span>销售人员</span><b>未知</b></div><div><span>提交时间</span><b>—</b></div><div><span>预审状态</span><b>—</b></div></div><div class="validation-tags"><span class="invalid">× 姓名/收入</span><span class="valid">✓ 地址信息</span><span class="invalid">× 验证手机</span><span class="invalid">× 授权预审</span></div><div class="form-section"><h3>用户已填信息</h3><div class="precheck-grid"><label>名字(firstName)<input /></label><label>中间名(middleName)<input /></label><label>父姓(fatherLastName)<input /></label><label>母姓(motherLastName)<input /></label><label>出生日期(birthDate)<input value="17/08/2008" /></label><label>性别(gender)<div class="gender"><button class="chosen">男</button><button>女</button></div></label><label>RFC<input /></label><label>邮箱(email)<input /></label><label>手机号(phone)<input value="5899022435" disabled /></label><label>月收入(monthlyIncome)<input /></label><label>街道(street)<input value="av vallarte" /></label><label>外门牌号(exteriorNumber)<input value="1410" /></label><label>内门牌号(interiorNumber)<input /></label><label>邮编(postalCode)<input value="65500" /></label><label>社区(colonia)<select><option>Agrarista</option></select></label><label>城市(city)<input value="Salinas Victoria" /></label><label>州(state)<input value="Nuevo León" /></label></div></div><div class="modal-foot"><button class="modal-save" id="savePrecheck">保存</button><button class="modal-link" id="startAttribution">发起归因链接</button></div></section></div>
+  <script src="./app.js"></script>
+</body>
+</html>
