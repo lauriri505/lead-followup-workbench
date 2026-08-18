@@ -5,5 +5,6 @@
   {"key":"preapproval","name":"预审推进","icon":"preapproval","enabled":true,"roles":["admin","tenant_admin","sales"]},
   {"key":"orders","name":"订单跟进","icon":"orders","enabled":true,"roles":["admin","tenant_admin","sales"]},
   {"key":"records","name":"记录中心","icon":"records","enabled":true,"roles":["admin","tenant_admin"]},
+  {"key":"accounts","name":"账号与权限","icon":"accounts","enabled":true,"roles":["admin","tenant_admin"]},
   {"key":"config","name":"任务体系配置","icon":"config","enabled":true,"roles":["admin","tenant_admin"]}
 ]
