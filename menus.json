@@ -1,0 +1,9 @@
+[
+  {"key":"dashboard","name":"后台总览","icon":"dashboard","enabled":true,"roles":["admin"]},
+  {"key":"leads","name":"线索中心","icon":"leads","enabled":true,"roles":["admin"]},
+  {"key":"tasks","name":"销售任务中心","icon":"tasks","enabled":true,"roles":["admin","sales"]},
+  {"key":"preapproval","name":"预审推进","icon":"preapproval","enabled":true,"roles":["admin","sales"]},
+  {"key":"orders","name":"订单跟进","icon":"orders","enabled":true,"roles":["admin","sales"]},
+  {"key":"records","name":"记录中心","icon":"records","enabled":true,"roles":["admin"]},
+  {"key":"config","name":"任务体系配置","icon":"config","enabled":true,"roles":["admin"]}
+]
