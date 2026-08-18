@@ -25,6 +25,8 @@
         <div class="head-actions"><button class="outline-action" id="precheckBtn">查看预审详情</button><button class="outline-action favorite" id="favoriteBtn">☆ 收藏</button><button class="primary next-action" id="completeBtn">提交 <span>→</span></button></div>
       </div>
 
+      <section class="task-strip"><div class="task-icon">✓</div><div class="task-main"><div class="task-kicker">我的当前任务 · 待处理</div><h2 id="taskTitle">预审回访</h2><p id="taskSummary">提醒用户进入预审并确认是否遇到填写障碍</p></div><div class="task-meta"><span>任务分类：<b id="taskType">用户提醒任务</b></span><span>联系对象：<b id="contactTarget">用户</b></span><span>截止时间：<b id="taskDue">今天 15:30</b></span></div><button class="outline-action" id="taskCenterBtn">我的任务</button></section>
+
       <section class="workspace-grid">
         <div class="main-column">
           <section class="card identity-card">
@@ -69,6 +71,7 @@
           <section class="card follow-card">
             <div class="follow-head"><div><div class="eyebrow">CURRENT ACTION</div><h2>本次跟进</h2><p class="follow-subtitle">根据当前状态选择下一步销售动作</p></div></div>
             <div class="contact-strip"><span class="contact-icon">↗</span><div><b>最近联系：07-21 10:18</b><span>WhatsApp · 已发送车型资料</span></div></div>
+            <div class="task-context"><div><span>业务任务组</span><b id="taskGroup">预审推进任务</b></div><div><span>完成标准</span><b id="taskCompletion">完成联系并记录用户反馈，或重新约定时间</b></div></div>
             <label class="form-label demo-label">切换线索阶段（演示）<select id="leadStateSelect"><option value="pending">待跟进 / —</option><option value="following">跟进中 / 已联系</option><option value="order">订单中 / 预审通过</option><option value="testdrive">暂存 / 试驾</option><option value="cash">暂存 / 确认全款</option><option value="no-intent">暂存 / 无意向购买</option><option value="lost">战败</option></select></label>
             <div class="state-context"><span>当前状态</span><b id="currentMainState">待跟进</b><i>—</i><b id="currentSubState">—</b></div><div class="form-label-title">跟进结果 <span>*</span></div>
             <div class="stage-list" id="stageList"></div>

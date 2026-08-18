@@ -12,6 +12,9 @@ tabs.forEach(tab => tab.addEventListener('click', () => {
   $('#opsPanel').classList.toggle('hidden', tab.dataset.tab !== 'ops');
   $('#notesPanel').classList.toggle('hidden', tab.dataset.tab !== 'notes');
 }));
+const taskByState={pending:{title:'首次联系',summary:'完成首次有效联系，确认购车意向、金融意向和下一步动作',type:'用户提醒任务',target:'用户',group:'首次联系任务',completion:'完成一次有效联系并记录跟进结果'},following:{title:'回访任务',summary:'联系用户确认最新意向，并确定下一步动作',type:'用户提醒任务',target:'用户',group:'回访任务',completion:'完成联系并记录用户反馈，或重新约定时间'},order:{title:'订单状态回访',summary:'告知用户预审通过进度，确认是否收到下游通知',type:'状态告知任务',target:'用户',group:'订单状态跟进任务',completion:'告知当前状态并记录用户是否理解下一步'},testdrive:{title:'试驾回访',summary:'确认试驾安排与客户反馈，必要时重新约定时间',type:'用户提醒任务',target:'用户',group:'回访任务',completion:'记录试驾反馈并设置下一次跟进时间'},cash:{title:'用户提醒任务',summary:'提醒用户确认全款购车安排和车辆库存',type:'用户提醒任务',target:'用户',group:'订单状态跟进任务',completion:'确认用户收到通知并记录反馈'},'no-intent':{title:'沉默回捞',summary:'到达回捞时间后重新确认用户购车意向',type:'用户提醒任务',target:'用户',group:'回访任务',completion:'完成联系并记录新的意向结果'},lost:{title:'战败归档',summary:'该线索已进入终态，不再生成销售任务',type:'纯等待',target:'—',group:'—',completion:'无需跟进'}};
+function updateTaskContext(key){const t=taskByState[key]||taskByState.following;$('#taskTitle').textContent=t.title;$('#taskSummary').textContent=t.summary;$('#taskType').textContent=t.type;$('#contactTarget').textContent=t.target;$('#taskGroup').textContent=t.group;$('#taskCompletion').textContent=t.completion;$('#taskDue').textContent=key==='lost'?'—':key==='order'?'明天 10:00':'今天 15:30';}
+$('#taskCenterBtn').addEventListener('click',()=>showToast('我的任务：1 条待处理，2 条即将到期'));
 
 const leadStates = {
   pending:{main:'待跟进',sub:'—',progress:'20%',count:'1 / 5 阶段',items:[['未接通','自动联系','第2次 +2小时','状态 → 跟进中 · 已联系；跟进次数 +1'],['已沟通-有意向','确认意向车型','承诺时间或 +2小时 / 次日10:00','确认意向车型，进入购车引导'],['已沟通-无意向','转低频唤醒','+30天唤醒一次','状态 → 暂存 · 无意向购买'],['要求稍后联系','按客户指定时间回访','销售录入客户指定时间','状态 → 跟进中 · 已联系'],['号码错误','无动作（终态）','—','状态 → 战败-号码错误'],['已发送预审链接','跟进预审进度','第2次 +2小时；第3次次日10:00','状态 → 跟进中 · 已联系']]},
@@ -23,6 +26,7 @@ const leadStates = {
   lost:{main:'战败',sub:'—',progress:'100%',count:'终态',items:[['战败','无后续动作','—','原因：号码错误 / 放弃购买 / 预审失败 / 未接通电话']]}
 };
 function renderLeadState(key){
+  updateTaskContext(key);
   const data=leadStates[key]; $('#currentMainState').textContent=data.main; $('#currentSubState').textContent=data.sub; $('#lostReasonWrap').classList.toggle('hidden', key !== 'lost');
   const list=$('#stageList'); list.innerHTML=data.items.map((x,i)=>`<button class="stage ${i===0?'selected':''}" data-stage="${x[0]}" data-action="${x[3]}" data-next="${x[2]}"><span class="stage-radio"></span><b>${x[0]}</b><small>${x[1]}</small><time>${x[2]}</time></button>`).join(''); bindStages(); const first=data.items[0]; $('#autoAction').textContent=first[3]; $('#nextAction').textContent=first[2];
 }
