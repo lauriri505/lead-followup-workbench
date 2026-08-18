@@ -13,8 +13,9 @@
       <div class="crumbs">线索管理 <span>/</span> 线索详情 <span>/</span> Sofia Ramirez</div>
       <div class="top-actions"><button class="icon-btn" aria-label="通知">♧</button><label class="role-switch">当前角色<select id="roleSelect"><option value="sales">销售 · sales 001</option><option value="admin">超级管理员</option></select></label><div class="avatar">DY</div></div>
     </header>
-    <div class="admin-nav"><button>▦</button><button>车辆库</button><button>线索库</button><button class="active">跟进线索</button><button>用户管理</button><button>金融订单</button><button>网站管理</button><button>内容库</button></div>
+    <div class="admin-nav"><button data-module="dashboard">▦ 总览</button><button data-module="leads" class="active">线索中心</button><button data-module="tasks">销售任务中心</button><button data-module="preapproval">预审推进</button><button data-module="orders">订单跟进</button><button data-module="records">记录中心</button><button data-module="config">任务体系配置</button></div>
     <section class="lead-list hidden" id="leadList"><div class="list-head"><div><div class="eyebrow">CRM · LEAD CENTER</div><h1>跟进线索</h1><p>管理员可查看全部线索；销售登录后仅进入对应工作台</p></div><button class="primary" id="openSalesWorkbench">进入销售工作台</button></div><div class="filters"><input placeholder="姓名 / 手机号 / 线索ID" /><select><option>跟进状态</option><option>待跟进</option><option>跟进中</option><option>订单中</option></select><select><option>线索类型</option><option>金融</option><option>全款</option><option>试驾</option></select><button class="primary small">搜索</button></div><table class="lead-table"><thead><tr><th>状态</th><th>子状态</th><th>姓名</th><th>手机号</th><th>品牌</th><th>车系</th><th>创建时间</th><th>线索来源</th><th>操作</th></tr></thead><tbody><tr><td><span class="table-pill">跟进中</span></td><td>已联系</td><td>Sofia Ramirez</td><td>5899022435</td><td>长安</td><td>CS75 PLUS</td><td>2026-08-05 06:42</td><td>WhatsApp</td><td><button class="table-link" data-open-workbench>查看</button></td></tr><tr><td><span class="table-pill">待跟进</span></td><td>—</td><td>David Chen</td><td>5612345454</td><td>NISSAN</td><td>MAGNITE</td><td>2026-08-05 06:41</td><td>车辆页</td><td><button class="table-link" data-open-workbench>查看</button></td></tr></tbody></table></section>
+    <section class="module-view hidden" id="moduleView"></section>
     <main class="page" id="workbenchPage">
       <div class="page-head">
         <div>
@@ -22,7 +23,7 @@
           <h1>线索跟进工作台</h1>
           <p class="subtitle">集中管理线索信息、跟进动作与客户沟通上下文</p>
         </div>
-        <div class="head-actions"><button class="outline-action" id="precheckBtn">查看预审详情</button><button class="outline-action favorite" id="favoriteBtn">☆ 收藏</button><button class="primary next-action" id="completeBtn">提交 <span>→</span></button></div>
+        <div class="head-actions"><button class="outline-action" id="precheckBtn">查看预审详情</button><button class="outline-action favorite" id="favoriteBtn">☆ 收藏</button><button class="outline-action" id="skipBtn">跳过</button><button class="primary next-action" id="completeBtn">提交 <span>→</span></button></div>
       </div>
 
       <section class="task-strip"><div class="task-icon">✓</div><div class="task-main"><div class="task-kicker">我的当前任务 · 待处理</div><h2 id="taskTitle">预审回访</h2><p id="taskSummary">提醒用户进入预审并确认是否遇到填写障碍</p></div><div class="task-meta"><span>任务分类：<b id="taskType">用户提醒任务</b></span><span>联系对象：<b id="contactTarget">用户</b></span><span>截止时间：<b id="taskDue">今天 15:30</b></span></div><button class="outline-action" id="taskCenterBtn">我的任务</button></section>
@@ -75,6 +76,7 @@
             <label class="form-label demo-label">切换线索阶段（演示）<select id="leadStateSelect"><option value="pending">待跟进 / —</option><option value="following">跟进中 / 已联系</option><option value="order">订单中 / 预审通过</option><option value="testdrive">暂存 / 试驾</option><option value="cash">暂存 / 确认全款</option><option value="no-intent">暂存 / 无意向购买</option><option value="lost">战败</option></select></label>
             <div class="state-context"><span>当前状态</span><b id="currentMainState">待跟进</b><i>—</i><b id="currentSubState">—</b></div><div class="form-label-title">跟进结果 <span>*</span></div>
             <div class="stage-list" id="stageList"></div>
+            <div class="order-mode-notice hidden" id="orderModeNotice"><strong>订单状态只读</strong><p>当前状态由 Mstar 订单系统回传，销售不可手动修改订单节点。请告知用户进度、记录反馈后提交任务。</p></div>
             <div class="form-row"><label class="form-label-inline"><span>下一次跟进时间 <b>*</b></span><input type="datetime-local" value="2024-07-21T13:02" /></label></div>
             <div class="form-row lost-reason hidden" id="lostReasonWrap"><label class="form-label">战败原因 <span>*</span><select id="lostReason"><option value="">请选择战败原因</option><option>号码错误</option><option>放弃购买</option><option>预审失败</option><option>未接通电话</option></select></label></div>
             <div class="action-rule"><span>系统自动执行</span><b id="autoAction">状态 → 跟进中 · 已联系；跟进次数 +1</b><span>下一次跟进</span><b id="nextAction">第2次 +2小时</b></div>
