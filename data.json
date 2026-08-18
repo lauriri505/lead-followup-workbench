@@ -1,0 +1,14 @@
+{
+  "leads": [
+    {"name":"Sofia Ramirez","phone":"5899022435","main":"跟进中","sub":"已联系","state":"following","brand":"长安","series":"CS75 PLUS","model":"1.5T 尊贵型","notes":["客户希望了解月供方案，已发送车型与金融政策资料。","已通过 WhatsApp 发送问候，等待客户回复。"]},
+    {"name":"David Chen","phone":"5612345454","main":"待跟进","sub":"—","state":"pending","brand":"NISSAN","series":"MAGNITE","model":"Exclusive MT","notes":["首次线索进入，待销售首次联系。"]},
+    {"name":"María López","phone":"5588123344","main":"订单中","sub":"预审通过","state":"order","brand":"长安","series":"UNI-K","model":"2.0T 尊贵型","notes":["预审已通过，等待客户提交进件材料。","已向客户说明下一步签约流程。"]},
+    {"name":"Carlos Ruiz","phone":"5510027811","main":"暂存","sub":"试驾","state":"testdrive","brand":"长安","series":"CS75 PLUS","model":"2.0T 旗舰型","notes":["客户希望周末到店试驾。"]},
+    {"name":"Ana Torres","phone":"5549081266","main":"暂存","sub":"确认全款","state":"cash","brand":"FORD","series":"Explorer","model":"Advance 2 Row","notes":["客户确认全款购买，等待确认车辆库存。"]},
+    {"name":"Luis Hernández","phone":"5532219088","main":"暂存","sub":"无意向购买","state":"no-intent","brand":"MAZDA","series":"CX-30","model":"尊贵型","notes":["客户暂时没有购车计划，30天后再唤醒。"]},
+    {"name":"Jorge Morales","phone":"5521807766","main":"战败","sub":"—","state":"lost","brand":"—","series":"—","model":"—","notes":["号码错误，系统已终止后续跟进。"]}
+  ],
+  "leadRows": [
+    ["跟进中","已联系","Sofia Ramirez","5899022435","长安","CS75 PLUS","WhatsApp"],["待跟进","—","David Chen","5612345454","NISSAN","MAGNITE","车辆页"],["订单中","预审通过","María López","5588123344","长安","UNI-K","金融机构"],["暂存","试驾","Carlos Ruiz","5510027811","长安","CS75 PLUS","试驾活动"],["暂存","确认全款","Ana Torres","5549081266","FORD","Explorer","门店录入"],["暂存","无意向购买","Luis Hernández","5532219088","MAZDA","CX-30","销售跟进"],["战败","号码错误","Jorge Morales","5521807766","—","—","系统自动"],["待跟进","要求稍后联系","Elena García","5577331188","NISSAN","X-TRAIL","官网表单"],["跟进中","已发送预审链接","Miguel Soto","5566012331","长安","逸动","金融机构"],["订单中","等待信审结果","Paola Cruz","5598802211","长安","UNI-V","销售跟进"],["暂存","未接通（达上限）","Rafael Díaz","5511907722","—","—","系统自动"],["战败","放弃购买","Lucía Vega","5544076110","—","—","销售跟进"]
+  ]
+}
