@@ -1,15 +1,169 @@
 {
   "leads": [
-    {"name":"Sofia Ramirez","phone":"5899022435","main":"跟进中","sub":"已联系","state":"lead-callback","brand":"长安","series":"CS75 PLUS","model":"1.5T 尊贵型","notes":["客户希望了解月供方案，已发送车型与金融政策资料。","已通过 WhatsApp 发送问候，等待客户回复。"]},
-    {"name":"David Chen","phone":"5612345454","main":"待跟进","sub":"—","state":"lead-first","brand":"NISSAN","series":"MAGNITE","model":"Exclusive MT","notes":["首次线索进入，待销售首次联系。"]},
-    {"name":"Elena García","phone":"5577331188","main":"跟进中","sub":"已联系","state":"lead-retry","brand":"NISSAN","series":"X-TRAIL","model":"Advance 2 Row","notes":["首次拨打未接通，系统生成重试任务。"]},
-    {"name":"Luis Hernández","phone":"5532219088","main":"暂存","sub":"无意向购买","state":"lead-dormant","brand":"MAZDA","series":"CX-30","model":"尊贵型","notes":["客户暂时没有购车计划，已到30天唤醒时间。"]},
-    {"name":"Miguel Soto","phone":"5566012331","main":"预审中","sub":"已发送链接未进入","state":"pre-entry","brand":"长安","series":"逸动","model":"尊贵型","notes":["预审链接已发送，用户尚未进入。"]},
-    {"name":"Andrea Flores","phone":"5580364421","main":"预审中","sub":"资料填写中","state":"pre-progress","brand":"FORD","series":"Territory","model":"Titanium","notes":["用户已填写身份信息，收入资料尚未完成。"]},
-    {"name":"Rafael Díaz","phone":"5511907722","main":"预审中","sub":"待手机验证","state":"pre-phone","brand":"NISSAN","series":"KICKS","model":"Exclusive","notes":["用户反馈未收到手机验证码。"]},
-    {"name":"Paola Cruz","phone":"5598802211","main":"订单中","sub":"等待信审结果","state":"order-inform","brand":"长安","series":"UNI-V","model":"尊贵型","notes":["订单已进入信审，等待下游结果。"]},
-    {"name":"María López","phone":"5588123344","main":"订单中","sub":"合同待签署","state":"order-customer","brand":"长安","series":"UNI-K","model":"2.0T 尊贵型","notes":["合同已生成，等待客户在线签署。"]},
-    {"name":"Carlos Ruiz","phone":"5510027811","main":"订单中","sub":"状态超时","state":"order-downstream","brand":"长安","series":"CS75 PLUS","model":"2.0T 旗舰型","notes":["订单状态超过24小时未更新，需要联系下游运营。"]}
+    {
+      "name":"Sofia Ramirez","phone":"5899022435","main":"跟进中","sub":"已联系","state":"lead-callback","brand":"长安","series":"CS75 PLUS","model":"1.5T 尊贵型",
+      "operations":[
+        {"time":"今天 14:02","title":"生成用户约定回访任务","detail":"任务子类型：SCHEDULED_CALLBACK；截止时间：今天 17:30；来源：销售录入客户承诺时间","operator":"系统"},
+        {"time":"今天 13:58","title":"跟进结果更新为「要求稍后联系」","detail":"线索状态保持“跟进中 · 已联系”，下一次联系时间调整为今天 17:30","operator":"sales 001 Deng Yao"},
+        {"time":"今天 13:56","title":"完成第二次电话联系","detail":"客户已接听，表示正在开会，希望下班后再沟通月供和首付方案","operator":"sales 001 Deng Yao"},
+        {"time":"今天 10:20","title":"用户信息已修改","detail":"意向车型由 CS75 PLUS 豪华型更新为 1.5T 尊贵型；修改原因：客户确认配置","operator":"sales 001 Deng Yao"},
+        {"time":"今天 10:18","title":"跟进结果更新为「已沟通-有意向」","detail":"线索由“待跟进”流转为“跟进中 · 已联系”，系统生成意向确认回访任务","operator":"sales 001 Deng Yao"},
+        {"time":"今天 09:42","title":"首次联系任务已分配","detail":"任务子类型：FIRST_CONTACT；优先级：普通；截止时间：今天 10:30","operator":"系统"},
+        {"time":"今天 09:40","title":"线索已创建","detail":"来源：WhatsApp 车型咨询页；租户：AutoCava；品牌范围：非合作品牌线索","operator":"系统"}
+      ],
+      "notes":[
+        {"time":"今天 13:57","text":"客户正在开会，约定今天 17:30 再联系。届时重点说明首付 20% 和 30% 两种方案的月供差异。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 10:21","text":"客户确认更关注 CS75 PLUS 1.5T 尊贵型，不考虑豪华型，希望有白色现车。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 10:18","text":"客户预算首付约 90,000 比索，月供希望控制在 7,000 比索以内，可以接受 60 或 72 期。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 10:05","text":"已把车型配置和金融政策资料发给客户，客户表示午休时查看。","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 16:40","text":"电话未接通，随后发了简短问候信息，没有继续频繁拨打。","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 15:12","text":"线索备注显示客户来自 Guadalajara，购车主要用于家庭通勤，预计一个月内决定。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "name":"David Chen","phone":"5612345454","main":"待跟进","sub":"—","state":"lead-first","brand":"NISSAN","series":"MAGNITE","model":"Exclusive MT",
+      "operations":[
+        {"time":"今天 09:46","title":"首次联系任务即将到期","detail":"距截止时间还有 44 分钟，系统向当前销售发送站内提醒","operator":"系统"},
+        {"time":"今天 09:12","title":"首次联系任务已生成","detail":"任务子类型：FIRST_CONTACT；截止时间：今天 10:30","operator":"系统"},
+        {"time":"今天 09:11","title":"线索自动分配完成","detail":"根据 AutoCava 销售分配规则分配给 sales 001 Deng Yao","operator":"系统"},
+        {"time":"今天 09:10","title":"用户信息完成去重校验","detail":"手机号未命中有效线索，允许创建新线索","operator":"系统"},
+        {"time":"今天 09:09","title":"线索已创建","detail":"来源：MAGNITE 车辆详情页；线索类型：金融","operator":"系统"}
+      ],
+      "notes":[
+        {"time":"今天 09:35","text":"查看了来源页面，客户咨询的是 MAGNITE Exclusive MT，需要先确认是否接受手动挡。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 09:28","text":"准备首次联系时询问用车城市、首付预算和期望提车时间。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 09:20","text":"手机号区号为墨西哥城，先使用电话联系，未接通再通过 WhatsApp 留言。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 09:15","text":"当前没有历史沟通记录，需要在首次联系时确认客户称呼和方便联系的时间。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "name":"Elena García","phone":"5577331188","main":"跟进中","sub":"已联系","state":"lead-retry","brand":"NISSAN","series":"X-TRAIL","model":"Advance 2 Row",
+      "operations":[
+        {"time":"今天 14:00","title":"未接通重试任务开始执行","detail":"当前为第 2 次联系，达到上限前仅累计未接通次数","operator":"系统"},
+        {"time":"今天 12:02","title":"生成未接通重试任务","detail":"任务子类型：RETRY_CONTACT；截止时间：今天 14:00","operator":"系统"},
+        {"time":"今天 12:01","title":"跟进结果更新为「未接通（第1次）」","detail":"线索进入“跟进中 · 已联系”；未接通次数累计为 1","operator":"sales 001 Deng Yao"},
+        {"time":"今天 11:58","title":"首次拨打用户电话","detail":"呼叫持续 28 秒，无人接听","operator":"sales 001 Deng Yao"},
+        {"time":"今天 10:30","title":"线索创建并分配","detail":"来源：X-TRAIL 试算器；首次联系任务已生成","operator":"系统"}
+      ],
+      "notes":[
+        {"time":"今天 12:03","text":"第一次电话无人接听，已通过 WhatsApp 说明来意，请客户方便时回复。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 11:45","text":"客户关注 X-TRAIL 两排座版本，来源试算金额显示首付预算约 120,000 比索。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 10:52","text":"计划先确认家庭乘员人数，再判断是否需要推荐三排座版本。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 10:36","text":"客户未填写方便联系时段，首次拨打安排在午间。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "name":"Luis Hernández","phone":"5532219088","main":"暂存","sub":"无意向购买","state":"lead-dormant","brand":"MAZDA","series":"CX-30","model":"尊贵型",
+      "operations":[
+        {"time":"今天 09:00","title":"生成沉默回捞任务","detail":"任务子类型：DORMANT_REACTIVATION；距离上次有效联系 30 天","operator":"系统"},
+        {"time":"07-20 16:15","title":"线索进入低频唤醒队列","detail":"下一次唤醒时间设置为 30 天后 09:00","operator":"系统"},
+        {"time":"07-20 16:14","title":"跟进结果更新为「已沟通-无意向」","detail":"线索流转为“暂存 · 无意向购买”","operator":"sales 001 Deng Yao"},
+        {"time":"07-20 16:10","title":"完成用户回访","detail":"客户表示近期没有购车计划，但同意后续低频联系","operator":"sales 001 Deng Yao"},
+        {"time":"07-18 10:20","title":"线索已创建","detail":"来源：MAZDA CX-30 车型页","operator":"系统"}
+      ],
+      "notes":[
+        {"time":"今天 09:05","text":"今天到达 30 天回捞时间，准备先询问客户购车计划是否有变化，不直接重复介绍金融方案。","operator":"sales 001 Deng Yao"},
+        {"time":"07-20 16:13","text":"客户暂时把预算用于家庭装修，预计两到三个月后再考虑购车。","operator":"sales 001 Deng Yao"},
+        {"time":"07-20 16:12","text":"客户没有拒绝后续联系，同意一个月后通过 WhatsApp 简单询问一次。","operator":"sales 001 Deng Yao"},
+        {"time":"07-18 11:02","text":"客户喜欢 CX-30 外观，但认为当前首付压力较大。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "name":"Miguel Soto","phone":"5566012331","main":"预审中","sub":"已发送链接未进入","state":"pre-entry","brand":"长安","series":"逸动","model":"尊贵型",
+      "operations":[
+        {"time":"今天 15:00","title":"生成提醒进入预审任务","detail":"任务子类型：REMIND_PREAPPROVAL_ENTRY；链接发送后 30 分钟仍未进入","operator":"系统"},
+        {"time":"今天 14:30","title":"预审链接发送成功","detail":"发送渠道：WhatsApp；预审节点更新为“已发送链接未进入”","operator":"sales 001 Deng Yao"},
+        {"time":"今天 14:28","title":"跟进结果更新为「已发送预审链接」","detail":"线索保持“跟进中 · 已联系”，生成预审推进任务","operator":"sales 001 Deng Yao"},
+        {"time":"今天 14:20","title":"完成意向确认回访","detail":"客户同意尝试金融预审并授权发送链接","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 17:30","title":"线索进入跟进中","detail":"首次联系有效，客户确认意向车型为长安逸动尊贵型","operator":"系统"}
+      ],
+      "notes":[
+        {"time":"今天 14:31","text":"已把预审链接发到客户 WhatsApp，并说明填写预计需要 5 到 8 分钟。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 14:24","text":"客户担心预审会立即产生贷款，已解释当前只是额度评估，不等于签订合同。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 14:21","text":"客户同意开始预审，但目前在外面，预计半小时后打开链接。","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 17:28","text":"客户计划首付约 25%，希望先确认可获得的贷款额度。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "name":"Andrea Flores","phone":"5580364421","main":"预审中","sub":"资料填写中","state":"pre-progress","brand":"FORD","series":"Territory","model":"Titanium",
+      "operations":[
+        {"time":"今天 16:30","title":"生成预审进度跟进任务","detail":"任务子类型：FOLLOW_PREAPPROVAL_PROGRESS；阻塞节点：收入信息","operator":"系统"},
+        {"time":"今天 16:05","title":"预审节点更新为「资料填写中」","detail":"身份信息和地址信息已保存，收入信息尚未完成","operator":"预审系统"},
+        {"time":"今天 15:40","title":"用户首次进入预审页面","detail":"可信事件 PREAPPROVAL_ENTERED 已回传","operator":"预审系统"},
+        {"time":"今天 15:12","title":"完成预审进入提醒","detail":"用户确认稍后填写，当前提醒任务已完成","operator":"sales 001 Deng Yao"},
+        {"time":"今天 14:35","title":"预审链接发送成功","detail":"链接有效期 24 小时；发送渠道：WhatsApp","operator":"系统"}
+      ],
+      "notes":[
+        {"time":"今天 16:32","text":"页面显示客户停留在收入信息，回访时只询问是否需要解释字段，不要求客户通过聊天发送敏感资料。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 15:14","text":"客户说晚些时候会继续填写，约定 17:00 前如果没有进展再联系一次。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 15:10","text":"客户已打开链接，但不清楚月收入应填写税前还是税后，已说明按页面提示填写。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 14:36","text":"发送链接前再次确认手机号和意向车型，信息无误。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "name":"Rafael Díaz","phone":"5511907722","main":"预审中","sub":"待手机验证","state":"pre-phone","brand":"NISSAN","series":"KICKS","model":"Exclusive",
+      "operations":[
+        {"time":"今天 16:50","title":"生成手机验证提醒任务","detail":"任务子类型：REMIND_PHONE_VERIFICATION；截止时间：今天 17:20","operator":"系统"},
+        {"time":"今天 16:48","title":"预审节点更新为「待手机验证」","detail":"基础资料已完成，等待用户输入短信验证码","operator":"预审系统"},
+        {"time":"今天 16:40","title":"验证码发送成功","detail":"发送至尾号 7722；验证码内容不保存到 CRM","operator":"预审系统"},
+        {"time":"今天 15:30","title":"预审资料保存成功","detail":"身份、收入和地址信息已完成","operator":"预审系统"},
+        {"time":"今天 14:10","title":"用户进入预审页面","detail":"可信事件 PREAPPROVAL_ENTERED 已回传","operator":"预审系统"}
+      ],
+      "notes":[
+        {"time":"今天 16:52","text":"客户说没有看到验证码短信，先提醒检查拦截信息并等待一分钟后重新获取。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 16:44","text":"已说明验证码只能由客户本人填写，销售不会索要验证码内容。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 15:35","text":"客户填写过程顺利，目前只剩手机验证。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 14:12","text":"客户使用安卓手机打开链接，页面可以正常加载。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "name":"Paola Cruz","phone":"5598802211","main":"订单中","sub":"等待信审结果","state":"order-inform","brand":"长安","series":"UNI-V","model":"尊贵型",
+      "operations":[
+        {"time":"今天 11:00","title":"生成订单状态告知任务","detail":"任务子类型：INFORM_ORDER_STATUS；当前节点：等待信审结果","operator":"系统"},
+        {"time":"今天 10:55","title":"订单状态同步为「等待信审结果」","detail":"订单 ID：MS-20260819-0186；状态来源：Mstar","operator":"订单系统"},
+        {"time":"今天 10:42","title":"预审通过","detail":"预审节点完成，线索状态流转为“订单中 · 预审通过”","operator":"预审系统"},
+        {"time":"今天 10:40","title":"订单关联成功","detail":"线索 ID 1533 已关联订单 MS-20260819-0186","operator":"系统"},
+        {"time":"昨天 16:20","title":"完成预审进度跟进任务","detail":"客户已提交全部资料，等待预审结果","operator":"sales 001 Deng Yao"}
+      ],
+      "notes":[
+        {"time":"今天 11:05","text":"准备向客户说明订单已经进入信审，目前不需要重复提交资料，有结果后会第一时间联系。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 10:45","text":"已告知客户预审通过，客户询问信审一般需要多久，暂未承诺具体完成时间。","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 16:22","text":"客户完成资料提交，确认联系电话在工作时段可以接听。","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 15:30","text":"客户希望选择 UNI-V 尊贵型黑色车辆，接受当前金融报价范围。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "name":"María López","phone":"5588123344","main":"订单中","sub":"合同待签署","state":"order-customer","brand":"长安","series":"UNI-K","model":"2.0T 尊贵型",
+      "operations":[
+        {"time":"今天 15:00","title":"生成合同签署提醒任务","detail":"任务子类型：REMIND_CUSTOMER_ACTION；截止时间：今天 16:30","operator":"系统"},
+        {"time":"今天 14:52","title":"订单状态同步为「合同待签署」","detail":"电子合同已生成，等待用户在线确认并签署","operator":"订单系统"},
+        {"time":"今天 14:45","title":"金融报价已确认","detail":"客户确认首付比例、贷款期数和月供方案","operator":"订单系统"},
+        {"time":"今天 11:20","title":"完成报价确认回访任务","detail":"用户接受 72 期方案，等待合同生成","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 17:10","title":"订单进入报价待确认","detail":"下游金融方案已回传 CRM","operator":"订单系统"}
+      ],
+      "notes":[
+        {"time":"今天 15:04","text":"客户下午在工作，约定 18:00 回家后查看并签署合同。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 14:56","text":"已提醒客户签署前核对姓名、车型、首付和贷款期数，如有问题先不要提交。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 11:18","text":"客户确认选择 72 期方案，认为月供更符合家庭预算。","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 17:15","text":"客户对报价中的保险费用有疑问，已记录并向下游确认。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "name":"Carlos Ruiz","phone":"5510027811","main":"订单中","sub":"状态超时","state":"order-downstream","brand":"长安","series":"CS75 PLUS","model":"2.0T 旗舰型",
+      "operations":[
+        {"time":"今天 09:15","title":"订单状态超时任务已升级","detail":"任务子类型：FOLLOW_ORDER_TIMEOUT；已超过规则时限 2 小时","operator":"系统"},
+        {"time":"今天 09:00","title":"生成下游协同任务","detail":"联系对象：Mstar 运营；要求确认订单处理进度和预计完成时间","operator":"系统"},
+        {"time":"今天 08:58","title":"检测到订单状态停留超时","detail":"“等待放款”节点连续 26 小时未更新，超过租户规则 24 小时","operator":"系统"},
+        {"time":"昨天 07:00","title":"订单状态同步为「等待放款」","detail":"状态来源：Mstar；订单 ID：MS-20260818-0092","operator":"订单系统"},
+        {"time":"08-17 18:25","title":"合同签署完成","detail":"电子签署事件校验成功，订单进入下游放款流程","operator":"订单系统"}
+      ],
+      "notes":[
+        {"time":"今天 09:18","text":"已联系 Mstar 运营 Laura，正在核对放款批次，预计 11:00 前给反馈。","operator":"sales 001 Deng Yao"},
+        {"time":"今天 09:05","text":"客户上午询问放款进度，目前只说明正在向下游确认，没有承诺具体到账时间。","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 16:30","text":"订单仍显示等待放款，客户希望确认是否还需要补充材料。","operator":"sales 001 Deng Yao"},
+        {"time":"08-17 18:30","text":"客户已完成合同签署，确认联系方式保持畅通。","operator":"sales 001 Deng Yao"}
+      ]
+    }
   ],
   "leadRows": [
     ["跟进中","已联系","Sofia Ramirez","5899022435","长安","CS75 PLUS","WhatsApp"],["待跟进","—","David Chen","5612345454","NISSAN","MAGNITE","车辆页"],["订单中","预审通过","María López","5588123344","长安","UNI-K","金融机构"],["暂存","试驾","Carlos Ruiz","5510027811","长安","CS75 PLUS","试驾活动"],["暂存","确认全款","Ana Torres","5549081266","FORD","Explorer","门店录入"],["暂存","无意向购买","Luis Hernández","5532219088","MAZDA","CX-30","销售跟进"],["战败","号码错误","Jorge Morales","5521807766","—","—","系统自动"],["待跟进","要求稍后联系","Elena García","5577331188","NISSAN","X-TRAIL","官网表单"],["跟进中","已发送预审链接","Miguel Soto","5566012331","长安","逸动","金融机构"],["订单中","等待信审结果","Paola Cruz","5598802211","长安","UNI-V","销售跟进"],["暂存","未接通（达上限）","Rafael Díaz","5511907722","—","—","系统自动"],["战败","放弃购买","Lucía Vega","5544076110","—","—","销售跟进"]
