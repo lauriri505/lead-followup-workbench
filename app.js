@@ -78,7 +78,7 @@ $('#closePrecheck').addEventListener('click', () => $('#precheckModal').classLis
 $('#precheckModal').addEventListener('click', e => { if(e.target.id === 'precheckModal') e.currentTarget.classList.add('hidden'); });
 $('#savePrecheck').addEventListener('click', () => showToast('预审信息已保存'));
 $('#startAttribution').addEventListener('click', () => showToast('归因链接已发起'));
-$('#favoriteBtn').addEventListener('click', () => { const b = $('#favoriteBtn'); b.classList.toggle('active'); b.textContent = b.classList.contains('active') ? '★ 已收藏' : '☆ 收藏'; showToast(b.classList.contains('active') ? '已加入收藏' : '已取消收藏'); });
+$('#favoriteBtn').addEventListener('click', () => { const b = $('#favoriteBtn'); b.classList.toggle('active'); b.textContent = b.classList.contains('active') ? '★ 已关注' : '☆ 关注'; showToast(b.classList.contains('active') ? '已关注该线索' : '已取消关注'); });
 let leadQueue=[];let currentLeadIndex=0;
 function renderLeadActivity(lead){
   $('#leadIdValue').textContent=lead.id||'—';$('#currentName').textContent=lead.name;$('#currentPhone').textContent=lead.phone;$('#currentBrand').textContent=lead.brand;$('#currentSeries').textContent=lead.series;$('#currentModel').textContent=lead.model;
