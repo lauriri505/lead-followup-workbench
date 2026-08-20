@@ -53,7 +53,7 @@
       ]
     },
     {
-      "id":"1536","name":"Luis Hernández","phone":"5532219088","main":"暂存","sub":"无意向购买","state":"lead-dormant","brand":"MAZDA","series":"CX-30","model":"尊贵型","lastContactNoteIndex":1,
+      "id":"1536","name":"Luis Hernández","phone":"5532219088","main":"暂存","sub":"无意向购买","state":"lead-no-intent-reactivation","brand":"MAZDA","series":"CX-30","model":"尊贵型","lastContactNoteIndex":1,
       "operations":[
         {"time":"今天 09:00","title":"生成沉默回捞任务","detail":"任务子类型：DORMANT_REACTIVATION；距离上次有效联系 30 天","operator":"系统"},
         {"time":"07-20 16:15","title":"线索进入低频唤醒队列","detail":"下一次唤醒时间设置为 30 天后 09:00","operator":"系统"},
@@ -66,6 +66,81 @@
         {"time":"07-20 16:13","text":"客户暂时把预算用于家庭装修，预计两到三个月后再考虑购车。","operator":"sales 001 Deng Yao"},
         {"time":"07-20 16:12","text":"客户没有拒绝后续联系，同意一个月后通过 WhatsApp 简单询问一次。","operator":"sales 001 Deng Yao"},
         {"time":"07-18 11:02","text":"客户喜欢 CX-30 外观，但认为当前首付压力较大。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "id":"1543","name":"Valeria Ramos","phone":"5526011843","main":"跟进中","sub":"已联系","state":"lead-intention","brand":"FORD","series":"Territory","model":"Titanium","lastContactNoteIndex":0,
+      "operations":[
+        {"time":"今天 10:00","title":"意向确认回访任务开始处理","detail":"任务子类型：INTENTION_CALLBACK；当前线索状态：跟进中 · 已联系","operator":"系统"},
+        {"time":"昨天 16:20","title":"跟进结果更新为「已沟通-有意向」","detail":"客户确认关注 Territory Titanium，系统生成意向确认回访任务","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 16:18","title":"用户信息已补充","detail":"购车时间更新为一个月内；首付预算更新为 100,000 比索","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 15:40","title":"首次有效联系完成","detail":"客户已接听，线索由待跟进流转为跟进中 · 已联系","operator":"sales 001 Deng Yao"}
+      ],
+      "notes":[
+        {"time":"昨天 16:21","text":"客户希望比较 48 期和 60 期方案，今天回访时重点确认可接受的月供上限。","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 16:17","text":"客户计划一个月内购车，首付预算约 100,000 比索。","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 15:55","text":"已通过 WhatsApp 发送 Territory Titanium 配置和颜色资料。","operator":"sales 001 Deng Yao"},
+        {"time":"昨天 15:42","text":"客户主要用于家庭通勤，关注后排空间和油耗。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "id":"1544","name":"Diego Navarro","phone":"5543129844","main":"暂存","sub":"试驾","state":"lead-trial-reactivation","brand":"NISSAN","series":"X-TRAIL","model":"Exclusive 3 Row","lastContactNoteIndex":0,
+      "operations":[
+        {"time":"今天 10:30","title":"生成试驾线索唤醒任务","detail":"任务子类型：DORMANT_REACTIVATION；距离试驾完成已满 30 天","operator":"系统"},
+        {"time":"07-21 18:05","title":"线索进入「暂存 · 试驾」","detail":"客户试驾后暂不决定，系统设置 30 天后再次唤醒","operator":"系统"},
+        {"time":"07-21 17:50","title":"试驾反馈已记录","detail":"客户认可空间，但希望与同级车型比较后再决定","operator":"sales 001 Deng Yao"},
+        {"time":"07-21 16:10","title":"试驾签到完成","detail":"试驾车型：X-TRAIL Exclusive 3 Row；门店：Nissan Polanco","operator":"系统"}
+      ],
+      "notes":[
+        {"time":"今天 10:32","text":"今天回访只确认试驾后的选择是否有变化，不重复询问已记录的空间反馈。","operator":"sales 001 Deng Yao"},
+        {"time":"07-21 17:52","text":"客户认可第三排的灵活性，但担心满载情况下后备箱空间不足。","operator":"sales 001 Deng Yao"},
+        {"time":"07-21 17:48","text":"客户还会试驾一款同级 SUV，预计两周后做决定。","operator":"sales 001 Deng Yao"},
+        {"time":"07-21 16:15","text":"试驾由客户本人完成，同行家人主要关注后排乘坐舒适性。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "id":"1545","name":"Ana Torres","phone":"5549081266","main":"暂存","sub":"确认全款","state":"lead-cash-reactivation","brand":"FORD","series":"Explorer","model":"Limited","lastContactNoteIndex":0,
+      "operations":[
+        {"time":"今天 11:00","title":"生成全款线索唤醒任务","detail":"任务子类型：DORMANT_REACTIVATION；当前状态：暂存 · 确认全款","operator":"系统"},
+        {"time":"07-20 14:35","title":"线索流转为「暂存 · 确认全款」","detail":"客户明确不需要金融方案，计划资金到位后全款购买","operator":"sales 001 Deng Yao"},
+        {"time":"07-20 14:30","title":"完成意向确认回访","detail":"已确认意向车型 Explorer Limited，颜色偏好为黑色","operator":"sales 001 Deng Yao"},
+        {"time":"07-19 10:12","title":"线索首次分配","detail":"来源：门店录入；负责人：sales 001 Deng Yao","operator":"系统"}
+      ],
+      "notes":[
+        {"time":"今天 11:02","text":"约定今天确认资金到位时间，以及是否仍选择 Explorer Limited 黑色。","operator":"sales 001 Deng Yao"},
+        {"time":"07-20 14:36","text":"客户明确选择全款购买，不需要继续介绍贷款产品。","operator":"sales 001 Deng Yao"},
+        {"time":"07-20 14:32","text":"客户预计一个月左右资金到位，届时希望优先确认黑色现车。","operator":"sales 001 Deng Yao"},
+        {"time":"07-19 10:20","text":"客户由门店销售转入 CRM，希望线上同步确认库存。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "id":"1546","name":"Mateo Silva","phone":"5587622146","main":"暂存","sub":"确认全款","state":"lead-cash-retry","brand":"MAZDA","series":"CX-5","model":"Signature","lastContactNoteIndex":0,
+      "operations":[
+        {"time":"今天 12:20","title":"全款线索未接通重试开始处理","detail":"任务子类型：RETRY_CONTACT；当前累计未接通 1 次","operator":"系统"},
+        {"time":"今天 10:20","title":"回捞联系结果更新为「未接通（未达上限）」","detail":"线索保持暂存 · 确认全款；系统生成 +2 小时重试任务","operator":"sales 001 Deng Yao"},
+        {"time":"今天 10:18","title":"拨打用户电话","detail":"呼叫 25 秒无人接听，未达到租户配置的 3 次上限","operator":"sales 001 Deng Yao"},
+        {"time":"07-20 11:00","title":"线索进入全款暂存","detail":"客户等待旧车出售后再确认购买时间","operator":"系统"}
+      ],
+      "notes":[
+        {"time":"今天 10:22","text":"第一次回捞电话未接通，已发送 WhatsApp 简短询问旧车出售进度。","operator":"sales 001 Deng Yao"},
+        {"time":"07-20 11:03","text":"客户准备出售旧车后全款购买 CX-5 Signature。","operator":"sales 001 Deng Yao"},
+        {"time":"07-20 10:58","text":"客户不考虑贷款，重点关心现金优惠和置换手续。","operator":"sales 001 Deng Yao"},
+        {"time":"07-19 15:30","text":"已发送黑色和灰色现车图片，客户更偏好灰色。","operator":"sales 001 Deng Yao"}
+      ]
+    },
+    {
+      "id":"1547","name":"Camila Ortega","phone":"5568113047","main":"暂存","sub":"无意向购买","state":"lead-no-intent-retry","brand":"NISSAN","series":"KICKS","model":"Advance","lastContactNoteIndex":0,
+      "operations":[
+        {"time":"今天 14:00","title":"无意向线索未接通重试开始处理","detail":"任务子类型：RETRY_CONTACT；当前累计未接通 1 次","operator":"系统"},
+        {"time":"今天 12:00","title":"沉默回捞结果更新为「未接通（未达上限）」","detail":"线索保持暂存 · 无意向购买；下一次联系默认 +2 小时","operator":"sales 001 Deng Yao"},
+        {"time":"今天 11:58","title":"执行 30 天沉默回捞","detail":"电话无人接听，系统累计未接通次数为 1","operator":"sales 001 Deng Yao"},
+        {"time":"07-20 12:10","title":"线索进入无意向暂存","detail":"原因：近期没有购车计划；设置 30 天低频唤醒","operator":"系统"}
+      ],
+      "notes":[
+        {"time":"今天 12:02","text":"回捞电话未接通，没有连续拨打；已通过 WhatsApp 留下简短说明。","operator":"sales 001 Deng Yao"},
+        {"time":"07-20 12:12","text":"客户近期工作安排变化，暂时取消购车计划，但同意一个月后再询问。","operator":"sales 001 Deng Yao"},
+        {"time":"07-20 12:08","text":"客户之前关注 KICKS Advance，主要考虑城市通勤和停车便利。","operator":"sales 001 Deng Yao"},
+        {"time":"07-19 16:20","text":"客户认为当前不是合适的购车时间，没有对车型本身提出异议。","operator":"sales 001 Deng Yao"}
       ]
     },
     {
