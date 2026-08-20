@@ -11,7 +11,7 @@ function syncTenantRoles(tenantValue){
   const nextRole=isPartner?(previousRole==='admin'?'tenant_admin':'sales'):(previousRole==='tenant_admin'?'admin':'sales');
   roleSelect.value=nextRole;setRole(nextRole);
 }
-tenantSelect.addEventListener('change',e=>{const tenant=e.target.value==='baic'?'北汽 · 合作主机厂':'AutoCava · 平台';syncTenantRoles(e.target.value);renderLeadRows();document.querySelector('.crumbs').innerHTML=`${tenant} <span>/</span> 线索中心 <span>/</span> 权限范围内数据`;showToast(`已切换租户：${tenant}`);});
+tenantSelect.addEventListener('change',e=>{const tenant=e.target.value==='baic'?'北汽 · 合作主机厂':'AutoCava · 平台';syncTenantRoles(e.target.value);renderLeadRows();showToast(`已切换租户：${tenant}`);});
 let menuConfig=[];
 function renderMenus(role){const nav=document.querySelector('.admin-nav');const visible=menuConfig.filter(m=>m.enabled&&m.roles.includes(role));nav.innerHTML=visible.map(m=>`<button data-module="${m.key}">${m.name}</button>`).join('');nav.querySelectorAll('[data-module]').forEach(btn=>btn.addEventListener('click',()=>showModule(btn.dataset.module)));}
 fetch('./menus.json').then(r=>r.json()).then(data=>{menuConfig=data;renderMenus(roleSelect.value);}).catch(()=>showToast('菜单配置加载失败，请确认 menus.json 已上传'));
