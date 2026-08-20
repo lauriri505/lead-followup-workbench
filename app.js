@@ -1,6 +1,17 @@
 const $ = (s) => document.querySelector(s);
 const roleSelect=$('#roleSelect');const leadList=$('#leadList');const workbenchPage=$('#workbenchPage');const moduleView=$('#moduleView');
-const tenantSelect=$('#tenantSelect');tenantSelect.addEventListener('change',e=>{const tenant=e.target.value==='baic'?'北汽 · 合作主机厂':'AutoCava · 平台';document.querySelector('.crumbs').innerHTML=`${tenant} <span>/</span> 线索中心 <span>/</span> 权限范围内数据`;showToast(`已切换租户：${tenant}`);});
+const tenantSelect=$('#tenantSelect');
+function syncTenantRoles(tenantValue){
+  const previousRole=roleSelect.value;
+  const isPartner=tenantValue==='baic';
+  const roles=isPartner
+    ?[{value:'sales',label:'主机厂销售 001'},{value:'tenant_admin',label:'主机厂管理员'}]
+    :[{value:'sales',label:'销售 · sales 001'},{value:'admin',label:'超级管理员'}];
+  roleSelect.innerHTML=roles.map(role=>`<option value="${role.value}">${role.label}</option>`).join('');
+  const nextRole=isPartner?(previousRole==='admin'?'tenant_admin':'sales'):(previousRole==='tenant_admin'?'admin':'sales');
+  roleSelect.value=nextRole;setRole(nextRole);
+}
+tenantSelect.addEventListener('change',e=>{const tenant=e.target.value==='baic'?'北汽 · 合作主机厂':'AutoCava · 平台';syncTenantRoles(e.target.value);document.querySelector('.crumbs').innerHTML=`${tenant} <span>/</span> 线索中心 <span>/</span> 权限范围内数据`;showToast(`已切换租户：${tenant}`);});
 let menuConfig=[];
 function renderMenus(role){const nav=document.querySelector('.admin-nav');const visible=menuConfig.filter(m=>m.enabled&&m.roles.includes(role));nav.innerHTML=visible.map(m=>`<button data-module="${m.key}">${m.name}</button>`).join('');nav.querySelectorAll('[data-module]').forEach(btn=>btn.addEventListener('click',()=>showModule(btn.dataset.module)));}
 fetch('./menus.json').then(r=>r.json()).then(data=>{menuConfig=data;renderMenus(roleSelect.value);}).catch(()=>showToast('菜单配置加载失败，请确认 menus.json 已上传'));
@@ -70,7 +81,7 @@ $('#startAttribution').addEventListener('click', () => showToast('归因链接�
 $('#favoriteBtn').addEventListener('click', () => { const b = $('#favoriteBtn'); b.classList.toggle('active'); b.textContent = b.classList.contains('active') ? '★ 已收藏' : '☆ 收藏'; showToast(b.classList.contains('active') ? '已加入收藏' : '已取消收藏'); });
 let leadQueue=[];let currentLeadIndex=0;
 function renderLeadActivity(lead){
-  $('#currentName').textContent=lead.name;$('#currentPhone').textContent=lead.phone;$('#currentBrand').textContent=lead.brand;$('#currentSeries').textContent=lead.series;$('#currentModel').textContent=lead.model;
+  $('#leadIdValue').textContent=lead.id||'—';$('#currentName').textContent=lead.name;$('#currentPhone').textContent=lead.phone;$('#currentBrand').textContent=lead.brand;$('#currentSeries').textContent=lead.series;$('#currentModel').textContent=lead.model;
   const operations=lead.operations||[];
   $('#opsTimeline').innerHTML=operations.map(item=>{const isSystem=item.operator==='系统'||item.operator==='订单系统'||item.operator==='预审系统';return `<div class="timeline-item"><span class="timeline-dot ${isSystem?'gray':'blue'}"></span><div><div class="timeline-head"><b>${escapeHtml(item.title)}</b><time>${escapeHtml(item.time)}</time></div><p>${escapeHtml(item.detail)}</p><div class="operator-line">操作人：${escapeHtml(item.operator)}</div></div></div>`;}).join('');
   const notes=lead.notes||[];
@@ -81,7 +92,7 @@ function loadNextLead(){currentLeadIndex=(currentLeadIndex+1)%leadQueue.length;c
 $('#completeBtn').addEventListener('click', () => {const missing=[...$('#dynamicFields').querySelectorAll('[required]')].find(el=>!el.value.trim());if(missing){showToast('请先完成当前任务要求的必填信息');missing.focus();return;}if(!$('#nextContactTime').value){showToast('请先设置下一次联系时间');$('#nextContactTime').focus();return;}loadNextLead();});
 let allLeadRows=[];
 function renderLeadRows(){document.querySelector('.lead-table tbody').innerHTML=allLeadRows.map(r=>`<tr><td><span class="table-pill">${r[0]}</span></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>2026-08-05 06:42</td><td>${r[6]}</td><td><button class="table-link" data-open-workbench>查看</button></td></tr>`).join('');document.querySelectorAll('[data-open-workbench]').forEach(btn=>btn.addEventListener('click',()=>{roleSelect.value='sales';setRole('sales');showToast('已进入对应销售工作台');}));}
-fetch('./data.json?v=6').then(response=>{if(!response.ok)throw new Error('data.json load failed');return response.json();}).then(data=>{leadQueue=data.leads;allLeadRows=data.leadRows;renderLeadRows();renderLeadState('lead-callback');renderLeadActivity(leadQueue[0]);}).catch(()=>showToast('演示数据加载失败，请确认 data.json 已上传'));
+fetch('./data.json?v=8').then(response=>{if(!response.ok)throw new Error('data.json load failed');return response.json();}).then(data=>{leadQueue=data.leads;allLeadRows=data.leadRows;renderLeadRows();renderLeadState('lead-callback');renderLeadActivity(leadQueue[0]);}).catch(()=>showToast('演示数据加载失败，请确认 data.json 已上传'));
 function escapeHtml(value){const d=document.createElement('div');d.textContent=value;return d.innerHTML}
 function showToast(message){const toast=$('#toast');toast.textContent=message;toast.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>toast.classList.remove('show'),2400)}
 $('#changeList').innerHTML='<div class="change-item"><time>今天 10:18 · Sofia Ramirez</time><p><b>车型</b>：3 Sedan → I GRAND TOURING MHEV TA</p><small>修改原因：客户电话确认最终意向车型</small></div><div class="change-item"><time>昨天 16:42 · Sofia Ramirez</time><p><b>地址</b>：Av. Vallarta 1200 → Av. Vallarta 1410</p><small>修改原因：客户补充完整门牌号</small></div><div class="change-item"><time>07-21 11:05 · 系统同步</time><p><b>地区</b>：Ciudad de México → Ciudad de México · CDMX</p><small>修改原因：根据经销商区域信息自动补全</small></div>';
