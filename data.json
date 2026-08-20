@@ -1,7 +1,7 @@
 {
   "leads": [
     {
-      "id":"1533","name":"Sofia Ramirez","phone":"5899022435","main":"跟进中","sub":"已联系","state":"lead-callback","brand":"长安","series":"CS75 PLUS","model":"1.5T 尊贵型",
+      "id":"1533","name":"Sofia Ramirez","phone":"5899022435","main":"跟进中","sub":"已联系","state":"lead-callback","brand":"长安","series":"CS75 PLUS","model":"1.5T 尊贵型","lastContactNoteIndex":0,
       "operations":[
         {"time":"今天 14:02","title":"生成用户约定回访任务","detail":"任务子类型：SCHEDULED_CALLBACK；截止时间：今天 17:30；来源：销售录入客户承诺时间","operator":"系统"},
         {"time":"今天 13:58","title":"跟进结果更新为「要求稍后联系」","detail":"线索状态保持“跟进中 · 已联系”，下一次联系时间调整为今天 17:30","operator":"sales 001 Deng Yao"},
@@ -21,7 +21,7 @@
       ]
     },
     {
-      "id":"1534","name":"David Chen","phone":"5612345454","main":"待跟进","sub":"—","state":"lead-first","brand":"NISSAN","series":"MAGNITE","model":"Exclusive MT",
+      "id":"1534","name":"David Chen","phone":"5612345454","main":"待跟进","sub":"—","state":"lead-first","brand":"NISSAN","series":"MAGNITE","model":"Exclusive MT","lastContactNoteIndex":null,
       "operations":[
         {"time":"今天 09:46","title":"首次联系任务即将到期","detail":"距截止时间还有 44 分钟，系统向当前销售发送站内提醒","operator":"系统"},
         {"time":"今天 09:12","title":"首次联系任务已生成","detail":"任务子类型：FIRST_CONTACT；截止时间：今天 10:30","operator":"系统"},
@@ -37,7 +37,7 @@
       ]
     },
     {
-      "id":"1535","name":"Elena García","phone":"5577331188","main":"跟进中","sub":"已联系","state":"lead-retry","brand":"NISSAN","series":"X-TRAIL","model":"Advance 2 Row",
+      "id":"1535","name":"Elena García","phone":"5577331188","main":"跟进中","sub":"已联系","state":"lead-retry","brand":"NISSAN","series":"X-TRAIL","model":"Advance 2 Row","lastContactNoteIndex":0,
       "operations":[
         {"time":"今天 14:00","title":"未接通重试任务开始执行","detail":"当前为第 2 次联系，达到上限前仅累计未接通次数","operator":"系统"},
         {"time":"今天 12:02","title":"生成未接通重试任务","detail":"任务子类型：RETRY_CONTACT；截止时间：今天 14:00","operator":"系统"},
@@ -53,7 +53,7 @@
       ]
     },
     {
-      "id":"1536","name":"Luis Hernández","phone":"5532219088","main":"暂存","sub":"无意向购买","state":"lead-dormant","brand":"MAZDA","series":"CX-30","model":"尊贵型",
+      "id":"1536","name":"Luis Hernández","phone":"5532219088","main":"暂存","sub":"无意向购买","state":"lead-dormant","brand":"MAZDA","series":"CX-30","model":"尊贵型","lastContactNoteIndex":1,
       "operations":[
         {"time":"今天 09:00","title":"生成沉默回捞任务","detail":"任务子类型：DORMANT_REACTIVATION；距离上次有效联系 30 天","operator":"系统"},
         {"time":"07-20 16:15","title":"线索进入低频唤醒队列","detail":"下一次唤醒时间设置为 30 天后 09:00","operator":"系统"},
@@ -69,7 +69,7 @@
       ]
     },
     {
-      "id":"1537","name":"Miguel Soto","phone":"5566012331","main":"预审中","sub":"已发送链接未进入","state":"pre-entry","brand":"长安","series":"逸动","model":"尊贵型",
+      "id":"1537","name":"Miguel Soto","phone":"5566012331","main":"预审中","sub":"已发送链接未进入","state":"pre-entry","brand":"长安","series":"逸动","model":"尊贵型","lastContactNoteIndex":0,
       "operations":[
         {"time":"今天 15:00","title":"生成提醒进入预审任务","detail":"任务子类型：REMIND_PREAPPROVAL_ENTRY；链接发送后 30 分钟仍未进入","operator":"系统"},
         {"time":"今天 14:30","title":"预审链接发送成功","detail":"发送渠道：WhatsApp；预审节点更新为“已发送链接未进入”","operator":"sales 001 Deng Yao"},
@@ -85,7 +85,7 @@
       ]
     },
     {
-      "id":"1538","name":"Andrea Flores","phone":"5580364421","main":"预审中","sub":"资料填写中","state":"pre-progress","brand":"FORD","series":"Territory","model":"Titanium",
+      "id":"1538","name":"Andrea Flores","phone":"5580364421","main":"预审中","sub":"资料填写中","state":"pre-progress","brand":"FORD","series":"Territory","model":"Titanium","lastContactNoteIndex":1,
       "operations":[
         {"time":"今天 16:30","title":"生成预审进度跟进任务","detail":"任务子类型：FOLLOW_PREAPPROVAL_PROGRESS；阻塞节点：收入信息","operator":"系统"},
         {"time":"今天 16:05","title":"预审节点更新为「资料填写中」","detail":"身份信息和地址信息已保存，收入信息尚未完成","operator":"预审系统"},
@@ -101,7 +101,7 @@
       ]
     },
     {
-      "id":"1539","name":"Rafael Díaz","phone":"5511907722","main":"预审中","sub":"待手机验证","state":"pre-phone","brand":"NISSAN","series":"KICKS","model":"Exclusive",
+      "id":"1539","name":"Rafael Díaz","phone":"5511907722","main":"预审中","sub":"待手机验证","state":"pre-phone","brand":"NISSAN","series":"KICKS","model":"Exclusive","lastContactNoteIndex":0,
       "operations":[
         {"time":"今天 16:50","title":"生成手机验证提醒任务","detail":"任务子类型：REMIND_PHONE_VERIFICATION；截止时间：今天 17:20","operator":"系统"},
         {"time":"今天 16:48","title":"预审节点更新为「待手机验证」","detail":"基础资料已完成，等待用户输入短信验证码","operator":"预审系统"},
@@ -117,7 +117,7 @@
       ]
     },
     {
-      "id":"1540","name":"Paola Cruz","phone":"5598802211","main":"订单中","sub":"等待信审结果","state":"order-inform","brand":"长安","series":"UNI-V","model":"尊贵型",
+      "id":"1540","name":"Paola Cruz","phone":"5598802211","main":"订单中","sub":"等待信审结果","state":"order-inform","brand":"长安","series":"UNI-V","model":"尊贵型","lastContactNoteIndex":1,
       "operations":[
         {"time":"今天 11:00","title":"生成订单状态告知任务","detail":"任务子类型：INFORM_ORDER_STATUS；当前节点：等待信审结果","operator":"系统"},
         {"time":"今天 10:55","title":"订单状态同步为「等待信审结果」","detail":"订单 ID：MS-20260819-0186；状态来源：Mstar","operator":"订单系统"},
@@ -133,7 +133,7 @@
       ]
     },
     {
-      "id":"1541","name":"María López","phone":"5588123344","main":"订单中","sub":"合同待签署","state":"order-customer","brand":"长安","series":"UNI-K","model":"2.0T 尊贵型",
+      "id":"1541","name":"María López","phone":"5588123344","main":"订单中","sub":"合同待签署","state":"order-customer","brand":"长安","series":"UNI-K","model":"2.0T 尊贵型","lastContactNoteIndex":0,
       "operations":[
         {"time":"今天 15:00","title":"生成合同签署提醒任务","detail":"任务子类型：REMIND_CUSTOMER_ACTION；截止时间：今天 16:30","operator":"系统"},
         {"time":"今天 14:52","title":"订单状态同步为「合同待签署」","detail":"电子合同已生成，等待用户在线确认并签署","operator":"订单系统"},
@@ -149,7 +149,7 @@
       ]
     },
     {
-      "id":"1542","name":"Carlos Ruiz","phone":"5510027811","main":"订单中","sub":"状态超时","state":"order-downstream","brand":"长安","series":"CS75 PLUS","model":"2.0T 旗舰型",
+      "id":"1542","name":"Carlos Ruiz","phone":"5510027811","main":"订单中","sub":"状态超时","state":"order-downstream","brand":"长安","series":"CS75 PLUS","model":"2.0T 旗舰型","lastContactNoteIndex":0,
       "operations":[
         {"time":"今天 09:15","title":"订单状态超时任务已升级","detail":"任务子类型：FOLLOW_ORDER_TIMEOUT；已超过规则时限 2 小时","operator":"系统"},
         {"time":"今天 09:00","title":"生成下游协同任务","detail":"联系对象：Mstar 运营；要求确认订单处理进度和预计完成时间","operator":"系统"},
