@@ -56,9 +56,29 @@
   </main>
   <dialog class="edit-dialog" id="editDialog">
     <form method="dialog" id="editForm">
-      <div class="dialog-heading"><div><p class="eyebrow">EDIT USER</p><h2>编辑用户当前信息</h2></div><button class="icon-button" id="closeEditButton" type="button" aria-label="关闭">×</button></div>
+      <div class="dialog-heading"><div><p class="eyebrow">EDIT USER</p><h2>编辑用户信息</h2></div><button class="icon-button" id="closeEditButton" type="button" aria-label="关闭">×</button></div>
       <p class="dialog-tip">修改后保留原始信息，并生成信息变更记录，不覆盖原始线索。</p>
-      <div class="edit-grid"><div><label for="editName">姓名</label><input id="editName" type="text" required></div><div><label for="editPhone">手机号</label><input id="editPhone" type="text" required></div><div><label for="editBrand">品牌</label><input id="editBrand" type="text"></div><div><label for="editSeries">车系</label><input id="editSeries" type="text"></div><div><label for="editModel">车型</label><input id="editModel" type="text"></div><div><label for="editRegion">地区</label><input id="editRegion" type="text"></div></div>
+      <div class="edit-tabs" role="tablist" aria-label="用户信息类型">
+        <button class="edit-tab" id="editOriginalTab" type="button" role="tab" aria-selected="false" aria-controls="editOriginalPanel">原始信息</button>
+        <button class="edit-tab active" id="editCurrentTab" type="button" role="tab" aria-selected="true" aria-controls="editCurrentPanel">当前信息</button>
+        <button class="edit-tab" id="editHistoryTab" type="button" role="tab" aria-selected="false" aria-controls="editHistoryPanel">编辑记录 <span id="editHistoryCount">0</span></button>
+      </div>
+      <section class="edit-tab-panel" id="editOriginalPanel" role="tabpanel" aria-labelledby="editOriginalTab" hidden>
+        <div class="readonly-notice">首次进入 CRM 时保存的线索信息，只读且不会被后续编辑覆盖。</div>
+        <dl class="original-grid">
+          <div><dt>姓名</dt><dd id="originalName">—</dd></div><div><dt>手机号</dt><dd id="originalPhone">—</dd></div>
+          <div><dt>品牌</dt><dd id="originalBrand">—</dd></div><div><dt>车系</dt><dd id="originalSeries">—</dd></div>
+          <div><dt>车型</dt><dd id="originalModel">—</dd></div><div><dt>地区</dt><dd id="originalRegion">—</dd></div>
+        </dl>
+      </section>
+      <section class="edit-tab-panel" id="editCurrentPanel" role="tabpanel" aria-labelledby="editCurrentTab">
+        <div class="current-notice"><strong>工作台当前展示信息</strong><span>保存修改后，用户信息卡片立即更新。</span></div>
+        <div class="edit-grid"><div><label for="editName">姓名</label><input id="editName" type="text" required></div><div><label for="editPhone">手机号</label><input id="editPhone" type="text" required></div><div><label for="editBrand">品牌</label><input id="editBrand" type="text"></div><div><label for="editSeries">车系</label><input id="editSeries" type="text"></div><div><label for="editModel">车型</label><input id="editModel" type="text"></div><div><label for="editRegion">地区</label><input id="editRegion" type="text"></div></div>
+      </section>
+      <section class="edit-tab-panel" id="editHistoryPanel" role="tabpanel" aria-labelledby="editHistoryTab" hidden>
+        <div class="history-heading"><strong>信息编辑记录</strong><span>按修改时间倒序展示</span></div>
+        <ol class="edit-history-list" id="editHistoryList"></ol>
+      </section>
       <div class="dialog-actions"><button class="button secondary" id="cancelEditButton" type="button">取消</button><button class="button primary" id="saveUserButton" type="submit">保存修改</button></div>
     </form>
   </dialog>

@@ -6,6 +6,18 @@ window.CRM_DEMO_DATA = {
       leadType: "金融", brand: "NISSAN", series: "X-TRAIL", model: "Advance 2 Row",
       dealer: "Changan Polanco", address: "Av. Ejército Nacional 843", region: "Ciudad de México",
       price: "$589,900 MXN", rate: "14.99%", term: "72期", createdAt: "2026-08-25 09:30",
+      original: { name: "Sofia Ramirez", phone: "5612345000", brand: "NISSAN", series: "Kicks", model: "Exclusive CVT", region: "Estado de México" },
+      editRecords: [
+        { time: "2026-08-25 09:45", operator: "sales 001 Deng Yao", changes: [
+          { field: "车系", before: "Kicks", after: "X-TRAIL" },
+          { field: "车型", before: "Exclusive CVT", after: "Advance 2 Row" }
+        ] },
+        { time: "2026-08-25 09:38", operator: "sales 001 Deng Yao", changes: [
+          { field: "姓名", before: "Sofia Ramirez", after: "Sofía Ramírez" },
+          { field: "手机号", before: "5612345000", after: "5612345454" },
+          { field: "地区", before: "Estado de México", after: "Ciudad de México" }
+        ] }
+      ],
       state: "pending", unreachableCount: 0,
       task: { id: "TASK-260825-001", group: "首次联系", trigger: "新线索已分配", due: "今天 10:00" },
       lastContact: "尚无联系记录",

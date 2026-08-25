@@ -156,7 +156,7 @@ function renderLead() {
   fillText("lastContact", lead.lastContact);
   fillText("currentState", stateLabel(lead.state));
   fillText("attemptCount", "未接通 " + lead.unreachableCount + " 次");
-  $("changedBadge").hidden = !lead.changed;
+  $("changedBadge").hidden = !lead.changed && !(lead.editRecords && lead.editRecords.length);
   $("watchButton").classList.toggle("watching", Boolean(lead.watched));
   $("watchButton").textContent = lead.watched ? "★ 已关注" : "☆ 关注";
   $("watchButton").setAttribute("aria-pressed", String(Boolean(lead.watched)));
@@ -324,30 +324,96 @@ function switchTab(tab) {
   $("notesPanel").hidden = operationsActive;
 }
 
+const editableUserFields = [
+  { key: "name", label: "姓名", input: "editName", original: "originalName" },
+  { key: "phone", label: "手机号", input: "editPhone", original: "originalPhone" },
+  { key: "brand", label: "品牌", input: "editBrand", original: "originalBrand" },
+  { key: "series", label: "车系", input: "editSeries", original: "originalSeries" },
+  { key: "model", label: "车型", input: "editModel", original: "originalModel" },
+  { key: "region", label: "地区", input: "editRegion", original: "originalRegion" }
+];
+
+function ensureLeadEditData(lead) {
+  if (!lead.original) {
+    lead.original = {};
+    editableUserFields.forEach((field) => { lead.original[field.key] = lead[field.key] || "—"; });
+  }
+  if (!lead.editRecords) lead.editRecords = [];
+}
+
+function switchEditTab(tabName) {
+  const tabs = {
+    original: { button: $("editOriginalTab"), panel: $("editOriginalPanel") },
+    current: { button: $("editCurrentTab"), panel: $("editCurrentPanel") },
+    history: { button: $("editHistoryTab"), panel: $("editHistoryPanel") }
+  };
+  Object.entries(tabs).forEach(([name, item]) => {
+    const active = name === tabName;
+    item.button.classList.toggle("active", active);
+    item.button.setAttribute("aria-selected", String(active));
+    item.panel.hidden = !active;
+  });
+  $("saveUserButton").hidden = tabName !== "current";
+  $("cancelEditButton").textContent = tabName === "current" ? "取消" : "关闭";
+}
+
+function renderOriginalInfo(lead) {
+  editableUserFields.forEach((field) => fillText(field.original, lead.original[field.key] || "—"));
+}
+
+function renderEditHistory(lead) {
+  const list = $("editHistoryList");
+  list.innerHTML = "";
+  fillText("editHistoryCount", lead.editRecords.length);
+  if (!lead.editRecords.length) {
+    list.appendChild(el("li", "edit-history-empty", "暂无编辑记录"));
+    return;
+  }
+  lead.editRecords.forEach((record) => {
+    const item = el("li", "edit-history-item");
+    const meta = el("div", "edit-history-meta");
+    meta.append(el("span", "", record.time), el("span", "edit-history-operator", "操作人：" + record.operator));
+    const changes = el("div", "edit-history-change");
+    record.changes.forEach((change) => {
+      const row = el("div");
+      row.append(el("span", "", change.field), el("strong", "", "修改前：" + change.before + "；修改后：" + change.after));
+      changes.appendChild(row);
+    });
+    item.append(meta, changes);
+    list.appendChild(item);
+  });
+}
+
 function openEditDialog() {
   const lead = activeLead();
-  $("editName").value = lead.name;
-  $("editPhone").value = lead.phone;
-  $("editBrand").value = lead.brand;
-  $("editSeries").value = lead.series;
-  $("editModel").value = lead.model;
-  $("editRegion").value = lead.region;
+  ensureLeadEditData(lead);
+  editableUserFields.forEach((field) => { $(field.input).value = lead[field.key] || ""; });
+  renderOriginalInfo(lead);
+  renderEditHistory(lead);
+  switchEditTab("current");
   $("editDialog").showModal();
 }
 
 function saveUserInfo(event) {
   event.preventDefault();
   const lead = activeLead();
-  const before = lead.name + " / " + lead.phone + " / " + lead.brand + " " + lead.series + " " + lead.model;
-  lead.name = $("editName").value.trim();
-  lead.phone = $("editPhone").value.trim();
-  lead.brand = $("editBrand").value.trim();
-  lead.series = $("editSeries").value.trim();
-  lead.model = $("editModel").value.trim();
-  lead.region = $("editRegion").value.trim();
-  const after = lead.name + " / " + lead.phone + " / " + lead.brand + " " + lead.series + " " + lead.model;
+  ensureLeadEditData(lead);
+  const changes = [];
+  editableUserFields.forEach((field) => {
+    const before = lead[field.key] || "";
+    const after = $(field.input).value.trim();
+    if (before !== after) changes.push({ field: field.label, before: before || "—", after: after || "—" });
+  });
+  if (!changes.length) {
+    showToast("当前信息没有变化");
+    return;
+  }
+  editableUserFields.forEach((field) => { lead[field.key] = $(field.input).value.trim(); });
   lead.changed = true;
-  lead.operations.unshift(["刚刚", "用户信息变更", "原信息：" + before + "；当前信息：" + after + "。原始线索信息已保留"]);
+  const operator = data.salesperson.id + " " + data.salesperson.name;
+  lead.editRecords.unshift({ time: "刚刚", operator, changes });
+  const detail = changes.map((change) => change.field + "：" + change.before + " → " + change.after).join("；");
+  lead.operations.unshift(["刚刚", "用户信息变更", detail + "。原始线索信息已保留"]);
   $("editDialog").close();
   renderLead();
   showToast("用户当前信息已更新，原始线索信息未被覆盖");
@@ -378,6 +444,9 @@ $("noteForm").addEventListener("submit", (event) => {
 });
 $("editUserButton").addEventListener("click", openEditDialog);
 $("editForm").addEventListener("submit", saveUserInfo);
+$("editOriginalTab").addEventListener("click", () => switchEditTab("original"));
+$("editCurrentTab").addEventListener("click", () => switchEditTab("current"));
+$("editHistoryTab").addEventListener("click", () => switchEditTab("history"));
 $("closeEditButton").addEventListener("click", () => $("editDialog").close());
 $("cancelEditButton").addEventListener("click", () => $("editDialog").close());
 
