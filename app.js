@@ -1,107 +1,385 @@
-const $ = (s) => document.querySelector(s);
-const roleSelect=$('#roleSelect');const leadList=$('#leadList');const workbenchPage=$('#workbenchPage');const moduleView=$('#moduleView');
-const tenantSelect=$('#tenantSelect');
-function syncTenantRoles(tenantValue){
-  const previousRole=roleSelect.value;
-  const isPartner=tenantValue==='baic';
-  const roles=isPartner
-    ?[{value:'sales',label:'主机厂销售 001'},{value:'tenant_admin',label:'主机厂管理员'}]
-    :[{value:'sales',label:'销售 · sales 001'},{value:'admin',label:'超级管理员'}];
-  roleSelect.innerHTML=roles.map(role=>`<option value="${role.value}">${role.label}</option>`).join('');
-  const nextRole=isPartner?(previousRole==='admin'?'tenant_admin':'sales'):(previousRole==='tenant_admin'?'admin':'sales');
-  roleSelect.value=nextRole;setRole(nextRole);
-}
-tenantSelect.addEventListener('change',e=>{const tenant=e.target.value==='baic'?'北汽 · 合作主机厂':'AutoCava · 平台';syncTenantRoles(e.target.value);renderLeadRows();showToast(`已切换租户：${tenant}`);});
-let menuConfig=[];
-function renderMenus(role){const nav=document.querySelector('.admin-nav');const visible=menuConfig.filter(m=>m.enabled&&m.roles.includes(role));nav.innerHTML=visible.map(m=>`<button data-module="${m.key}">${m.name}</button>`).join('');nav.querySelectorAll('[data-module]').forEach(btn=>btn.addEventListener('click',()=>showModule(btn.dataset.module)));}
-fetch('./menus.json').then(r=>r.json()).then(data=>{menuConfig=data;renderMenus(roleSelect.value);}).catch(()=>showToast('菜单配置加载失败，请确认 menus.json 已上传'));
-function setRole(role){const admin=role==='admin'||role==='tenant_admin';leadList.classList.toggle('hidden',!admin);workbenchPage.classList.toggle('hidden',admin);moduleView.classList.toggle('hidden',!admin);document.querySelector('.admin-nav').classList.toggle('hidden',!admin);renderMenus(role);if(admin){showModule('leads');renderLeadRows();}}
-roleSelect.addEventListener('change',e=>setRole(e.target.value));
-document.querySelectorAll('[data-open-workbench]').forEach(btn=>btn.addEventListener('click',()=>{roleSelect.value='sales';setRole('sales');showToast('已进入 Sofia Ramirez 的销售工作台');}));
-$('#openSalesWorkbench').addEventListener('click',()=>{roleSelect.value='sales';setRole('sales');});
-setRole('sales');
-const moduleTemplates={dashboard:`<div class="module-head"><div><div class="eyebrow">CRM OVERVIEW</div><h1>后台总览</h1><p>今日销售任务、线索转化和订单协同概览</p></div></div><div class="stat-grid"><div class="stat-card"><span>今日待处理任务</span><b>18</b><small>较昨日 +4</small></div><div class="stat-card"><span>即将到期</span><b class="warn">6</b><small>未来 2 小时内</small></div><div class="stat-card"><span>已完成任务</span><b>42</b><small>完成率 78%</small></div><div class="stat-card"><span>订单跟进中</span><b>27</b><small>需要销售关注</small></div></div><div class="module-grid"><div class="module-card"><h2>今日任务分布</h2><div class="bar-row"><span>首次联系</span><i style="width:72%"></i><b>8</b></div><div class="bar-row"><span>回访任务</span><i style="width:54%"></i><b>6</b></div><div class="bar-row"><span>预审推进</span><i style="width:32%"></i><b>3</b></div><div class="bar-row"><span>订单跟进</span><i style="width:18%"></i><b>1</b></div></div><div class="module-card"><h2>需要关注</h2><div class="alert-row"><span class="dot red"></span><div><b>6 条任务即将到期</b><small>最早截止：今天 14:30</small></div></div><div class="alert-row"><span class="dot amber"></span><div><b>3 条订单状态超过 24 小时未更新</b><small>需要创建下游协同任务</small></div></div></div></div>`,
-tasks:`<div class="module-head"><div><div class="eyebrow">TASK CENTER</div><h1>销售任务中心</h1><p>按任务状态和截止时间管理销售工作</p></div><button class="primary small">+ 手动创建任务</button></div><div class="task-tabs"><button class="active">我的任务 <b>18</b></button><button>即将到期 <b>6</b></button><button>已逾期 <b>2</b></button><button>已完成</button></div><div class="task-table module-card"><div class="task-row task-header"><span>任务</span><span>关联线索</span><span>分类</span><span>联系对象</span><span>截止时间</span><span>状态</span><span>操作</span></div>${[['预审回访','Sofia Ramirez','用户提醒任务','用户','今天 15:30','待处理'],['未接通重试','David Chen','用户提醒任务','用户','今天 16:00','待处理'],['合同生成超时','María López','下游协同任务','金融机构运营','已逾期 2 小时','待处理'],['订单状态回访','Carlos Ruiz','状态告知任务','用户','明天 10:00','待处理']].map(r=>`<div class="task-row"><span><b>${r[0]}</b><small>回访任务</small></span><span>${r[1]}</span><span>${r[2]}</span><span>${r[3]}</span><span>${r[4]}</span><span class="status-chip">${r[5]}</span><button class="table-link">进入处理</button></div>`).join('')}</div>`,
-preapproval:`<div class="module-head"><div><div class="eyebrow">PREAPPROVAL</div><h1>预审推进</h1><p>按预审节点查看用户待完成动作和销售任务</p></div></div><div class="stage-cards"><div><span>未开始</span><b>12</b><small>愿意预审但尚未进入</small></div><div><span>填写中</span><b>8</b><small>已填写部分信息</small></div><div><span>待验证</span><b>5</b><small>手机或授权未完成</small></div><div><span>提交失败</span><b>2</b><small>需要重新引导提交</small></div></div><div class="module-card"><h2>预审任务</h2><div class="task-row task-header"><span>用户</span><span>当前节点</span><span>销售动作</span><span>截止时间</span><span>状态</span></div><div class="task-row"><span>Sofia Ramirez</span><span>已发送链接未进入</span><span>提醒进入预审</span><span>今天 15:30</span><span class="status-chip">待处理</span></div><div class="task-row"><span>David Chen</span><span>手机验证未完成</span><span>提醒完成手机验证</span><span>今天 17:00</span><span class="status-chip">待处理</span></div></div>`,
-orders:`<div class="module-head"><div><div class="eyebrow">ORDER FOLLOW-UP</div><h1>订单跟进</h1><p>订单状态由下游系统回传，销售只处理对应任务</p></div></div><div class="sub-nav"><button class="active">订单状态</button><button>用户待办 <b>9</b></button><button>下游协同 <b>3</b></button></div><div class="module-card"><div class="task-row task-header"><span>用户</span><span>订单状态</span><span>停留时长</span><span>销售任务</span><span>数据来源</span><span>操作</span></div>${[['María López','预审通过','2 小时','待客户进件','Mstar'],['Paola Cruz','等待信审结果','26 小时','告知订单状态','Mstar'],['Carlos Ruiz','合同待签署','31 小时','提醒用户签署合同 / 下游协同','Mstar']].map(r=>`<div class="task-row"><span>${r[0]}</span><span><b>${r[1]}</b></span><span>${r[2]}</span><span>${r[3]}</span><span>${r[4]}</span><button class="table-link">查看</button></div>`).join('')}</div>`,
-records:`<div class="module-head"><div><div class="eyebrow">AUDIT CENTER</div><h1>记录中心</h1><p>统一查询系统操作、跟踪记事和信息变更</p></div></div><div class="sub-nav"><button class="active">操作记录</button><button>跟踪记事</button><button>信息变更记录</button></div><div class="module-card"><div class="record-line"><time>今天 10:35</time><b>跟进阶段更新为「未接通」</b><span>操作人：系统</span></div><div class="record-line"><time>今天 10:34</time><b>销售手动修改用户信息</b><span>操作人：sales 001 Deng Yao</span></div><div class="record-line"><time>今天 10:18</time><b>客户对 CS75 PLUS 有兴趣</b><span>操作人：sales 001 Deng Yao</span></div></div>`,
-config:`<div class="module-head"><div><div class="eyebrow">TASK CONFIGURATION</div><h1>任务体系配置</h1><p>配置任务分类、触发规则、联系人和完成标准</p></div><button class="primary small">+ 新建任务规则</button></div><div class="config-layout"><div class="config-menu"><button class="active">全部任务规则</button><button>首次联系任务</button><button>回访任务</button><button>预审推进任务</button><button>订单状态跟进</button></div><div class="module-card config-list"><div class="config-row config-header"><span>任务子类型</span><span>任务分类</span><span>联系对象</span><span>触发规则</span><span>状态</span></div>${[['FIRST_CONTACT','用户提醒任务','用户','线索创建 / 首次分配','启用'],['RETRY_CONTACT','用户提醒任务','用户','未接通 +2小时','启用'],['FOLLOW_PREAPPROVAL_PROGRESS','用户提醒任务','用户','预审节点变化','启用'],['FOLLOW_ORDER_TIMEOUT','下游协同任务','下游运营','订单状态超时','启用']].map(r=>`<div class="config-row"><span><b>${r[0]}</b></span><span>${r[1]}</span><span>${r[2]}</span><span>${r[3]}</span><span class="status-chip">${r[4]}</span></div>`).join('')}</div></div>`};
-moduleTemplates.accounts=`<div class="module-head"><div><div class="eyebrow">IDENTITY & ACCESS</div><h1>账号与权限</h1><p>管理租户账号、角色和品牌 / 经销商数据范围</p></div><button class="primary small">+ 邀请账号</button></div><div class="tenant-scope"><b>数据范围</b><span>租户：北汽 · 合作主机厂</span><span>品牌：北汽</span><span>当前角色：主机厂管理员</span><span class="status-chip">权限校验已启用</span></div><div class="module-card"><div class="task-row task-header"><span>账号</span><span>角色</span><span>品牌范围</span><span>经销商范围</span><span>状态</span><span>最近登录</span><span>操作</span></div>${[['baic.admin','主机厂管理员','北汽全部品牌','全部经销商','启用','今天 09:12'],['sales.001','主机厂销售','北汽','北京朝阳店','启用','今天 10:04'],['sales.002','主机厂销售','北汽','上海浦东店','锁定','昨天 18:40']].map(r=>`<div class="task-row"><span><b>${r[0]}</b><small>tenant: baic</small></span><span>${r[1]}</span><span>${r[2]}</span><span>${r[3]}</span><span class="status-chip">${r[4]}</span><span>${r[5]}</span><button class="table-link">编辑</button></div>`).join('')}</div><div class="module-card permission-card"><h2>角色权限摘要</h2><div class="permission-grid"><div><b>主机厂管理员</b><span>账号管理 · 租户线索 · 规则配置 · 审计查看</span></div><div><b>主机厂销售</b><span>本人任务 · 本人线索 · 预审引导 · 下游协同</span></div><div><b>超级管理员</b><span>全租户管理 · 平台规则 · 全局审计</span></div></div></div>`;
-function showModule(key){const isLeads=key==='leads';leadList.classList.toggle('hidden',!isLeads);moduleView.classList.toggle('hidden',isLeads);workbenchPage.classList.add('hidden');if(!isLeads)moduleView.innerHTML=moduleTemplates[key]||'';if(key==='config')moduleView.insertAdjacentHTML('afterbegin','<div class="tenant-scope"><b>当前配置范围</b><span>租户：北汽 · 合作主机厂</span><span>品牌：北汽</span><span>当前生效版本：V2</span><span class="status-chip">已发布</span></div>');document.querySelectorAll('.admin-nav [data-module]').forEach(b=>b.classList.toggle('active',b.dataset.module===key));}
-document.querySelectorAll('.admin-nav [data-module]').forEach(btn=>btn.addEventListener('click',()=>showModule(btn.dataset.module)));
-const tabs = document.querySelectorAll('.tab');
-tabs.forEach(tab => tab.addEventListener('click', () => {
-  tabs.forEach(t => t.classList.remove('active'));
-  tab.classList.add('active');
-  $('#opsPanel').classList.toggle('hidden', tab.dataset.tab !== 'ops');
-  $('#notesPanel').classList.toggle('hidden', tab.dataset.tab !== 'notes');
-}));
-const operationScenarios={
-  'lead-first':{mode:'lead',modeName:'普通线索',main:'待跟进',sub:'—',title:'首次联系任务',summary:'完成首次有效联系，确认购车意向和下一步动作',type:'用户提醒任务',target:'用户',group:'首次联系任务',subtype:'FIRST_CONTACT',completion:'完成一次联系并记录结构化跟进结果',due:'今天 15:30',timeHelp:'未接通默认 +2小时；稍后联系由销售填写；无意向默认 +30天',notes:'首次接触后的跟进结果可以触发线索状态流转；号码错误属于终态结果，必须记录战败原因。',stateLabel:'线索状态处理',items:[['未接通（第1次）','重新联系','+2小时','状态 → 跟进中 · 已联系；未接通次数 +1'],['已沟通-有意向','确认意向车型','承诺时间或次日10:00','状态 → 跟进中 · 已联系'],['已沟通-无意向','进入低频唤醒','+30天','状态 → 暂存 · 无意向购买'],['要求稍后联系','按客户指定时间回访','销售手动时间','状态 → 跟进中 · 已联系'],['号码错误','终止后续任务','—','状态 → 战败 · 号码错误'],['已发送预审链接','生成预审推进任务','第2次+2小时；第3次次日10:00','状态 → 跟进中 · 已联系']],fields:[{label:'本次沟通说明',type:'text',placeholder:'填写用户原始反馈（选填）'}],resultFields:{'号码错误':[{label:'战败原因',type:'select',options:['号码错误'],required:true}]}},
-  'lead-intention':{mode:'lead',modeName:'普通线索',main:'跟进中',sub:'已联系',title:'意向确认回访',summary:'确认用户意向车型、购车计划和下一步安排',type:'用户提醒任务',target:'用户',group:'回访任务',subtype:'INTENTION_CALLBACK',completion:'完成有效联系并明确用户当前意向',due:'明天 10:00',timeHelp:'有承诺时间按承诺时间；无承诺时第1次 +1天、第2次 +3天',notes:'当前状态决定可选跟进结果；任务组决定本次销售目标和默认截止时间。',stateLabel:'线索状态处理',items:[['已沟通-有意向','继续确认车型与方案','承诺时间或+1天','状态保持 跟进中 · 已联系'],['已发送预审链接','进入预审推进','第2次+2小时；第3次次日10:00','状态保持；生成预审推进任务'],['试驾','进入低频唤醒','+30天','状态 → 暂存 · 试驾'],['已沟通-无意向','选择暂存去向','+30天','状态 → 暂存 · 无意向购买 / 确认全款'],['未接通（第2次）','继续重试','次日10:00','状态不变；未接通次数 +1'],['未接通（第3次，达上限）','系统终止任务','—','系统 → 战败 · 未接通电话'],['要求稍后联系','按客户指定时间回访','销售手动时间','状态不变'],['预审通过','进入订单流程','—','状态 → 订单中 · 预审通过'],['放弃购买','终止后续任务','—','状态 → 战败 · 暂时不买']],fields:[{label:'本次沟通说明',type:'text',placeholder:'填写用户原始反馈（选填）'}],resultFields:{'已沟通-无意向':[{label:'暂存去向',type:'select',options:['无意向购买','确认全款'],required:true},{label:'无意向原因',type:'text',placeholder:'选择无意向购买时必填',required:true}],'放弃购买':[{label:'战败原因',type:'select',options:['暂时不买','选择其他品牌','预算不足','其他'],required:true}]}},
-  'lead-retry':{mode:'lead',modeName:'普通线索',main:'跟进中',sub:'已联系',title:'未接通重试',summary:'再次联系用户，并累计未接通次数',type:'用户提醒任务',target:'用户',group:'回访任务',subtype:'RETRY_CONTACT',completion:'完成本次联系；未接通时按次数生成后续任务',due:'今天 16:00',timeHelp:'第2次未接通默认次日10:00；销售手动时间优先',notes:'未达到上限只累计次数；达到上限时由系统自动转战败，销售不能手动判定。',stateLabel:'线索状态处理',items:[['已沟通-有意向','继续确认车型与方案','承诺时间或+1天','状态保持 跟进中 · 已联系'],['已发送预审链接','进入预审推进','第2次+2小时；第3次次日10:00','状态保持；生成预审推进任务'],['试驾','进入低频唤醒','+30天','状态 → 暂存 · 试驾'],['已沟通-无意向','选择暂存去向','+30天','状态 → 暂存 · 无意向购买 / 确认全款'],['未接通（第2次）','继续重试','次日10:00','状态不变；未接通次数 +1'],['未接通（第3次，达上限）','系统终止任务','—','系统 → 战败 · 未接通电话'],['要求稍后联系','按客户指定时间回访','销售手动时间','状态不变'],['预审通过','进入订单流程','—','状态 → 订单中 · 预审通过'],['放弃购买','终止后续任务','—','状态 → 战败 · 暂时不买']],fields:[{label:'联系渠道',type:'select',options:['电话','WhatsApp','其他']},{label:'本次沟通说明',type:'text',placeholder:'填写用户原始反馈（选填）'}],resultFields:{'已沟通-无意向':[{label:'暂存去向',type:'select',options:['无意向购买','确认全款'],required:true},{label:'无意向原因',type:'text',placeholder:'选择无意向购买时必填',required:true}],'放弃购买':[{label:'战败原因',type:'select',options:['暂时不买','选择其他品牌','预算不足','其他'],required:true}]}},
-  'lead-callback':{mode:'lead',modeName:'普通线索',main:'跟进中',sub:'已联系',title:'用户约定回访',summary:'按用户约定时间联系并确认最新意向',type:'用户提醒任务',target:'用户',group:'回访任务',subtype:'SCHEDULED_CALLBACK',completion:'完成联系，或录入新的用户约定时间',due:'今天 17:30',timeHelp:'再次约定必须填写用户指定时间；销售手动时间优先于系统默认规则',notes:'任务到期时间来自上次用户约定；本次仍可根据联系结果进入其他合法状态。',stateLabel:'线索状态处理',items:[['已沟通-有意向','继续确认车型与方案','承诺时间或+1天','状态保持 跟进中 · 已联系'],['已发送预审链接','进入预审推进','第2次+2小时；第3次次日10:00','状态保持；生成预审推进任务'],['试驾','进入低频唤醒','+30天','状态 → 暂存 · 试驾'],['已沟通-无意向','选择暂存去向','+30天','状态 → 暂存 · 无意向购买 / 确认全款'],['未接通（第2次）','继续重试','次日10:00','状态不变；未接通次数 +1'],['未接通（第3次，达上限）','系统终止任务','—','系统 → 战败 · 未接通电话'],['要求稍后联系','按客户指定时间回访','销售手动时间','状态不变'],['预审通过','进入订单流程','—','状态 → 订单中 · 预审通过'],['放弃购买','终止后续任务','—','状态 → 战败 · 暂时不买']],fields:[{label:'用户约定说明',type:'text',placeholder:'例如：下班后方便接听'}],resultFields:{'已沟通-无意向':[{label:'暂存去向',type:'select',options:['无意向购买','确认全款'],required:true},{label:'无意向原因',type:'text',placeholder:'选择无意向购买时必填',required:true}],'放弃购买':[{label:'战败原因',type:'select',options:['暂时不买','选择其他品牌','预算不足','其他'],required:true}]}},
-  'lead-trial-reactivation':{mode:'lead',modeName:'普通线索',main:'暂存',sub:'试驾',title:'试驾线索唤醒',summary:'重新联系试驾暂存用户，确认购车意向是否恢复',type:'用户提醒任务',target:'用户',group:'回访任务',subtype:'DORMANT_REACTIVATION',completion:'确认用户是否恢复意向或已达到未接通上限',due:'今天 18:00',timeHelp:'恢复意向后按已联系节奏；达到未接通上限后不再生成时间',notes:'试驾暂存状态只有恢复意向才回到跟进中；达到未接通上限由系统转战败。',stateLabel:'线索状态处理',items:[['已沟通-有意向','恢复正常跟进','按已联系节奏','状态 → 跟进中 · 已联系'],['未接通（达上限）','系统终止任务','—','系统 → 战败 · 未接通电话']],fields:[{label:'试驾后反馈',type:'text',placeholder:'填写用户对车辆或试驾的原始反馈'}]},
-  'lead-cash-reactivation':{mode:'lead',modeName:'普通线索',main:'暂存',sub:'确认全款',title:'全款线索唤醒',summary:'重新确认全款用户是否恢复购车意向',type:'用户提醒任务',target:'用户',group:'回访任务',subtype:'DORMANT_REACTIVATION',completion:'确认当前意向并记录下一次安排',due:'今天 18:20',timeHelp:'未达上限默认第2次 +2小时、第3次次日10:00',notes:'恢复意向后回到跟进中；未接通未达上限保持暂存，达到上限由系统转战败。',stateLabel:'线索状态处理',items:[['已沟通-有意向','恢复正常跟进','按已联系节奏','状态 → 跟进中 · 已联系'],['未接通（未达上限）','继续重试','第2次+2小时；第3次次日10:00','状态保持 暂存 · 确认全款；重试次数 +1'],['未接通（达上限）','系统终止任务','—','系统 → 战败 · 未接通电话']],fields:[{label:'全款购车反馈',type:'text',placeholder:'填写预算、车型或购车时间变化'}]},
-  'lead-cash-retry':{mode:'lead',modeName:'普通线索',main:'暂存',sub:'确认全款',title:'全款线索未接通重试',summary:'再次联系确认全款用户，并累计未接通次数',type:'用户提醒任务',target:'用户',group:'回访任务',subtype:'RETRY_CONTACT',completion:'完成重试并记录联系结果',due:'今天 19:00',timeHelp:'第2次 +2小时；第3次次日10:00；销售手动时间优先',notes:'未达上限保持暂存并累计次数；达上限由系统自动转战败。',stateLabel:'线索状态处理',items:[['已沟通-有意向','恢复正常跟进','按已联系节奏','状态 → 跟进中 · 已联系'],['未接通（未达上限）','继续重试','第2次+2小时；第3次次日10:00','状态保持 暂存 · 确认全款；重试次数 +1'],['未接通（达上限）','系统终止任务','—','系统 → 战败 · 未接通电话']],fields:[{label:'联系渠道',type:'select',options:['电话','WhatsApp','其他']},{label:'本次联系说明',type:'text',placeholder:'填写本次联系情况（选填）'}]},
-  'lead-no-intent-reactivation':{mode:'lead',modeName:'普通线索',main:'暂存',sub:'无意向购买',title:'无意向线索唤醒',summary:'到达唤醒时间后重新确认用户购车意向',type:'用户提醒任务',target:'用户',group:'回访任务',subtype:'DORMANT_REACTIVATION',completion:'确认用户是否恢复意向或继续保持暂存',due:'今天 18:40',timeHelp:'未达上限默认第2次 +2小时、第3次次日10:00',notes:'只有恢复意向才回到跟进中；未接通未达上限保持暂存，达到上限由系统转战败。',stateLabel:'线索状态处理',items:[['已沟通-有意向','恢复正常跟进','按已联系节奏','状态 → 跟进中 · 已联系'],['未接通（未达上限）','继续重试','第2次+2小时；第3次次日10:00','状态保持 暂存 · 无意向购买；重试次数 +1'],['未接通（达上限）','系统终止任务','—','系统 → 战败 · 未接通电话']],fields:[{label:'回捞反馈',type:'text',placeholder:'填写用户当前购车计划'}]},
-  'lead-no-intent-retry':{mode:'lead',modeName:'普通线索',main:'暂存',sub:'无意向购买',title:'无意向线索未接通重试',summary:'再次联系低频唤醒用户，并累计未接通次数',type:'用户提醒任务',target:'用户',group:'回访任务',subtype:'RETRY_CONTACT',completion:'完成重试并记录联系结果',due:'明天 10:00',timeHelp:'第2次 +2小时；第3次次日10:00；销售手动时间优先',notes:'未达上限保持暂存并累计次数；达上限由系统自动转战败。',stateLabel:'线索状态处理',items:[['已沟通-有意向','恢复正常跟进','按已联系节奏','状态 → 跟进中 · 已联系'],['未接通（未达上限）','继续重试','第2次+2小时；第3次次日10:00','状态保持 暂存 · 无意向购买；重试次数 +1'],['未接通（达上限）','系统终止任务','—','系统 → 战败 · 未接通电话']],fields:[{label:'联系渠道',type:'select',options:['电话','WhatsApp','其他']},{label:'本次联系说明',type:'text',placeholder:'填写本次联系情况（选填）'}]},
-  'pre-entry':{mode:'preapproval',modeName:'预审推进',main:'预审中',sub:'已发送链接未进入',title:'提醒进入预审',summary:'提醒用户打开链接并开始填写预审资料',type:'用户提醒任务',target:'用户',group:'预审推进任务',subtype:'REMIND_PREAPPROVAL_ENTRY',completion:'完成有效提醒并记录用户是否遇到进入障碍',due:'今天 15:30',timeHelp:'首次提醒默认 +30分钟；仍未进入则按租户规则再次提醒',notes:'销售只能记录提醒结果和用户障碍，不能手动把预审节点改成“已进入”或“预审通过”。预审节点由可信事件更新。',stateLabel:'预审节点处理',items:[['已完成提醒','等待用户进入','+30分钟','预审节点保持；等待可信事件'],['未接通','再次联系','+2小时','预审节点保持；生成重试任务'],['要求稍后联系','按用户时间回访','销售手动时间','预审节点保持'],['用户拒绝预审','返回普通线索处理','按线索规则','记录拒绝原因；不伪造预审结果']],fields:[{label:'用户障碍',type:'select',options:['暂无障碍','链接无法打开','不了解预审流程','担心信息安全','其他']},{label:'用户反馈',type:'text',placeholder:'填写用户遇到的问题'}]},
-  'pre-progress':{mode:'preapproval',modeName:'预审推进',main:'预审中',sub:'资料填写中',title:'跟进预审进度',summary:'根据当前预审节点提醒用户继续填写',type:'用户提醒任务',target:'用户',group:'预审推进任务',subtype:'FOLLOW_PREAPPROVAL_PROGRESS',completion:'完成提醒并记录阻塞原因或新的承诺时间',due:'今天 17:00',timeHelp:'用户有承诺时间则手动填写；否则按租户预审规则',notes:'页面展示最新预审节点但保持只读。销售可查看详情、解释流程、记录问题，不能直接勾选资料已完成。',stateLabel:'预审节点处理',items:[['已完成进度提醒','等待用户继续填写','+2小时','节点保持；等待预审事件'],['用户正在填写','按承诺时间检查','销售手动时间','节点保持'],['资料填写有障碍','记录问题并再次跟进','+1天','节点保持；必要时生成协同任务'],['未接通','再次联系','+2小时','节点保持；生成重试任务']],fields:[{label:'阻塞环节',type:'select',options:['身份信息','收入信息','地址信息','资料上传','其他']},{label:'问题说明',type:'text',placeholder:'填写阻塞原因或需协助事项'}]},
-  'pre-phone':{mode:'preapproval',modeName:'预审推进',main:'预审中',sub:'待手机验证',title:'提醒完成手机验证',summary:'提醒用户完成验证码验证并记录反馈',type:'用户提醒任务',target:'用户',group:'预审推进任务',subtype:'REMIND_PHONE_VERIFICATION',completion:'完成提醒；验证结果由预审系统回传',due:'今天 17:20',timeHelp:'未完成时默认 +2小时；用户承诺时间优先',notes:'销售不得代用户填写验证码，也不能手动标记验证成功；验证码与验证结果不写入跟踪记事。',stateLabel:'预审节点处理',items:[['已提醒验证','等待系统回传','+2小时','节点保持 待手机验证'],['未收到验证码','引导重新获取','+30分钟','节点保持；记录问题'],['手机号需更正','进入用户信息修改','修改后 +30分钟','修改留痕；节点等待重新验证'],['要求稍后联系','按用户时间回访','销售手动时间','节点保持']],fields:[{label:'验证问题',type:'select',options:['未收到验证码','验证码失效','手机号错误','操作不清楚','其他']}]},
-  'order-inform':{mode:'order',modeName:'订单跟进',main:'订单中',sub:'等待信审结果',title:'告知订单状态',summary:'向用户说明当前订单节点和预计下一步',type:'状态告知任务',target:'用户',group:'订单状态跟进任务',subtype:'INFORM_ORDER_STATUS',completion:'完成状态告知并记录用户是否理解',due:'明天 10:00',timeHelp:'按订单节点规则 +1 / +3 / +7天，用户承诺时间优先',notes:'订单状态由 Mstar 回传并只读。提交只完成状态告知任务，不改变订单状态。',stateLabel:'订单状态处理',items:[['已完成状态告知','用户已了解当前进度','+1天','订单状态保持；完成当前任务'],['用户有疑问','记录问题并继续跟进','+1天','订单状态保持；可生成协同任务'],['未接通','再次告知','+2小时','订单状态保持；生成重试任务'],['要求稍后联系','按用户时间回访','销售手动时间','订单状态保持']],fields:[{label:'用户理解情况',type:'select',options:['已理解','需要再次解释','对时效有异议']},{label:'用户疑问',type:'text',placeholder:'填写用户关心的订单问题'}]},
-  'order-customer':{mode:'order',modeName:'订单跟进',main:'订单中',sub:'合同待签署',title:'提醒用户完成动作',summary:'提醒用户确认并签署合同',type:'用户提醒任务',target:'用户',group:'订单状态跟进任务',subtype:'REMIND_CUSTOMER_ACTION',completion:'完成有效提醒，并记录用户承诺时间或障碍',due:'今天 16:30',timeHelp:'用户承诺时间优先；未承诺默认 +1天',notes:'销售记录提醒结果，不把订单状态直接改成“已签署”。签署状态仍由订单系统事件更新。',stateLabel:'订单状态处理',items:[['已完成签署提醒','等待用户完成动作','+1天','订单状态保持 合同待签署'],['用户承诺完成','按承诺时间检查','销售手动时间','订单状态保持'],['签署存在障碍','记录问题并发起协同','+4小时','订单状态保持；生成协同任务'],['未接通','再次联系','+2小时','订单状态保持；生成重试任务']],fields:[{label:'用户障碍',type:'select',options:['不了解合同内容','链接无法打开','信息有误','暂时不方便','其他']},{label:'承诺或问题说明',type:'text',placeholder:'填写用户承诺时间或问题'}]},
-  'order-downstream':{mode:'order',modeName:'订单跟进',main:'订单中',sub:'状态超时',title:'跟进订单状态超时',summary:'联系下游销售或运营确认订单处理结果',type:'下游协同任务',target:'下游销售 / 运营',group:'订单状态跟进任务',subtype:'FOLLOW_ORDER_TIMEOUT',completion:'记录下游联系人、反馈结果和再次确认时间',due:'已逾期 2小时',timeHelp:'按下游预计处理时间填写；未给时间则默认 +4小时',notes:'本任务联系人不是用户。销售只记录下游反馈，不得替下游确认处理完成或修改订单状态。',stateLabel:'订单状态处理',items:[['已联系下游','记录反馈并等待处理','按反馈时间','订单状态保持；完成本次协同'],['下游暂未回复','继续催办','+2小时','订单状态保持；生成后续协同任务'],['下游确认处理中','按预计时间复查','销售手动时间','订单状态保持'],['问题需升级','提交运营升级处理','+1小时','订单状态保持；生成升级任务']],fields:[{label:'协同对象',type:'text',placeholder:'填写下游销售或运营姓名',required:true},{label:'下游反馈',type:'text',placeholder:'填写处理结果或预计完成时间',required:true}]}
-};
-function updateTaskContext(t){$('#taskTitle').textContent=t.title;$('#taskType').textContent=t.type;$('#contactTarget').textContent=t.target;$('#taskGroup').textContent=t.group;$('#taskSubtype').textContent=t.subtype;$('#taskCompletion').textContent=t.completion;$('#taskDue').textContent=t.due;}
-$('#taskCenterBtn').addEventListener('click',()=>showToast('我的任务：1 条待处理，2 条即将到期'));
-function renderDynamicFields(fields=[]){$('#dynamicFields').innerHTML=fields.map(f=>`<label>${f.label}${f.required?' <b>*</b>':''}${f.type==='select'?`<select ${f.required?'required':''}>${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`:`<input type="text" ${f.required?'required':''} placeholder="${f.placeholder||''}" />`}</label>`).join('');}
-function renderLeadState(key){
-  const data=operationScenarios[key]||operationScenarios['lead-callback'];updateTaskContext(data);
-  $('#operationModeBadge').textContent=data.modeName;$('#operationModeBadge').className=`operation-mode-badge ${data.mode}`;$('#currentMainState').textContent=data.main;$('#currentSubState').textContent=data.sub;$('#operationNotes').textContent=data.notes;$('#stateRuleLabel').textContent=data.stateLabel;$('#nextTimeHelp').textContent=data.timeHelp;$('#lostReasonWrap').classList.add('hidden');$('#nextContactTime').required=true;$('#nextTimeRequired').classList.remove('hidden');$('#followInputsRow').classList.toggle('callback-inline',data.subtype==='SCHEDULED_CALLBACK');
-  const list=$('#stageList');list.innerHTML=data.items.map((x,i)=>`<button class="stage ${i===0?'selected':''}" data-stage="${x[0]}" data-action="${x[3]}" data-next="${x[2]}"><span class="stage-radio"></span><b>${x[0]}</b><small>${x[1]}</small><time>${x[2]}</time></button>`).join('');renderDynamicFields([...(data.fields||[]),...((data.resultFields||{})[data.items[0][0]]||[])]);bindStages(data);const first=data.items[0];$('#autoAction').textContent=first[3];$('#nextAction').textContent=first[2];
-}
-function bindStages(data){document.querySelectorAll('.stage').forEach(stage=>stage.addEventListener('click',()=>{document.querySelectorAll('.stage').forEach(s=>s.classList.remove('selected'));stage.classList.add('selected');$('#autoAction').textContent=stage.dataset.action;$('#nextAction').textContent=stage.dataset.next;renderDynamicFields([...(data.fields||[]),...((data.resultFields||{})[stage.dataset.stage]||[])]);}));}
-$('#leadStateSelect').addEventListener('change',e=>{const key=e.target.value;renderLeadState(key);const index=leadQueue.findIndex(lead=>lead.state===key);if(index>=0){currentLeadIndex=index;renderLeadActivity(leadQueue[index]);}}); $('#leadStateSelect').value='lead-callback'; renderLeadState('lead-callback');
-document.querySelector('.identity-card .text-btn').addEventListener('click',()=>$('#userInfoModal').classList.remove('hidden'));
-$('#closeUserModal').addEventListener('click',()=>$('#userInfoModal').classList.add('hidden'));
-document.querySelectorAll('.info-tab').forEach(tab=>tab.addEventListener('click',()=>{document.querySelectorAll('.info-tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');['current','original','history'].forEach(k=>$('#'+k+'InfoPanel').classList.toggle('hidden',k!==tab.dataset.infoTab));}));
-$('#saveUserInfo').addEventListener('click',()=>{const map={currentLeadType:$('#editType').value,currentPhone:$('#editPhone').value,currentBrand:$('#editBrand').value,currentSeries:$('#editSeries').value,currentModel:$('#editModel').value,currentDealer:$('#editDealer').value,currentAddress:$('#editAddress').value,currentRegion:$('#editRegion').value};Object.entries(map).forEach(([id,value])=>$('#'+id).textContent=value||'—');const reason=$('#editReason').value.trim()||'销售手动更新用户信息';$('#changeList').innerHTML=`<div class="change-item"><time>刚刚 · Sofia Ramirez</time><p>${escapeHtml(reason)}</p><small>当前信息已更新，原始线索快照保持不变</small></div>`;$('#userInfoModal').classList.add('hidden');showToast('当前用户信息已保存，原始信息已保留');});
+const data = window.CRM_DEMO_DATA;
+const leads = data.leads;
+let currentIndex = 0;
+let selectedResult = null;
+let toastTimer;
 
-$('#addNoteBtn').addEventListener('click', () => { $('#noteForm').classList.remove('hidden'); $('#noteInput').focus(); });
-$('#cancelNote').addEventListener('click', () => { $('#noteForm').classList.add('hidden'); $('#noteInput').value = ''; });
-$('#noteForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const text = $('#noteInput').value.trim(); if (!text) return;
-  const item = document.createElement('div'); item.className = 'timeline-item';
-  item.innerHTML = `<span class="timeline-dot purple"></span><div><div class="timeline-head"><time>刚刚</time></div><p>${escapeHtml(text)}</p><div class="operator-line">操作人：sales 001 Deng Yao</div></div>`;
-  $('#noteTimeline').prepend(item); $('#noteForm').classList.add('hidden'); $('#noteInput').value = '';
-  $('#noteCount').textContent = Number($('#noteCount').textContent) + 1; showToast('跟踪记事已保存');
-});
-$('#precheckBtn').addEventListener('click', () => $('#precheckModal').classList.remove('hidden'));
-$('#closePrecheck').addEventListener('click', () => $('#precheckModal').classList.add('hidden'));
-$('#precheckModal').addEventListener('click', e => { if(e.target.id === 'precheckModal') e.currentTarget.classList.add('hidden'); });
-$('#savePrecheck').addEventListener('click', () => showToast('预审信息已保存'));
-$('#startAttribution').addEventListener('click', () => showToast('归因链接已发起'));
-$('#favoriteBtn').addEventListener('click', () => { const b = $('#favoriteBtn'); b.classList.toggle('active'); b.textContent = b.classList.contains('active') ? '★ 已关注' : '☆ 关注'; showToast(b.classList.contains('active') ? '已关注该线索' : '已取消关注'); });
-let leadQueue=[];let currentLeadIndex=0;
-function renderLeadActivity(lead){
-  $('#leadIdValue').textContent=lead.id||'—';$('#currentName').textContent=lead.name;$('#currentPhone').textContent=lead.phone;$('#currentBrand').textContent=lead.brand;$('#currentSeries').textContent=lead.series;$('#currentModel').textContent=lead.model;
-  const sourceContact=Number.isInteger(lead.lastContactNoteIndex)?lead.notes?.[lead.lastContactNoteIndex]:null;$('#lastContactTime').textContent=sourceContact?.time||'—';$('#lastContactText').textContent=sourceContact?.text||'暂无有效联系记录';
-  const operations=lead.operations||[];
-  $('#opsTimeline').innerHTML=operations.map(item=>{const isSystem=item.operator==='系统'||item.operator==='订单系统'||item.operator==='预审系统';return `<div class="timeline-item"><span class="timeline-dot ${isSystem?'gray':'blue'}"></span><div><div class="timeline-head"><b>${escapeHtml(item.title)}</b><time>${escapeHtml(item.time)}</time></div><p>${escapeHtml(item.detail)}</p><div class="operator-line">操作人：${escapeHtml(item.operator)}</div></div></div>`;}).join('');
-  const notes=lead.notes||[];
-  $('#noteTimeline').innerHTML=notes.map(item=>`<div class="timeline-item"><span class="timeline-dot purple"></span><div><div class="timeline-head"><time>${escapeHtml(item.time)}</time></div><p>${escapeHtml(item.text)}</p><div class="operator-line">操作人：${escapeHtml(item.operator)}</div></div></div>`).join('');
-  $('#noteCount').textContent=notes.length;
+const $ = (id) => document.getElementById(id);
+const el = (tag, className, text) => {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+};
+
+const stateMeta = {
+  pending: { main: "待跟进", sub: "—" },
+  following: { main: "跟进中", sub: "已联系" },
+  testdrive: { main: "暂存", sub: "试驾" },
+  cash: { main: "暂存", sub: "确认全款" },
+  noIntent: { main: "暂存", sub: "无意向购买" },
+  lost: { main: "战败", sub: "—" }
+};
+
+const standardResults = {
+  interested: { label: "已沟通－有意向", action: "进入或保持已联系状态", deadline: "承诺时间优先；默认 +2小时" },
+  unreachable: { label: "未接通", action: "累计未接通次数", deadline: "按当前累计次数计算" },
+  callback: { label: "要求稍后联系", action: "按用户约定时间回访", deadline: "销售必须填写时间" },
+  noIntent: { label: "已沟通－无意向", action: "转入低频唤醒", deadline: "默认 +30天" },
+  testdrive: { label: "暂定试驾", action: "转入暂存·试驾", deadline: "默认 +30天" },
+  cash: { label: "确认全款", action: "转入暂存·确认全款", deadline: "默认 +30天" },
+  invalid: { label: "号码错误", action: "转为战败终态", deadline: "不再生成任务" },
+  abandon: { label: "放弃购买", action: "转为战败终态", deadline: "不再生成任务" },
+  keepDormant: { label: "继续暂存", action: "保持当前暂存状态", deadline: "默认 +30天" }
+};
+
+function resultCodesFor(lead) {
+  if (lead.state === "pending") return ["unreachable", "interested", "noIntent", "callback", "invalid"];
+  if (lead.state === "following") return ["interested", "unreachable", "callback", "testdrive", "cash", "noIntent", "abandon"];
+  if (["testdrive", "cash", "noIntent"].includes(lead.state)) return ["interested", "unreachable", "keepDormant", "abandon"];
+  return [];
 }
-function setCurrentTaskStatus(status){const el=$('#currentTaskStatus');el.textContent=status;el.className=`task-status ${status==='已完成'?'completed':'processing'}`;$('#currentTaskIcon').textContent=status==='已完成'?'✓':'→';}
-function loadNextLead(){currentLeadIndex=(currentLeadIndex+1)%leadQueue.length;const lead=leadQueue[currentLeadIndex];$('#leadStateSelect').value=lead.state;renderLeadState(lead.state);renderLeadActivity(lead);setCurrentTaskStatus('处理中');$('#completeBtn').disabled=false;showToast(`上一任务已完成，当前任务处理中：${lead.name}`);}
-$('#completeBtn').addEventListener('click', () => {const missing=[...$('#dynamicFields').querySelectorAll('[required]')].find(el=>!el.value.trim());if(missing){showToast('请先完成当前任务要求的必填信息');missing.focus();return;}if(!$('#nextContactTime').value){showToast('请先设置下一次联系时间');$('#nextContactTime').focus();return;}setCurrentTaskStatus('已完成');$('#completeBtn').disabled=true;showToast('当前任务已完成，正在进入下一条');setTimeout(loadNextLead,650);});
-let allLeadRows=[];let tenantLeadRows={};
-function renderLeadRows(){const tbody=document.querySelector('.lead-table tbody');if(!tbody)return;const isBaic=tenantSelect.value==='baic';const rows=isBaic?(tenantLeadRows.baic||[]):allLeadRows;$('#leadScopeText').textContent=isBaic?'数据范围：北汽租户 · 仅展示北汽品牌及北汽车系线索':'数据范围：AutoCava 平台权限范围内线索';tbody.innerHTML=rows.map(r=>`<tr><td><span class="table-pill">${r[0]}</span></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>2026-08-05 06:42</td><td>${r[6]}</td><td><button class="table-link" data-open-workbench>查看</button></td></tr>`).join('');document.querySelectorAll('[data-open-workbench]').forEach(btn=>btn.addEventListener('click',()=>{roleSelect.value='sales';setRole('sales');showToast('已进入对应销售工作台');}));}
-fetch('./data.json?v=14').then(response=>{if(!response.ok)throw new Error('data.json load failed');return response.json();}).then(data=>{leadQueue=data.leads;allLeadRows=data.leadRows;tenantLeadRows=data.tenantLeadRows||{};renderLeadRows();renderLeadState('lead-callback');renderLeadActivity(leadQueue[0]);}).catch(()=>showToast('演示数据加载失败，请确认 data.json 已上传'));
-function escapeHtml(value){const d=document.createElement('div');d.textContent=value;return d.innerHTML}
-function showToast(message){const toast=$('#toast');toast.textContent=message;toast.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>toast.classList.remove('show'),2400)}
-$('#changeList').innerHTML='<div class="change-item"><time>今天 10:18 · Sofia Ramirez</time><p><b>车型</b>：3 Sedan → I GRAND TOURING MHEV TA</p><small>修改原因：客户电话确认最终意向车型</small></div><div class="change-item"><time>昨天 16:42 · Sofia Ramirez</time><p><b>地址</b>：Av. Vallarta 1200 → Av. Vallarta 1410</p><small>修改原因：客户补充完整门牌号</small></div><div class="change-item"><time>07-21 11:05 · 系统同步</time><p><b>地区</b>：Ciudad de México → Ciudad de México · CDMX</p><small>修改原因：根据经销商区域信息自动补全</small></div>';
-const currentDemo={currentLeadType:'全款',currentPhone:'5899022435',currentBrand:'长安',currentSeries:'CS75 PLUS',currentModel:'1.5T 尊贵型',currentDealer:'Changan Polanco Centro',currentAddress:'Av. Vallarta 1410',currentRegion:'Guadalajara · JAL'};Object.entries(currentDemo).forEach(([id,value])=>{const el=$('#'+id);if(el)el.textContent=value;});const editDemo={editType:'全款',editPhone:'5899022435',editBrand:'长安',editSeries:'CS75 PLUS',editModel:'1.5T 尊贵型',editDealer:'Changan Polanco Centro',editAddress:'Av. Vallarta 1410',editRegion:'Guadalajara · JAL'};Object.entries(editDemo).forEach(([id,value])=>{const el=$('#'+id);if(el)el.value=value;});
-document.querySelectorAll('.note-meta span:first-child').forEach(el=>{el.textContent='操作人：sales 001 Deng Yao';});
+
+function stateLabel(key) {
+  const item = stateMeta[key] || stateMeta.pending;
+  return item.main + " · " + item.sub;
+}
+
+function resultLabelFor(lead, code) {
+  if (code !== "unreachable") return standardResults[code].label;
+  const attempt = lead.unreachableCount + 1;
+  return "未接通（第" + attempt + "次" + (attempt >= 3 ? "，达上限" : "") + "）";
+}
+
+function demoNow() {
+  return new Date(2026, 7, 25, 9, 45, 0, 0);
+}
+
+function toInputValue(date) {
+  const pad = (value) => String(value).padStart(2, "0");
+  return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate()) + "T" + pad(date.getHours()) + ":" + pad(date.getMinutes());
+}
+
+function addHours(hours) {
+  const date = demoNow();
+  date.setHours(date.getHours() + hours);
+  return toInputValue(date);
+}
+
+function addDays(days) {
+  const date = demoNow();
+  date.setDate(date.getDate() + days);
+  return toInputValue(date);
+}
+
+function tomorrowAtTen() {
+  const date = demoNow();
+  date.setDate(date.getDate() + 1);
+  date.setHours(10, 0, 0, 0);
+  return toInputValue(date);
+}
+
+function readableTime(value) {
+  if (!value) return "—";
+  return value.replace("T", " ");
+}
+
+function getTransition(lead, code) {
+  const nextCount = code === "unreachable" ? lead.unreachableCount + 1 : lead.unreachableCount;
+  if (code === "invalid") return { state: "lost", reason: "号码错误", terminal: true, nextCount };
+  if (code === "abandon") return { state: "lost", reason: "", terminal: true, nextCount };
+  if (code === "unreachable" && nextCount >= 3) return { state: "lost", reason: "未接通（累计3次）", terminal: true, systemLost: true, nextCount };
+  if (code === "unreachable") {
+    return { state: lead.state === "pending" ? "following" : lead.state, task: "普通回访", trigger: nextCount === 1 ? "首次联系未接通" : "累计第2次未接通", time: nextCount === 1 ? addHours(2) : tomorrowAtTen(), nextCount };
+  }
+  if (code === "interested") return { state: "following", task: "普通回访", trigger: lead.state === "following" ? "客户已沟通有意向" : "客户恢复意向", time: addHours(2), nextCount };
+  if (code === "callback") return { state: lead.state === "pending" ? "following" : lead.state, task: "普通回访", trigger: "客户要求稍后联系", time: "", manualTime: true, nextCount };
+  if (code === "noIntent") return { state: "noIntent", task: "普通回访", trigger: "线索进入暂存", time: addDays(30), reason: "", nextCount };
+  if (code === "testdrive") return { state: "testdrive", task: "普通回访", trigger: "线索进入暂存", time: addDays(30), nextCount };
+  if (code === "cash") return { state: "cash", task: "普通回访", trigger: "线索进入暂存", time: addDays(30), nextCount };
+  if (code === "keepDormant") return { state: lead.state, task: "普通回访", trigger: "暂存线索到期", time: addDays(30), nextCount };
+  return { state: lead.state, nextCount };
+}
+
+function activeLead() {
+  return leads[currentIndex];
+}
+
+function initials(name) {
+  return name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
+}
+
+function fillText(id, value) {
+  $(id).textContent = value ?? "—";
+}
+
+function renderScenarioOptions() {
+  const select = $("scenarioSelect");
+  select.innerHTML = "";
+  leads.forEach((lead, index) => {
+    if (!lead.task) return;
+    const option = el("option", "", lead.task.group + "｜" + stateLabel(lead.state) + "｜" + lead.name);
+    option.value = String(index);
+    option.selected = index === currentIndex;
+    select.appendChild(option);
+  });
+}
+
+function renderLead() {
+  const lead = activeLead();
+  selectedResult = null;
+  fillText("leadId", lead.id);
+  const activeQueue = leads.filter((item) => item.task);
+  fillText("queuePosition", "队列 " + (activeQueue.indexOf(lead) + 1) + " / " + activeQueue.length);
+  fillText("taskTitle", lead.task.group);
+  fillText("taskTrigger", lead.task.trigger);
+  fillText("taskId", lead.task.id);
+  fillText("taskGroup", lead.task.group);
+  fillText("taskDue", lead.task.due);
+  fillText("taskGroupLabel", lead.task.group);
+  fillText("avatar", initials(lead.name));
+  fillText("userName", lead.name);
+  fillText("userPhone", lead.phone);
+  fillText("statePill", stateMeta[lead.state].main);
+  fillText("source", lead.source);
+  fillText("leadType", lead.leadType);
+  fillText("brand", lead.brand);
+  fillText("series", lead.series);
+  fillText("model", lead.model);
+  fillText("createdAt", lead.createdAt);
+  fillText("dealer", lead.dealer);
+  fillText("region", lead.region);
+  fillText("address", lead.address);
+  fillText("price", lead.price);
+  fillText("rate", lead.rate);
+  fillText("term", lead.term);
+  fillText("lastContact", lead.lastContact);
+  fillText("currentState", stateLabel(lead.state));
+  fillText("attemptCount", "未接通 " + lead.unreachableCount + " 次");
+  $("changedBadge").hidden = !lead.changed;
+  $("watchButton").classList.toggle("watching", Boolean(lead.watched));
+  $("watchButton").textContent = lead.watched ? "★ 已关注" : "☆ 关注";
+  $("watchButton").setAttribute("aria-pressed", String(Boolean(lead.watched)));
+  renderScenarioOptions();
+  renderResults();
+  renderRecords();
+  resetDynamicFields();
+}
+
+function renderResults() {
+  const lead = activeLead();
+  const list = $("resultList");
+  list.innerHTML = "";
+  resultCodesFor(lead).forEach((code) => {
+    const config = { ...standardResults[code] };
+    if (code === "unreachable") {
+      const attempt = lead.unreachableCount + 1;
+      config.label = resultLabelFor(lead, code);
+      config.deadline = attempt === 1 ? "默认 +2小时" : attempt === 2 ? "默认次日 10:00" : "系统自动转战败";
+    }
+    const label = el("label", "result-option");
+    const radio = el("input");
+    radio.type = "radio";
+    radio.name = "followResult";
+    radio.value = code;
+    const copy = el("span", "result-copy");
+    copy.append(el("strong", "", config.label), el("small", "", config.action));
+    label.append(radio, copy, el("span", "result-deadline", config.deadline));
+    radio.addEventListener("change", () => selectResult(code, label));
+    list.appendChild(label);
+  });
+}
+
+function resetDynamicFields() {
+  $("reasonRow").hidden = true;
+  $("callbackRow").hidden = true;
+  $("nextTimeRow").hidden = false;
+  $("reasonInput").value = "";
+  $("reasonInput").readOnly = false;
+  $("callbackNote").value = "";
+  $("nextTime").value = "";
+  $("nextTimeDefault").value = "";
+  fillText("previewState", stateLabel(activeLead().state));
+  fillText("previewTask", "等待选择跟进结果");
+  $("submitButton").disabled = false;
+  $("submitTopButton").disabled = false;
+}
+
+function selectResult(code, selectedLabel) {
+  selectedResult = code;
+  document.querySelectorAll(".result-option").forEach((item) => item.classList.toggle("selected", item === selectedLabel));
+  const transition = getTransition(activeLead(), code);
+  $("reasonRow").hidden = !["noIntent", "invalid", "abandon"].includes(code) && !transition.systemLost;
+  $("reasonInput").readOnly = Boolean(transition.systemLost);
+  if (code === "invalid") $("reasonInput").value = "号码错误";
+  else if (transition.systemLost) $("reasonInput").value = transition.reason;
+  else $("reasonInput").value = "";
+  $("callbackRow").hidden = code !== "callback";
+  $("nextTimeRow").hidden = code === "callback" || transition.terminal;
+  if (code === "callback") $("nextTime").value = addHours(2);
+  else $("nextTimeDefault").value = transition.time || "";
+  fillText("previewState", stateLabel(transition.state));
+  fillText("previewTask", transition.terminal ? "不再生成任务" : transition.task + " · " + transition.trigger);
+}
+
+function renderRecords() {
+  const lead = activeLead();
+  const operator = data.salesperson.id + " " + data.salesperson.name;
+  const operationTimeline = $("operationTimeline");
+  operationTimeline.innerHTML = "";
+  lead.operations.forEach(([time, title, detail]) => {
+    const item = el("li");
+    item.append(el("div", "timeline-time", time), el("div", "timeline-title", title), el("div", "timeline-detail", detail), el("div", "timeline-operator", "操作人：" + operator));
+    operationTimeline.appendChild(item);
+  });
+  const noteTimeline = $("noteTimeline");
+  noteTimeline.innerHTML = "";
+  lead.notes.forEach(([time, detail]) => {
+    const item = el("li");
+    item.append(el("div", "timeline-time", time), el("div", "timeline-title", "跟踪记录"), el("div", "timeline-detail", detail), el("div", "timeline-operator", "操作人：" + operator));
+    noteTimeline.appendChild(item);
+  });
+  fillText("noteCount", lead.notes.length);
+}
+
+function validateSubmission(transition) {
+  if (!selectedResult) return "请选择跟进结果";
+  if (!$("reasonRow").hidden && !$("reasonInput").value.trim()) return "请填写原因；战败或无意向原因不能为空";
+  if (selectedResult === "callback") {
+    if (!$("callbackNote").value.trim()) return "请填写用户约定说明";
+    if (!$("nextTime").value) return "请选择用户约定的下一次联系时间";
+  }
+  if (!transition.terminal && selectedResult !== "callback" && !$("nextTimeDefault").value) return "请选择下一次联系时间";
+  return "";
+}
+
+function nextTaskId() {
+  return "TASK-260825-" + String(40 + Math.floor(Math.random() * 50)).padStart(3, "0");
+}
+
+function submitFollowUp() {
+  const lead = activeLead();
+  const transition = selectedResult ? getTransition(lead, selectedResult) : {};
+  const error = validateSubmission(transition);
+  if (error) {
+    showToast(error);
+    return;
+  }
+  const resultLabel = resultLabelFor(lead, selectedResult);
+  const reason = $("reasonInput").value.trim();
+  const nextTime = selectedResult === "callback" ? $("nextTime").value : $("nextTimeDefault").value;
+  const oldState = stateLabel(lead.state);
+  const newState = stateLabel(transition.state);
+  const newOperations = [
+    ["刚刚", "跟进提交", "跟进结果：" + resultLabel + (reason ? "；原因：" + reason : "")],
+    ["刚刚", "任务完成", lead.task.group + "任务 " + lead.task.id + " 已由处理中更新为已完成"]
+  ];
+  if (oldState !== newState) newOperations.push(["刚刚", "状态流转", oldState + " → " + newState]);
+  if (!transition.terminal) newOperations.push(["刚刚", "任务生成", "生成" + transition.task + "；触发原因：" + transition.trigger + "；截止时间：" + readableTime(nextTime)]);
+  else newOperations.push(["刚刚", "任务结束", "线索进入战败终态，不再生成后续任务"]);
+  lead.operations = newOperations.concat(lead.operations);
+  lead.state = transition.state;
+  lead.unreachableCount = transition.nextCount;
+  if (selectedResult === "callback") {
+    lead.lastContact = $("callbackNote").value.trim();
+    lead.notes.unshift(["刚刚", lead.lastContact]);
+  }
+  if (transition.terminal) {
+    lead.lostReason = reason || transition.reason;
+    lead.task = null;
+  } else {
+    lead.task = { id: nextTaskId(), group: transition.task, trigger: transition.trigger, due: readableTime(nextTime) };
+  }
+  const completedLeadId = lead.id;
+  moveToNextActiveLead();
+  renderLead();
+  showToast(completedLeadId + " 已提交，当前任务已完成，已进入下一条");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function moveToNextActiveLead() {
+  for (let step = 1; step <= leads.length; step += 1) {
+    const candidate = (currentIndex + step) % leads.length;
+    if (leads[candidate].task) {
+      currentIndex = candidate;
+      return;
+    }
+  }
+}
+
+function showToast(message) {
+  clearTimeout(toastTimer);
+  $("toast").textContent = message;
+  $("toast").classList.add("show");
+  toastTimer = setTimeout(() => $("toast").classList.remove("show"), 3200);
+}
+
+function switchTab(tab) {
+  const operationsActive = tab === "operations";
+  $("operationsTab").classList.toggle("active", operationsActive);
+  $("notesTab").classList.toggle("active", !operationsActive);
+  $("operationsTab").setAttribute("aria-selected", String(operationsActive));
+  $("notesTab").setAttribute("aria-selected", String(!operationsActive));
+  $("operationsPanel").hidden = !operationsActive;
+  $("notesPanel").hidden = operationsActive;
+}
+
+function openEditDialog() {
+  const lead = activeLead();
+  $("editName").value = lead.name;
+  $("editPhone").value = lead.phone;
+  $("editBrand").value = lead.brand;
+  $("editSeries").value = lead.series;
+  $("editModel").value = lead.model;
+  $("editRegion").value = lead.region;
+  $("editDialog").showModal();
+}
+
+function saveUserInfo(event) {
+  event.preventDefault();
+  const lead = activeLead();
+  const before = lead.name + " / " + lead.phone + " / " + lead.brand + " " + lead.series + " " + lead.model;
+  lead.name = $("editName").value.trim();
+  lead.phone = $("editPhone").value.trim();
+  lead.brand = $("editBrand").value.trim();
+  lead.series = $("editSeries").value.trim();
+  lead.model = $("editModel").value.trim();
+  lead.region = $("editRegion").value.trim();
+  const after = lead.name + " / " + lead.phone + " / " + lead.brand + " " + lead.series + " " + lead.model;
+  lead.changed = true;
+  lead.operations.unshift(["刚刚", "用户信息变更", "原信息：" + before + "；当前信息：" + after + "。原始线索信息已保留"]);
+  $("editDialog").close();
+  renderLead();
+  showToast("用户当前信息已更新，原始线索信息未被覆盖");
+}
+
+$("scenarioSelect").addEventListener("change", (event) => {
+  currentIndex = Number(event.target.value);
+  renderLead();
+});
+$("submitButton").addEventListener("click", submitFollowUp);
+$("submitTopButton").addEventListener("click", submitFollowUp);
+$("watchButton").addEventListener("click", () => {
+  const lead = activeLead();
+  lead.watched = !lead.watched;
+  renderLead();
+  showToast(lead.watched ? "已关注当前线索" : "已取消关注");
+});
+$("operationsTab").addEventListener("click", () => switchTab("operations"));
+$("notesTab").addEventListener("click", () => switchTab("notes"));
+$("noteForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const value = $("noteInput").value.trim();
+  if (!value) return showToast("请输入跟踪内容");
+  activeLead().notes.unshift(["刚刚", value]);
+  $("noteInput").value = "";
+  renderRecords();
+  showToast("跟踪记录已添加");
+});
+$("editUserButton").addEventListener("click", openEditDialog);
+$("editForm").addEventListener("submit", saveUserInfo);
+$("closeEditButton").addEventListener("click", () => $("editDialog").close());
+$("cancelEditButton").addEventListener("click", () => $("editDialog").close());
+
+fillText("salespersonTop", data.salesperson.id + " " + data.salesperson.name);
+renderLead();
