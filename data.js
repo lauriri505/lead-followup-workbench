@@ -1,12 +1,38 @@
 window.CRM_DEMO_DATA = {
   salesperson: { id: "sales 001", name: "Deng Yao" },
+  vehicleCatalog: {
+    NISSAN: { "X-TRAIL": ["Advance 2 Row", "Exclusive CVT", "Platinum"], Kicks: ["Advance CVT", "Exclusive CVT"] },
+    MAZDA: { "CX-30": ["i Sport", "i Grand Touring"], "CX-5": ["i Sport", "Signature"] },
+    FORD: { Explorer: ["XLT", "Limited", "Platinum"], Territory: ["Trend", "Titanium"] },
+    KIA: { Sportage: ["EX", "EX Pack", "SXL"], Seltos: ["EX", "SX"] },
+    TOYOTA: { "Corolla Cross": ["LE", "XLE", "HEV"], RAV4: ["XLE", "Limited HEV"] },
+    HONDA: { "CR-V": ["Turbo Plus", "Touring"], "HR-V": ["Uniq", "Touring"] },
+    CHEVROLET: { Tracker: ["LT", "RS", "Premier"], Groove: ["LT", "Premier"] }
+  },
+  dealers: [
+    { name: "Changan Polanco", brand: "NISSAN", region: "Ciudad de México", address: "Av. Ejército Nacional 843" },
+    { name: "Nissan Polanco", brand: "NISSAN", region: "Ciudad de México", address: "Lago Alberto 320" },
+    { name: "Nissan Satélite", brand: "NISSAN", region: "Estado de México", address: "Blvd. Manuel Ávila Camacho 2300" },
+    { name: "Mazda Universidad", brand: "MAZDA", region: "Ciudad de México", address: "Av. Universidad 1000" },
+    { name: "Mazda Interlomas", brand: "MAZDA", region: "Estado de México", address: "Vialidad de la Barranca 6" },
+    { name: "Ford Dinastía", brand: "FORD", region: "Ciudad de México", address: "Calz. de Tlalpan 2750" },
+    { name: "Ford Satélite", brand: "FORD", region: "Estado de México", address: "Circuito Centro Comercial 20" },
+    { name: "KIA Lindavista", brand: "KIA", region: "Ciudad de México", address: "Av. Insurgentes Norte 1800" },
+    { name: "KIA Metepec", brand: "KIA", region: "Estado de México", address: "Av. Tecnológico 1200" },
+    { name: "Toyota Satélite", brand: "TOYOTA", region: "Estado de México", address: "Blvd. Manuel Ávila Camacho 2250" },
+    { name: "Toyota Universidad", brand: "TOYOTA", region: "Ciudad de México", address: "Av. Universidad 936" },
+    { name: "Honda Perisur", brand: "HONDA", region: "Ciudad de México", address: "Periférico Sur 3720" },
+    { name: "Honda Interlomas", brand: "HONDA", region: "Estado de México", address: "Paseo de la Herradura 75" },
+    { name: "Chevrolet Pedregal", brand: "CHEVROLET", region: "Ciudad de México", address: "Periférico Sur 4091" },
+    { name: "Chevrolet Coacalco", brand: "CHEVROLET", region: "Estado de México", address: "Vía José López Portillo 101" }
+  ],
   leads: [
     {
       id: "LEAD-1533", name: "Sofía Ramírez", phone: "5612345454", source: "车型详情页",
       leadType: "金融", brand: "NISSAN", series: "X-TRAIL", model: "Advance 2 Row",
       dealer: "Changan Polanco", address: "Av. Ejército Nacional 843", region: "Ciudad de México",
       price: "$589,900 MXN", rate: "14.99%", term: "72期", createdAt: "2026-08-25 09:30",
-      original: { name: "Sofia Ramirez", phone: "5612345000", brand: "NISSAN", series: "Kicks", model: "Exclusive CVT", region: "Estado de México" },
+      original: { name: "Sofia Ramirez", phone: "5612345000", brand: "NISSAN", series: "Kicks", model: "Exclusive CVT", dealer: "Nissan Satélite", region: "Estado de México", address: "Blvd. Manuel Ávila Camacho 2300" },
       editRecords: [
         { time: "2026-08-25 09:45", operator: "sales 001 Deng Yao", changes: [
           { field: "车系", before: "Kicks", after: "X-TRAIL" },

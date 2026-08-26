@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="AutoCava 普通线索跟进工作台演示原型">
   <title>线索跟进工作台</title>
-  <link rel="stylesheet" href="styles.css?v=20260826-1">
+  <link rel="stylesheet" href="styles.css?v=20260826-2">
 </head>
 <body>
   <header class="topbar">
@@ -68,12 +68,22 @@
         <dl class="original-grid">
           <div><dt data-i18n="field.name">姓名</dt><dd id="originalName">—</dd></div><div><dt data-i18n="field.phone">手机号</dt><dd id="originalPhone">—</dd></div>
           <div><dt data-i18n="field.brand">品牌</dt><dd id="originalBrand">—</dd></div><div><dt data-i18n="field.series">车系</dt><dd id="originalSeries">—</dd></div>
-          <div><dt data-i18n="field.model">车型</dt><dd id="originalModel">—</dd></div><div><dt data-i18n="field.region">地区</dt><dd id="originalRegion">—</dd></div>
+          <div><dt data-i18n="field.model">车型</dt><dd id="originalModel">—</dd></div><div><dt data-i18n="dealer.name">经销商</dt><dd id="originalDealer">—</dd></div>
+          <div><dt data-i18n="field.region">地区</dt><dd id="originalRegion">—</dd></div><div><dt data-i18n="field.address">地址</dt><dd id="originalAddress">—</dd></div>
         </dl>
       </section>
       <section class="edit-tab-panel" id="editCurrentPanel" role="tabpanel" aria-labelledby="editCurrentTab">
         <div class="current-notice"><strong data-i18n="edit.currentNoticeTitle">工作台当前展示信息</strong><span data-i18n="edit.currentNoticeText">保存修改后，用户信息卡片立即更新。</span></div>
-        <div class="edit-grid"><div><label for="editName" data-i18n="field.name">姓名</label><input id="editName" type="text" required></div><div><label for="editPhone" data-i18n="field.phone">手机号</label><input id="editPhone" type="text" required></div><div><label for="editBrand" data-i18n="field.brand">品牌</label><input id="editBrand" type="text"></div><div><label for="editSeries" data-i18n="field.series">车系</label><input id="editSeries" type="text"></div><div><label for="editModel" data-i18n="field.model">车型</label><input id="editModel" type="text"></div><div><label for="editRegion" data-i18n="field.region">地区</label><input id="editRegion" type="text"></div></div>
+        <div class="edit-grid">
+          <div><label for="editName" data-i18n="field.name">姓名</label><input id="editName" type="text" required></div>
+          <div><label for="editPhone" data-i18n="field.phone">手机号</label><input id="editPhone" type="text" required></div>
+          <div><label for="editBrand" data-i18n="field.brand">品牌</label><select id="editBrand" required></select></div>
+          <div><label for="editSeries" data-i18n="field.series">车系</label><select id="editSeries" required></select></div>
+          <div><label for="editModel" data-i18n="field.model">车型</label><select id="editModel" required></select></div>
+          <div><label for="editDealer" data-i18n="dealer.name">经销商</label><input id="editDealer" type="text" list="dealerOptions" required autocomplete="off" placeholder="输入或选择经销商" data-i18n-placeholder="dealer.placeholder"><datalist id="dealerOptions"></datalist><small data-i18n="dealer.hint">可输入名称联想选择</small></div>
+          <div><label for="editRegion" data-i18n="field.region">地区</label><input id="editRegion" type="text" readonly></div>
+          <div><label for="editAddress" data-i18n="field.address">地址</label><input id="editAddress" type="text" readonly></div>
+        </div>
       </section>
       <section class="edit-tab-panel" id="editHistoryPanel" role="tabpanel" aria-labelledby="editHistoryTab" hidden>
         <div class="history-heading"><strong data-i18n="edit.historyTitle">信息编辑记录</strong><span data-i18n="edit.historyOrder">按修改时间倒序展示</span></div>
@@ -83,6 +93,6 @@
     </form>
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="data.js?v=20260826-1"></script><script src="app.js?v=20260826-1"></script>
+  <script src="data.js?v=20260826-2"></script><script src="app.js?v=20260826-2"></script>
 </body>
 </html>
