@@ -134,8 +134,6 @@ function renderLead() {
   fillText("taskTitle", lead.task.group);
   fillText("taskTrigger", lead.task.trigger);
   fillText("taskId", lead.task.id);
-  fillText("taskGroup", lead.task.group);
-  fillText("taskDue", lead.task.due);
   fillText("taskGroupLabel", lead.task.group);
   fillText("avatar", initials(lead.name));
   fillText("userName", lead.name);

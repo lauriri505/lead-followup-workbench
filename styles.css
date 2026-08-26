@@ -36,7 +36,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .status-badge{margin-left:4px;padding:2px 5px;border-radius:3px;background:#354d72;color:#dce8f7;font-size:8px;font-weight:750}
 .task-main h2{margin:2px 0 0;font-size:16px}
 .task-main p{display:none}
-.task-facts{margin:0 0 0 auto;display:grid;grid-template-columns:repeat(3,minmax(92px,1fr));gap:24px}
+.task-facts{margin:0 0 0 auto;display:grid;grid-template-columns:minmax(112px,1fr)}
 .task-facts dt{color:#8d9aaf;font-size:8px}
 .task-facts dd{margin:1px 0 0;color:#fff;font-size:10px;font-weight:750;overflow-wrap:anywhere}
 .workspace-grid{margin-top:18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
