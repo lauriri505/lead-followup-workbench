@@ -20,7 +20,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .title-line{display:flex;align-items:center;gap:10px}
 .page-heading h1{margin:0;font-size:24px;line-height:1.15;letter-spacing:-.025em}
 .lead-id-chip{padding:3px 7px;border-radius:4px;background:#253249;color:#fff;font-size:9px;letter-spacing:.02em}
-.queue-position{padding-left:9px;border-left:1px solid #d8dde6;color:#8792a6;font-size:9px;font-weight:650}
+.today-task-count{padding-left:9px;border-left:1px solid #d8dde6;color:#8792a6;font-size:9px;font-weight:650}
 .heading-copy{margin:5px 0 0;color:#68748a;font-size:11px}
 .heading-actions{display:flex;gap:9px}
 .button{min-height:34px;padding:0 14px;border:1px solid #d6dde8;border-radius:7px;background:#fff;font-size:11px;font-weight:750;transition:.15s ease}

@@ -129,8 +129,8 @@ function renderLead() {
   const lead = activeLead();
   selectedResult = null;
   fillText("leadId", lead.id);
-  const activeQueue = leads.filter((item) => item.task);
-  fillText("queuePosition", "队列 " + (activeQueue.indexOf(lead) + 1) + " / " + activeQueue.length);
+  const todayPendingTasks = leads.filter((item) => item.task && item.task.due.includes("今天"));
+  fillText("todayTaskCount", "今日待处理任务 " + todayPendingTasks.length);
   fillText("taskTitle", lead.task.group);
   fillText("taskTrigger", lead.task.trigger);
   fillText("taskId", lead.task.id);
