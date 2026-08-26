@@ -45,6 +45,7 @@ window.CRM_DEMO_DATA = {
         ] }
       ],
       state: "pending", unreachableCount: 0,
+      orderStatusCode: "UNMARKED", orderStatusHistory: [],
       task: { id: "TASK-260825-001", group: "首次联系", trigger: "新线索已分配", due: "今天 10:00" },
       lastContact: "尚无联系记录",
       operations: [
@@ -63,6 +64,8 @@ window.CRM_DEMO_DATA = {
       dealer: "Mazda Universidad", address: "Av. Universidad 1000", region: "Ciudad de México",
       price: "$532,900 MXN", rate: "15.50%", term: "60期", createdAt: "2026-08-25 08:42",
       state: "following", unreachableCount: 1,
+      orderStatusCode: "CREDIT_REVIEW", orderStatusUpdatedAt: "今天 10:25", orderStatusUpdatedBy: "sales 001 Deng Yao",
+      orderStatusHistory: [{ from: "UNMARKED", to: "CREDIT_REVIEW", time: "今天 10:25", operator: "sales 001 Deng Yao" }],
       task: { id: "TASK-260825-008", group: "普通回访", trigger: "首次联系未接通", due: "今天 12:20" },
       lastContact: "拨打用户电话，无人接听。",
       operations: [
@@ -84,6 +87,11 @@ window.CRM_DEMO_DATA = {
       dealer: "Ford Dinastía", address: "Calz. de Tlalpan 2750", region: "Ciudad de México",
       price: "$1,439,000 MXN", rate: "—", term: "—", createdAt: "2026-08-24 16:05",
       state: "following", unreachableCount: 0,
+      orderStatusCode: "CONTRACT_SIGNED", orderStatusUpdatedAt: "昨天 17:05", orderStatusUpdatedBy: "sales 001 Deng Yao",
+      orderStatusHistory: [
+        { from: "CREDIT_REVIEW", to: "CONTRACT_SIGNED", time: "昨天 17:05", operator: "sales 001 Deng Yao" },
+        { from: "UNMARKED", to: "CREDIT_REVIEW", time: "昨天 16:40", operator: "sales 001 Deng Yao" }
+      ],
       task: { id: "TASK-260825-011", group: "普通回访", trigger: "客户要求稍后联系", due: "今天 17:30" },
       lastContact: "我现在在开会，今天下午五点半以后再联系我。",
       operations: [
@@ -106,6 +114,11 @@ window.CRM_DEMO_DATA = {
       dealer: "KIA Lindavista", address: "Av. Insurgentes Norte 1800", region: "Ciudad de México",
       price: "$689,900 MXN", rate: "13.90%", term: "48期", createdAt: "2026-08-23 11:12",
       state: "following", unreachableCount: 0,
+      orderStatusCode: "WAITING_DISBURSEMENT", orderStatusUpdatedAt: "昨天 15:20", orderStatusUpdatedBy: "sales 001 Deng Yao",
+      orderStatusHistory: [
+        { from: "CONTRACT_SIGNED", to: "WAITING_DISBURSEMENT", time: "昨天 15:20", operator: "sales 001 Deng Yao" },
+        { from: "CREDIT_REVIEW", to: "CONTRACT_SIGNED", time: "08-24 11:30", operator: "sales 001 Deng Yao" }
+      ],
       task: { id: "TASK-260825-015", group: "普通回访", trigger: "客户已沟通有意向", due: "今天 15:00" },
       lastContact: "首付预算约20%，请下午把48期和60期月供都发给我。",
       operations: [
@@ -128,6 +141,7 @@ window.CRM_DEMO_DATA = {
       dealer: "Toyota Satélite", address: "Blvd. Manuel Ávila Camacho 2250", region: "Estado de México",
       price: "$599,900 MXN", rate: "—", term: "—", createdAt: "2026-07-26 13:40",
       state: "testdrive", unreachableCount: 0,
+      orderStatusCode: "UNMARKED", orderStatusHistory: [],
       task: { id: "TASK-260825-021", group: "普通回访", trigger: "暂存线索到期", due: "今天 11:00" },
       lastContact: "先安排试驾，购车时间可能在下个月。",
       operations: [
@@ -150,6 +164,7 @@ window.CRM_DEMO_DATA = {
       dealer: "Honda Perisur", address: "Periférico Sur 3720", region: "Ciudad de México",
       price: "$839,900 MXN", rate: "—", term: "—", createdAt: "2026-07-25 12:10",
       state: "cash", unreachableCount: 1,
+      orderStatusCode: "UNMARKED", orderStatusHistory: [],
       task: { id: "TASK-260825-025", group: "普通回访", trigger: "暂存线索到期", due: "今天 14:00" },
       lastContact: "不考虑贷款，等旧车出售后再决定。",
       operations: [
@@ -172,6 +187,7 @@ window.CRM_DEMO_DATA = {
       dealer: "Nissan Polanco", address: "Lago Alberto 320", region: "Ciudad de México",
       price: "$548,900 MXN", rate: "16.20%", term: "60期", createdAt: "2026-07-24 18:22",
       state: "noIntent", unreachableCount: 1,
+      orderStatusCode: "UNMARKED", orderStatusHistory: [],
       task: { id: "TASK-260825-029", group: "普通回访", trigger: "暂存线索到期", due: "今天 16:00" },
       lastContact: "近期预算不足，先暂停购车，后面情况合适再联系。",
       operations: [
@@ -194,6 +210,11 @@ window.CRM_DEMO_DATA = {
       dealer: "Chevrolet Pedregal", address: "Periférico Sur 4091", region: "Ciudad de México",
       price: "$566,400 MXN", rate: "15.80%", term: "60期", createdAt: "2026-08-24 09:14",
       state: "following", unreachableCount: 2,
+      orderStatusCode: "DISBURSEMENT_SUCCESS", orderStatusUpdatedAt: "今天 09:40", orderStatusUpdatedBy: "sales 001 Deng Yao",
+      orderStatusHistory: [
+        { from: "WAITING_DISBURSEMENT", to: "DISBURSEMENT_SUCCESS", time: "今天 09:40", operator: "sales 001 Deng Yao" },
+        { from: "CONTRACT_SIGNED", to: "WAITING_DISBURSEMENT", time: "昨天 16:10", operator: "sales 001 Deng Yao" }
+      ],
       task: { id: "TASK-260825-034", group: "普通回访", trigger: "累计第2次未接通", due: "今天 10:00" },
       lastContact: "第二次拨打仍无人接听，WhatsApp 消息未读。",
       operations: [

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="AutoCava 普通线索跟进工作台演示原型">
   <title>线索跟进工作台</title>
-  <link rel="stylesheet" href="styles.css?v=20260826-4">
+  <link rel="stylesheet" href="styles.css?v=20260826-5">
 </head>
 <body>
   <header class="topbar">
@@ -27,6 +27,7 @@
         <section class="panel user-panel" aria-labelledby="userInfoTitle">
           <div class="panel-heading"><div><h2 id="userInfoTitle"><span data-i18n="user.title">用户信息</span> <span class="changed-badge" id="changedBadge" hidden data-i18n="user.changed">信息已修改</span></h2></div><button class="text-button" id="editUserButton" type="button" data-i18n="user.edit">编辑信息</button></div>
           <div class="person-summary"><div class="avatar" id="avatar">SR</div><div><h3 id="userName">Sofía Ramírez</h3><p id="userPhone">5612345454</p></div><span class="state-pill" id="statePill">待跟进</span></div>
+          <div class="order-status-row"><div><span class="order-status-label" data-i18n="order.label">订单状态</span><strong class="order-status-badge" id="orderStatusBadge">未标记</strong><small id="orderStatusMeta">尚未人工标记</small></div><button class="button secondary compact" id="orderStatusButton" type="button" data-i18n="order.update">更新状态</button></div>
           <div class="info-sections">
             <div class="info-section"><h3 data-i18n="lead.info">线索信息</h3><dl class="info-grid"><div><dt data-i18n="lead.source">线索来源</dt><dd id="source">车型详情页</dd></div><div><dt data-i18n="lead.type">线索类型</dt><dd id="leadType">金融</dd></div><div><dt data-i18n="field.brand">品牌</dt><dd id="brand">NISSAN</dd></div><div><dt data-i18n="field.series">车系</dt><dd id="series">X-TRAIL</dd></div><div><dt data-i18n="field.model">车型</dt><dd id="model">Advance 2 Row</dd></div><div><dt data-i18n="lead.created">创建时间</dt><dd id="createdAt">2026-08-25 09:30</dd></div></dl></div>
             <div class="info-section"><h3 data-i18n="dealer.finance">经销商与金融信息</h3><dl class="info-grid"><div><dt data-i18n="dealer.name">经销商</dt><dd id="dealer">Changan Polanco</dd></div><div><dt data-i18n="field.region">地区</dt><dd id="region">Ciudad de México</dd></div><div class="wide"><dt data-i18n="field.address">地址</dt><dd id="address">Av. Ejército Nacional 843</dd></div><div><dt data-i18n="finance.price">车价格</dt><dd id="price">$589,900 MXN</dd></div><div><dt data-i18n="finance.rate">年利率</dt><dd id="rate">14.99%</dd></div><div><dt data-i18n="finance.term">贷款期数</dt><dd id="term">72期</dd></div></dl></div>
@@ -92,7 +93,20 @@
       <div class="dialog-actions"><button class="button secondary" id="cancelEditButton" type="button" data-i18n="action.cancel">取消</button><button class="button primary" id="saveUserButton" type="submit" data-i18n="action.save">保存修改</button></div>
     </form>
   </dialog>
+  <dialog class="edit-dialog order-dialog" id="orderDialog">
+    <form method="dialog" id="orderStatusForm">
+      <div class="dialog-heading"><div><p class="eyebrow">ORDER STATUS</p><h2 data-i18n="order.dialogTitle">更新订单状态</h2></div><button class="icon-button" id="closeOrderButton" type="button" aria-label="关闭" data-i18n-aria-label="action.close">×</button></div>
+      <p class="dialog-tip" data-i18n="order.dialogTip">订单状态为独立标准字段，不会改变线索状态或生成跟踪记事。</p>
+      <div class="order-editor">
+        <div class="order-current"><span data-i18n="order.current">当前订单状态</span><strong id="orderCurrentStatus">未标记</strong><small id="orderCurrentMeta">尚未人工标记</small></div>
+        <div><label for="orderStatusSelect" data-i18n="order.newStatus">更新为</label><select id="orderStatusSelect" required></select></div>
+      </div>
+      <div class="order-history-heading"><strong data-i18n="order.history">订单状态变更记录</strong><span data-i18n="order.historyDescription">独立记录，不与跟踪记事混合</span></div>
+      <ol class="order-history-list" id="orderStatusHistory"></ol>
+      <div class="dialog-actions"><button class="button secondary" id="cancelOrderButton" type="button" data-i18n="action.cancel">取消</button><button class="button primary" id="saveOrderButton" type="submit" data-i18n="order.save">确认更新</button></div>
+    </form>
+  </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="data.js?v=20260826-4"></script><script src="app.js?v=20260826-4"></script>
+  <script src="data.js?v=20260826-5"></script><script src="app.js?v=20260826-5"></script>
 </body>
 </html>

@@ -55,6 +55,15 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .person-summary h3{margin:0;font-size:14px}
 .person-summary p{margin:1px 0 0;color:#98a2b3;font-size:10px}
 .state-pill{margin-left:auto;padding:3px 7px;border-radius:4px;background:#eef5f1;color:var(--green);font-size:9px;font-weight:750}
+.order-status-row{margin-top:12px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid #e1e6ee;border-radius:7px;background:#f7f8fa}
+.order-status-row>div{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+.order-status-label{color:#7f8a9d;font-size:9px}
+.order-status-badge{padding:3px 7px;border-radius:4px;background:#e9edf3;color:#536076;font-size:9px}
+.order-status-badge[data-status="CREDIT_REVIEW"]{background:#fff4df;color:#8a5b17}
+.order-status-badge[data-status="CONTRACT_SIGNED"],.order-status-badge[data-status="WAITING_DISBURSEMENT"]{background:#eaf1fb;color:#355d91}
+.order-status-badge[data-status="DISBURSEMENT_SUCCESS"],.order-status-badge[data-status="VEHICLE_DELIVERED"]{background:#e9f5ef;color:#28735a}
+.order-status-row small{color:#98a2b3;font-size:8px}
+.button.compact{min-height:28px;padding:0 10px;font-size:9px;white-space:nowrap}
 .info-sections{display:grid;gap:8px;margin-top:14px}
 .info-section h3{display:none}
 .info-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px 16px;margin:0}
@@ -159,6 +168,25 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .edit-history-change strong{font-weight:650;overflow-wrap:anywhere}
 .edit-history-empty{padding:52px 0;text-align:center;color:#9aa4b4}
 .dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}
+.order-dialog{width:min(620px,calc(100vw - 32px))}
+.order-editor{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.order-current,.order-editor>div:last-child{padding:12px;border:1px solid #e0e5ed;border-radius:7px;background:#fafbfc}
+.order-current{display:grid;gap:3px}
+.order-current span,.order-editor label{color:#7f8a9d;font-size:9px;font-weight:700}
+.order-current strong{font-size:12px}
+.order-current small{color:#98a2b3;font-size:8px}
+.order-editor label{display:block;margin-bottom:6px}
+.order-editor select{width:100%;height:34px;padding:0 10px;border:1px solid #cfd7e3;border-radius:6px;background:#fff}
+.order-history-heading{margin-top:18px;padding-bottom:9px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #e4e8ef}
+.order-history-heading strong{font-size:11px}
+.order-history-heading span{color:#96a0b0;font-size:8px}
+.order-history-list{list-style:none;max-height:190px;margin:0;padding:0;overflow:auto}
+.order-history-item{padding:11px 0;border-bottom:1px solid #edf0f4}
+.order-history-item:last-child{border-bottom:0}
+.order-history-main{display:flex;align-items:center;gap:7px;font-size:10px}
+.order-history-main span{color:#97a1b1}
+.order-history-meta{margin-top:3px;color:#8d98a9;font-size:8px}
+.order-history-empty{padding:34px 0;text-align:center;color:#9aa4b4;font-size:10px}
 .toast{position:fixed;left:50%;bottom:22px;z-index:50;transform:translate(-50%,20px);padding:10px 15px;border-radius:7px;background:#172237;color:#fff;box-shadow:0 12px 30px rgba(16,28,48,.25);opacity:0;pointer-events:none;transition:.2s ease}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 [hidden]{display:none!important}
@@ -194,12 +222,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   .state-pill{margin-left:0}
   .result-option{grid-template-columns:16px minmax(0,1fr)}
   .result-deadline{grid-column:2;text-align:left}
-  .field-row,.two-field-row,.execution-preview,.edit-grid,.original-grid{grid-template-columns:1fr}
+  .field-row,.two-field-row,.execution-preview,.edit-grid,.original-grid,.order-editor{grid-template-columns:1fr}
   .field-row small{grid-column:1}
   .edit-tab-panel{min-height:0}
   .current-notice{align-items:flex-start;flex-direction:column}
   .edit-history-change div{grid-template-columns:1fr}
   .dialog-actions .button{flex:1}
+  .order-status-row{align-items:flex-start;flex-direction:column}
+  .order-history-heading{align-items:flex-start;flex-direction:column}
 }
 @media(max-width:390px){
   .topbar-meta .salesperson{display:none}

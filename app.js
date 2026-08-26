@@ -20,6 +20,8 @@ const messages = {
     "records.operations": "操作记录", "records.notes": "跟踪记事", "records.description": "系统自动记录，按时间倒序展示。", "records.operator": "操作人：{operator}",
     "notes.addTitle": "销售手动添加跟踪记录", "notes.description": "记录沟通中的关键信息。", "notes.content": "跟踪内容", "notes.placeholder": "只记录用户输入或销售确认的关键信息", "notes.add": "添加记录", "notes.record": "跟踪记录",
     "edit.title": "编辑用户信息", "edit.tip": "修改后保留原始信息，并生成信息变更记录，不覆盖原始线索。", "edit.tabsLabel": "用户信息类型", "edit.original": "原始信息", "edit.current": "当前信息", "edit.history": "编辑记录", "edit.originalNotice": "首次进入 CRM 时保存的线索信息，只读且不会被后续编辑覆盖。", "edit.currentNoticeTitle": "工作台当前展示信息", "edit.currentNoticeText": "保存修改后，用户信息卡片立即更新。", "edit.historyTitle": "信息编辑记录", "edit.historyOrder": "按修改时间倒序展示", "edit.noHistory": "暂无编辑记录", "edit.close": "关闭",
+    "order.label": "订单状态", "order.update": "更新状态", "order.dialogTitle": "更新订单状态", "order.dialogTip": "订单状态为独立标准字段，不会改变线索状态或生成跟踪记事。", "order.current": "当前订单状态", "order.newStatus": "更新为", "order.history": "订单状态变更记录", "order.historyDescription": "独立记录，不与跟踪记事混合", "order.save": "确认更新", "order.unmarkedMeta": "尚未人工标记", "order.updatedMeta": "{time} · {operator}", "order.noHistory": "暂无订单状态变更记录", "order.historyMeta": "{time} · 操作人：{operator}", "order.same": "订单状态没有变化",
+    "order.status.UNMARKED": "未标记", "order.status.CREDIT_REVIEW": "信审中", "order.status.CONTRACT_SIGNED": "已签合同", "order.status.WAITING_DISBURSEMENT": "等待放款", "order.status.DISBURSEMENT_SUCCESS": "放款成功", "order.status.VEHICLE_DELIVERED": "已提车",
     "watch.on": "★ 已关注", "watch.off": "☆ 关注",
     "state.pending.main": "待跟进", "state.pending.sub": "—", "state.following.main": "跟进中", "state.following.sub": "已联系", "state.testdrive.main": "暂存", "state.testdrive.sub": "试驾", "state.cash.main": "暂存", "state.cash.sub": "确认全款", "state.noIntent.main": "暂存", "state.noIntent.sub": "无意向购买", "state.lost.main": "战败", "state.lost.sub": "—",
     "result.interested.label": "已沟通－有意向", "result.interested.action": "进入或保持已联系状态", "result.interested.deadline": "承诺时间优先；默认 +2小时",
@@ -32,7 +34,7 @@ const messages = {
     "result.abandon.label": "放弃购买", "result.abandon.action": "转为战败终态", "result.abandon.deadline": "不再生成任务",
     "result.keepDormant.label": "继续暂存", "result.keepDormant.action": "保持当前暂存状态", "result.keepDormant.deadline": "默认 +30天",
     "validation.result": "请选择跟进结果", "validation.reason": "请填写原因；战败或无意向原因不能为空", "validation.callbackNote": "请填写用户约定说明", "validation.callbackTime": "请选择用户约定的下一次联系时间", "validation.nextTime": "请选择下一次联系时间", "validation.dealer": "请从联想列表中选择有效经销商",
-    "toast.submitted": "{id} 已提交，当前任务已完成，已进入下一条", "toast.watched": "已关注当前线索", "toast.unwatched": "已取消关注", "toast.noteRequired": "请输入跟踪内容", "toast.noteAdded": "跟踪记录已添加", "toast.noChanges": "当前信息没有变化", "toast.userUpdated": "用户当前信息已更新，原始线索信息未被覆盖"
+    "toast.submitted": "{id} 已提交，当前任务已完成，已进入下一条", "toast.watched": "已关注当前线索", "toast.unwatched": "已取消关注", "toast.noteRequired": "请输入跟踪内容", "toast.noteAdded": "跟踪记录已添加", "toast.noChanges": "当前信息没有变化", "toast.userUpdated": "用户当前信息已更新，原始线索信息未被覆盖", "toast.orderUpdated": "订单状态已更新为：{status}"
   },
   "es-MX": {
     "brand.home": "Volver al inicio", "language.label": "Idioma", "account.role": "Rol actual: Ventas",
@@ -47,6 +49,8 @@ const messages = {
     "records.operations": "Registro de operaciones", "records.notes": "Notas de seguimiento", "records.description": "Registro automático en orden cronológico inverso.", "records.operator": "Operador: {operator}",
     "notes.addTitle": "Agregar nota de seguimiento", "notes.description": "Registra la información clave de la conversación.", "notes.content": "Contenido de la nota", "notes.placeholder": "Registra únicamente información proporcionada o confirmada por el cliente", "notes.add": "Agregar nota", "notes.record": "Nota de seguimiento",
     "edit.title": "Editar información del cliente", "edit.tip": "Los datos originales se conservan y cada cambio genera un registro de edición.", "edit.tabsLabel": "Tipo de información del cliente", "edit.original": "Información original", "edit.current": "Información actual", "edit.history": "Historial de cambios", "edit.originalNotice": "Información guardada al ingresar por primera vez al CRM. Es de solo lectura y no se sobrescribe.", "edit.currentNoticeTitle": "Información mostrada en la mesa", "edit.currentNoticeText": "Al guardar, la tarjeta del cliente se actualiza de inmediato.", "edit.historyTitle": "Historial de edición", "edit.historyOrder": "Del más reciente al más antiguo", "edit.noHistory": "No hay cambios registrados", "edit.close": "Cerrar",
+    "order.label": "Estado del pedido", "order.update": "Actualizar estado", "order.dialogTitle": "Actualizar estado del pedido", "order.dialogTip": "Es un campo estandarizado independiente; no modifica el estado del prospecto ni crea notas de seguimiento.", "order.current": "Estado actual del pedido", "order.newStatus": "Actualizar a", "order.history": "Historial del estado del pedido", "order.historyDescription": "Registro independiente de las notas de seguimiento", "order.save": "Confirmar actualización", "order.unmarkedMeta": "Sin actualización manual", "order.updatedMeta": "{time} · {operator}", "order.noHistory": "No hay cambios de estado del pedido", "order.historyMeta": "{time} · Operador: {operator}", "order.same": "El estado del pedido no cambió",
+    "order.status.UNMARKED": "Sin marcar", "order.status.CREDIT_REVIEW": "En evaluación crediticia", "order.status.CONTRACT_SIGNED": "Contrato firmado", "order.status.WAITING_DISBURSEMENT": "En espera de desembolso", "order.status.DISBURSEMENT_SUCCESS": "Desembolso completado", "order.status.VEHICLE_DELIVERED": "Vehículo entregado",
     "watch.on": "★ Siguiendo", "watch.off": "☆ Seguir",
     "state.pending.main": "Por contactar", "state.pending.sub": "—", "state.following.main": "En seguimiento", "state.following.sub": "Contactado", "state.testdrive.main": "En pausa", "state.testdrive.sub": "Prueba de manejo", "state.cash.main": "En pausa", "state.cash.sub": "Pago de contado", "state.noIntent.main": "En pausa", "state.noIntent.sub": "Sin intención de compra", "state.lost.main": "Perdido", "state.lost.sub": "—",
     "result.interested.label": "Contactado con interés", "result.interested.action": "Entra o permanece como contactado", "result.interested.deadline": "Prioriza la hora acordada; predeterminado +2 h",
@@ -59,7 +63,7 @@ const messages = {
     "result.abandon.label": "Desiste de la compra", "result.abandon.action": "Marcar como perdido", "result.abandon.deadline": "No se generará otra tarea",
     "result.keepDormant.label": "Mantener en pausa", "result.keepDormant.action": "Conservar el estado actual", "result.keepDormant.deadline": "Predeterminado +30 días",
     "validation.result": "Selecciona un resultado de seguimiento", "validation.reason": "Ingresa un motivo; es obligatorio para prospectos perdidos o sin interés", "validation.callbackNote": "Describe el acuerdo con el cliente", "validation.callbackTime": "Selecciona la fecha acordada con el cliente", "validation.nextTime": "Selecciona la fecha del próximo contacto", "validation.dealer": "Selecciona un distribuidor válido de la lista",
-    "toast.submitted": "{id} enviado. La tarea actual se completó y se abrió el siguiente prospecto", "toast.watched": "Prospecto agregado a seguimiento", "toast.unwatched": "Prospecto eliminado de seguimiento", "toast.noteRequired": "Ingresa el contenido de la nota", "toast.noteAdded": "Nota de seguimiento agregada", "toast.noChanges": "No hay cambios en la información actual", "toast.userUpdated": "La información actual se actualizó; los datos originales se conservaron"
+    "toast.submitted": "{id} enviado. La tarea actual se completó y se abrió el siguiente prospecto", "toast.watched": "Prospecto agregado a seguimiento", "toast.unwatched": "Prospecto eliminado de seguimiento", "toast.noteRequired": "Ingresa el contenido de la nota", "toast.noteAdded": "Nota de seguimiento agregada", "toast.noChanges": "No hay cambios en la información actual", "toast.userUpdated": "La información actual se actualizó; los datos originales se conservaron", "toast.orderUpdated": "Estado del pedido actualizado a: {status}"
   }
 };
 
@@ -97,6 +101,16 @@ const stateMeta = {
   cash: { main: "暂存", sub: "确认全款" },
   noIntent: { main: "暂存", sub: "无意向购买" },
   lost: { main: "战败", sub: "—" }
+};
+
+const orderStatusCodes = ["UNMARKED", "CREDIT_REVIEW", "CONTRACT_SIGNED", "WAITING_DISBURSEMENT", "DISBURSEMENT_SUCCESS", "VEHICLE_DELIVERED"];
+const orderStatusDataLabels = {
+  UNMARKED: "未标记",
+  CREDIT_REVIEW: "信审中",
+  CONTRACT_SIGNED: "已签合同",
+  WAITING_DISBURSEMENT: "等待放款",
+  DISBURSEMENT_SUCCESS: "放款成功",
+  VEHICLE_DELIVERED: "已提车"
 };
 
 const standardResults = {
@@ -251,6 +265,7 @@ function renderLead() {
   fillText("lastContact", lead.lastContact);
   fillText("currentState", stateLabel(lead.state));
   fillText("attemptCount", t("follow.attempts", { count: lead.unreachableCount }));
+  renderOrderStatusSummary(lead);
   $("changedBadge").hidden = !lead.changed && !(lead.editRecords && lead.editRecords.length);
   $("watchButton").classList.toggle("watching", Boolean(lead.watched));
   $("watchButton").textContent = lead.watched ? t("watch.on") : t("watch.off");
@@ -259,6 +274,82 @@ function renderLead() {
   renderResults();
   renderRecords();
   resetDynamicFields();
+}
+
+function ensureOrderStatusData(lead) {
+  if (!orderStatusCodes.includes(lead.orderStatusCode)) lead.orderStatusCode = "UNMARKED";
+  if (!lead.orderStatusHistory) lead.orderStatusHistory = [];
+}
+
+function orderStatusLabel(code) {
+  return t("order.status." + (orderStatusCodes.includes(code) ? code : "UNMARKED"));
+}
+
+function orderStatusMetaText(lead) {
+  if (!lead.orderStatusUpdatedAt) return t("order.unmarkedMeta");
+  return t("order.updatedMeta", { time: lead.orderStatusUpdatedAt, operator: lead.orderStatusUpdatedBy || "—" });
+}
+
+function renderOrderStatusSummary(lead) {
+  ensureOrderStatusData(lead);
+  fillText("orderStatusBadge", orderStatusLabel(lead.orderStatusCode));
+  $("orderStatusBadge").dataset.status = lead.orderStatusCode;
+  fillText("orderStatusMeta", orderStatusMetaText(lead));
+}
+
+function renderOrderStatusHistory(lead) {
+  const list = $("orderStatusHistory");
+  list.innerHTML = "";
+  if (!lead.orderStatusHistory.length) {
+    list.appendChild(el("li", "order-history-empty", t("order.noHistory")));
+    return;
+  }
+  lead.orderStatusHistory.forEach((record) => {
+    const item = el("li", "order-history-item");
+    const main = el("div", "order-history-main");
+    main.append(el("strong", "", orderStatusLabel(record.from)), el("span", "", "→"), el("strong", "", orderStatusLabel(record.to)));
+    item.append(main, el("div", "order-history-meta", t("order.historyMeta", { time: record.time, operator: record.operator })));
+    list.appendChild(item);
+  });
+}
+
+function openOrderStatusDialog() {
+  const lead = activeLead();
+  ensureOrderStatusData(lead);
+  fillText("orderCurrentStatus", orderStatusLabel(lead.orderStatusCode));
+  fillText("orderCurrentMeta", orderStatusMetaText(lead));
+  const select = $("orderStatusSelect");
+  select.innerHTML = "";
+  orderStatusCodes.forEach((code) => {
+    const option = el("option", "", orderStatusLabel(code));
+    option.value = code;
+    option.selected = code === lead.orderStatusCode;
+    select.appendChild(option);
+  });
+  renderOrderStatusHistory(lead);
+  $("orderDialog").showModal();
+}
+
+function saveOrderStatus(event) {
+  event.preventDefault();
+  const lead = activeLead();
+  ensureOrderStatusData(lead);
+  const previous = lead.orderStatusCode;
+  const next = $("orderStatusSelect").value;
+  if (previous === next) {
+    showToast(t("order.same"));
+    return;
+  }
+  const operator = data.salesperson.id + " " + data.salesperson.name;
+  const time = "刚刚";
+  lead.orderStatusCode = next;
+  lead.orderStatusUpdatedAt = time;
+  lead.orderStatusUpdatedBy = operator;
+  lead.orderStatusHistory.unshift({ from: previous, to: next, time, operator });
+  lead.operations.unshift([time, "订单状态标记", "订单状态：" + orderStatusDataLabels[previous] + " → " + orderStatusDataLabels[next]]);
+  $("orderDialog").close();
+  renderLead();
+  showToast(t("toast.orderUpdated", { status: orderStatusLabel(next) }));
 }
 
 function renderResults() {
@@ -606,6 +697,10 @@ $("noteForm").addEventListener("submit", (event) => {
 });
 $("editUserButton").addEventListener("click", openEditDialog);
 $("editForm").addEventListener("submit", saveUserInfo);
+$("orderStatusButton").addEventListener("click", openOrderStatusDialog);
+$("orderStatusForm").addEventListener("submit", saveOrderStatus);
+$("closeOrderButton").addEventListener("click", () => $("orderDialog").close());
+$("cancelOrderButton").addEventListener("click", () => $("orderDialog").close());
 $("editBrand").addEventListener("change", () => {
   populateSeriesOptions();
   populateDealerOptions();
