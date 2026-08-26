@@ -12,6 +12,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .brand{display:flex;align-items:center;gap:10px;color:#fff;font-size:13px;font-weight:800;text-decoration:none;letter-spacing:.01em}
 .brand-mark{width:20px;height:20px;border-radius:4px;display:grid;place-items:center;background:#fff;color:var(--navy);font-size:7px;font-weight:900}
 .topbar-meta{display:flex;align-items:center;gap:10px;color:#9da8b9;font-size:10px}
+.language-picker{display:flex;align-items:center;gap:6px;color:#9da8b9;font-size:9px}
+.language-picker select{width:auto;height:27px;padding:0 24px 0 8px;border:1px solid #344158;border-radius:6px;background:#172238;color:#d9e0ea;font-size:9px}
 .salesperson{color:#bdc6d4;font-weight:650}
 .account-avatar{width:26px;height:26px;display:grid;place-items:center;border-radius:50%;background:#f3f5f8;color:#38445a;font-size:8px;font-weight:850}
 .page-shell{max-width:1440px;margin:0 auto;padding:20px 30px 40px}
@@ -171,6 +173,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 @media(max-width:640px){
   .topbar{height:48px;padding:0 14px}
   .account-label{display:none}
+  .language-picker>span{display:none}
   .page-shell{padding:16px 12px 32px}
   .page-heading{display:block}
   .title-line{flex-wrap:wrap}
