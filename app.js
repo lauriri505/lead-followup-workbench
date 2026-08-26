@@ -36,7 +36,7 @@ const messages = {
   },
   "es-MX": {
     "brand.home": "Volver al inicio", "language.label": "Idioma", "account.role": "Rol actual: Ventas",
-    "page.title": "Mesa de seguimiento de prospectos", "page.subtitle": "Administra prospectos, acciones de seguimiento y el contexto de comunicación con clientes", "page.todayTasks": "Tareas pendientes hoy: {count}",
+    "page.title": "Seguimiento de Leads", "page.subtitle": "Administra prospectos, acciones de seguimiento y el contexto de comunicación con clientes", "page.todayTasks": "Tareas pendientes hoy: {count}",
     "action.submit": "Enviar", "action.submitNext": "Enviar y abrir el siguiente", "action.close": "Cerrar", "action.cancel": "Cancelar", "action.save": "Guardar cambios",
     "task.current": "Mi tarea actual", "task.processing": "En proceso", "task.trigger": "Motivo de activación: ", "task.id": "ID de tarea",
     "user.title": "Información del cliente", "user.changed": "Información modificada", "user.edit": "Editar información",
