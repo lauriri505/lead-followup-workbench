@@ -54,7 +54,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .avatar{width:38px;height:38px;display:grid;place-items:center;border-radius:50%;border:1px solid #d6dde7;background:#f7f8fa;color:#627087;font-size:13px;font-weight:750}
 .person-summary h3{margin:0;font-size:14px}
 .person-summary p{margin:1px 0 0;color:#98a2b3;font-size:10px}
-.state-pill{margin-left:auto;padding:3px 7px;border-radius:4px;background:#eef5f1;color:var(--green);font-size:9px;font-weight:750}
 .order-status-row{margin-top:16px;padding:14px 0 0;display:flex;align-items:center;justify-content:space-between;gap:14px;border:0;border-top:1px solid #e7ebf1;border-radius:0;background:transparent}
 .order-status-row>div{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
 .order-status-label{color:#7f8a9d;font-size:9px}
@@ -73,11 +72,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .info-grid dd{margin:2px 0 0;font-size:11px;font-weight:700;overflow-wrap:anywhere}
 .follow-heading{align-items:flex-start;padding-bottom:12px;border-bottom:1px solid #e6eaf0}
 .task-group-label{display:inline-flex;align-items:center;padding:3px 6px;border-radius:3px;background:#eef1f5;color:#5c687c;font-size:8px;font-weight:750;white-space:nowrap}
-.last-contact{margin-top:14px;display:flex;gap:10px;align-items:flex-start;padding:12px;background:#f3f5f8;border-radius:7px}
-.contact-icon{flex:0 0 24px;height:24px;display:grid;place-items:center;color:#4f6178;font-size:13px}
-.last-contact div{min-width:0}
-.last-contact span:not(.contact-icon){display:block;color:#7e899b;font-size:9px}
-.last-contact strong{display:block;margin-top:2px;font-size:10px;overflow-wrap:anywhere}
 .field-label{display:block;margin:15px 0 6px;color:#667287;font-size:10px;font-weight:750}
 .select-control,input,textarea{width:100%;border:1px solid #cfd7e3;border-radius:6px;background:#fff}
 .select-control,input{height:34px;padding:0 10px}
@@ -219,7 +213,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   .user-panel,.follow-panel,.activity-panel{padding:15px}
   .info-grid{grid-template-columns:1fr 1fr}
   .person-summary{flex-wrap:wrap}
-  .state-pill{margin-left:0}
   .result-option{grid-template-columns:16px minmax(0,1fr)}
   .result-deadline{grid-column:2;text-align:left}
   .field-row,.two-field-row,.execution-preview,.edit-grid,.original-grid,.order-editor{grid-template-columns:1fr}

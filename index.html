@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="AutoCava 普通线索跟进工作台演示原型">
   <title>线索跟进工作台</title>
-  <link rel="stylesheet" href="styles.css?v=20260827-1">
+  <link rel="stylesheet" href="styles.css?v=20260827-2">
 </head>
 <body>
   <header class="topbar">
@@ -26,7 +26,7 @@
       <div class="left-column">
         <section class="panel user-panel" aria-labelledby="userInfoTitle">
           <div class="panel-heading"><div><h2 id="userInfoTitle"><span data-i18n="user.title">用户信息</span> <span class="changed-badge" id="changedBadge" hidden data-i18n="user.changed">信息已修改</span></h2></div><button class="text-button" id="editUserButton" type="button" data-i18n="user.edit">编辑信息</button></div>
-          <div class="person-summary"><div class="avatar" id="avatar">SR</div><div><h3 id="userName">Sofía Ramírez</h3><p id="userPhone">5612345454</p></div><span class="state-pill" id="statePill">待跟进</span></div>
+          <div class="person-summary"><div class="avatar" id="avatar">SR</div><div><h3 id="userName">Sofía Ramírez</h3><p id="userPhone">5612345454</p></div></div>
           <div class="info-sections">
             <div class="info-section"><h3 data-i18n="lead.info">线索信息</h3><dl class="info-grid"><div><dt data-i18n="lead.source">线索来源</dt><dd id="source">车型详情页</dd></div><div><dt data-i18n="lead.type">线索类型</dt><dd id="leadType">金融</dd></div><div><dt data-i18n="field.brand">品牌</dt><dd id="brand">NISSAN</dd></div><div><dt data-i18n="field.series">车系</dt><dd id="series">X-TRAIL</dd></div><div><dt data-i18n="field.model">车型</dt><dd id="model">Advance 2 Row</dd></div><div><dt data-i18n="lead.created">创建时间</dt><dd id="createdAt">2026-08-25 09:30</dd></div></dl></div>
             <div class="info-section"><h3 data-i18n="dealer.finance">经销商与金融信息</h3><dl class="info-grid"><div><dt data-i18n="dealer.name">经销商</dt><dd id="dealer">Changan Polanco</dd></div><div><dt data-i18n="field.region">地区</dt><dd id="region">Ciudad de México</dd></div><div class="wide"><dt data-i18n="field.address">地址</dt><dd id="address">Av. Ejército Nacional 843</dd></div><div><dt data-i18n="finance.price">车价格</dt><dd id="price">$589,900 MXN</dd></div><div><dt data-i18n="finance.rate">年利率</dt><dd id="rate">14.99%</dd></div><div><dt data-i18n="finance.term">贷款期数</dt><dd id="term">72期</dd></div></dl></div>
@@ -35,7 +35,6 @@
         </section>
         <section class="panel follow-panel" aria-labelledby="followTitle">
           <div class="panel-heading follow-heading"><div><h2 id="followTitle" data-i18n="follow.title">本次跟进</h2><p data-i18n="follow.description">当前任务决定跟进内容，业务状态随跟进结果流转</p></div><span class="task-group-label" id="taskGroupLabel">首次联系</span></div>
-          <div class="last-contact"><span class="contact-icon">↗</span><div><span data-i18n="follow.lastContact">最近联系原文</span><strong id="lastContact">尚无联系记录</strong></div></div>
           <label class="field-label" for="scenarioSelect" data-i18n="follow.scenario">切换普通线索演示场景</label><select id="scenarioSelect" class="select-control"></select>
           <div class="current-state"><span data-i18n="follow.currentState">当前状态</span><strong id="currentState">待跟进 · —</strong><span class="attempt-count" id="attemptCount">未接通 0 次</span></div>
           <fieldset class="result-fieldset"><legend><span data-i18n="follow.result">跟进结果</span> <span>*</span></legend><div class="result-list" id="resultList"></div></fieldset>
@@ -107,6 +106,6 @@
     </form>
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="data.js?v=20260827-1"></script><script src="app.js?v=20260827-1"></script>
+  <script src="data.js?v=20260827-2"></script><script src="app.js?v=20260827-2"></script>
 </body>
 </html>
