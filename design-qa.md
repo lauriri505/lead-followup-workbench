@@ -1,55 +1,53 @@
-# Design QA — 编辑用户信息级联选择
+# Design QA — 用户信息与订单状态布局
 
-- Source visual truth: `source-edit-user.png`
-- Rendered implementation: `implementation-full.png`
-- Browser viewport: 1600 × 1000 CSS px
-- Source pixels: 1512 × 616 px; treated as an approximately 2× focused crop (normalized target about 756 × 308 CSS px)
-- Implementation pixels: 1572 × 1000 px; edit form region measured at 736 × 378 CSS px
-- State: 中文界面 / 编辑用户信息 / 当前信息页签 / 默认 NISSAN 线索
+- source visual truth path: `source-order-status-layout.png`
+- implementation screenshot path: `implementation-full.png`
+- source pixels: 1408 × 754
+- implementation pixels: 720 × 357（从 1500 × 954 桌面浏览器视图裁取的用户信息区域）
+- CSS viewport: 1500 × 1000，deviceScaleFactor 1
+- responsive viewport: 390 × 844，deviceScaleFactor 1
+- state: 中文界面、首条普通线索、订单状态“未标记”、订单状态弹窗关闭
 
 ## Full-view comparison evidence
 
-The implementation preserves the reference modal hierarchy, tab treatment, pale information notice, two-column field grid, input heights, border color, typography hierarchy, and bottom-right actions. The implementation is intentionally taller because the requested dealer field and automatically populated region/address row add one field row.
+参考图与实现截图已在同一轮视觉对照中打开。实现保留现有工作台的信息密度、三列字段栅格和状态标签风格，并按本次要求把订单状态移动到全部线索、经销商和金融信息之后。订单状态不再使用浅灰背景和四周边框，仅以顶部细分隔线与上方信息区分。
 
 ## Focused region comparison evidence
 
-The source crop and the rendered edit form were inspected together. Brand, series, and model retain the same field dimensions and alignment while changing from text inputs to native selects. Dealer uses an input with browser-native autocomplete suggestions. Region and address use the same control dimensions with a muted read-only treatment so their system-populated status is visible.
+本次变更仅涉及用户信息卡片内部，因此使用用户信息区域裁图作为聚焦对照。浏览器计算样式验证结果：
+
+- 订单状态顶部坐标晚于信息区底部坐标，确认位于全部用户信息之后。
+- `background-color: transparent`。
+- 左、右、下边框均为 0，仅保留 1px 顶部分隔线。
+- `border-radius: 0`，不存在订单信息方块容器。
 
 ## Required fidelity surfaces
 
-- Fonts and typography: existing system font stack, weights, sizes, and hierarchy are preserved. No actionable mismatch.
-- Spacing and layout rhythm: two-column grid, notice spacing, field gaps, radii, and action alignment match the existing modal. Extra vertical height is required by the added dealer/location fields.
-- Colors and visual tokens: existing navy, gray, border, focus, and disabled tokens are reused. Read-only fields have sufficient contrast.
-- Image quality and assets: the reference contains no raster UI assets requiring recreation.
-- Copy and content: new labels and helper text reflect the requested cascade and dealer lookup behavior; Chinese and Mexican Spanish keys are complete.
+- Fonts and typography: 沿用现有 CRM 字体、字号和字重，未产生新的字体漂移。
+- Spacing and layout rhythm: 订单状态与详细字段间保留 16px 间距，顶部 1px 分隔线形成清晰但轻量的层级。
+- Colors and visual tokens: 沿用现有灰阶、状态色和按钮样式；移除订单状态外层浅灰底。
+- Image quality and asset fidelity: 本区域无新增图片或图标资产。
+- Copy and content: “订单状态”“未标记”“尚未人工标记”“更新状态”及所有标准状态选项保持不变。
 
-## Primary interactions tested
+## Interaction and responsive checks
 
-1. Brand NISSAN → MAZDA refreshes series to CX-30/CX-5 and models to the selected series options.
-2. Dealer suggestions filter to the selected brand.
-3. Selecting Mazda Interlomas automatically fills Estado de México and Vialidad de la Barranca 6.
-4. Saving updates brand, series, model, dealer, region, and address on the workbench.
-5. The edit history records all six changed fields with operator information.
-6. Invalid free text is rejected unless it matches a dealer in the suggestion list.
-7. Mobile viewport 390 × 844 has no horizontal overflow; dialog width is 358 px and the form becomes one column.
-8. Browser console error count: 0.
+- “更新状态”按钮可打开独立订单状态弹窗。
+- 可选状态保持为：未标记、信审中、已签合同、等待放款、放款成功、已提车。
+- 390 × 844 视口无横向溢出，状态区和按钮均在可视范围内。
+- 浏览器控制台错误：0。
 
 ## Findings
 
-- No actionable P0, P1, or P2 mismatch remains.
-- P3: the native datalist suggestion popup appearance can vary slightly between browsers. This does not affect the interaction or saved result.
+- 无 P0、P1 或 P2 问题。
 
 ## Comparison history
 
-- Pass 1: no P0/P1/P2 issues found. The intentional extra row was verified against the new functional requirement. No visual correction loop was required.
+- 初始问题：订单状态位于用户摘要和详细字段之间，并使用带背景、边框和圆角的方块容器。
+- 修复：将订单状态节点移动到信息区之后；改为透明背景、无圆角、仅顶部细分隔线。
+- 修复后证据：桌面端 DOM 位置、计算样式、聚焦截图及 390px 响应式检查均符合要求。
 
-## Implementation checklist
+## Follow-up polish
 
-- [x] Vehicle brand/series/model cascade
-- [x] Dealer autocomplete and brand filtering
-- [x] Automatic read-only region/address population
-- [x] Save and edit-history integration
-- [x] Chinese and Mexican Spanish UI labels
-- [x] Desktop and mobile validation
+- 无必须处理的 P3 项。
 
 final result: passed
