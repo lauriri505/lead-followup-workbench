@@ -1,5 +1,8 @@
 const data = window.CRM_DEMO_DATA;
-const leads = data.leads;
+const table = window.CRM_CONFIG_TABLE || { leadProfiles: {} };
+// The display model is assembled from the configuration table first, then
+// enriched with demo-only history. This is the same seam an API adapter can use.
+const leads = data.leads.map((lead) => ({ ...lead, ...(table.leadProfiles[lead.id] || {}) }));
 const vehicleCatalog = data.vehicleCatalog || {};
 const dealerDirectory = data.dealers || [];
 let flowConfig = window.LEAD_FLOW_CONFIG.load();
@@ -192,6 +195,12 @@ function getTransition(lead, code) {
 
 function activeLead() {
   return leads[currentIndex];
+}
+
+function selectLeadFromUrl() {
+  const requested = new URLSearchParams(window.location.search).get("lead");
+  const index = leads.findIndex((lead) => lead.id === requested && lead.task);
+  if (index >= 0) currentIndex = index;
 }
 
 function initials(name) {
@@ -642,6 +651,7 @@ window.addEventListener("storage", (event) => {
 });
 window.addEventListener("focus", reloadFlowConfiguration);
 
+selectLeadFromUrl();
 applyStaticTranslations();
 fillText("salespersonTop", data.salesperson.id + " " + data.salesperson.name);
 renderLead();

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>北汽线索管理后台</title>
+  <link rel="stylesheet" href="styles.css?v=20260902-3">
+  <link rel="stylesheet" href="admin.css?v=20260902-1">
+</head>
+<body class="admin-page">
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="brand-mark">AC</span><span>AUTOCAVA CRM</span></a>
+    <div class="topbar-meta"><span>租户：北汽</span><span>当前角色：主机厂管理员</span><a class="admin-link" href="index.html">销售工作台</a><span class="account-avatar">BA</span></div>
+  </header>
+  <main class="admin-shell">
+    <aside class="admin-nav" aria-label="管理员导航">
+      <div class="admin-nav-title">北汽线索管理</div>
+      <button class="admin-nav-item active" data-section="leads">线索中心</button>
+      <button class="admin-nav-item" data-section="tasks">任务概览</button>
+      <button class="admin-nav-item" data-section="config">线索流转配置</button>
+      <button class="admin-nav-item" data-section="access">权限范围</button>
+      <div class="admin-scope"><span>数据权限</span><strong>北汽品牌</strong><small>仅展示北汽及授权经销商线索</small></div>
+    </aside>
+    <section class="admin-content">
+      <div class="admin-heading"><div><p class="eyebrow">BAIC LEAD CENTER</p><h1>线索管理后台</h1><p>查看北汽线索、销售任务与当前配置效果。</p></div><a class="button secondary" href="admin-config.html">打开完整配置</a></div>
+      <section class="admin-section" data-panel="leads">
+        <div class="metric-grid"><article><span>全部线索</span><strong id="metricAll">0</strong><small>权限范围内</small></article><article><span>待处理任务</span><strong id="metricPending">0</strong><small>销售工作台队列</small></article><article><span>跟进中</span><strong id="metricFollowing">0</strong><small>需要持续联系</small></article><article><span>战败</span><strong id="metricLost">0</strong><small>已停止派发</small></article></div>
+        <div class="admin-card"><div class="card-heading"><div><h2>线索列表</h2><p>管理员可查看北汽权限范围内的线索全量信息。</p></div><span class="table-count" id="tableCount">0 条</span></div>
+          <div class="filters"><input id="searchInput" type="search" placeholder="搜索姓名、手机号、线索ID"><select id="stateFilter"><option value="all">全部状态</option></select><select id="brandFilter"><option value="all">全部品牌</option><option value="BAIC">BAIC</option></select><button class="button primary compact" id="clearFilters">重置</button></div>
+          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>线索ID</th><th>状态</th><th>线索类型</th><th>姓名</th><th>手机号</th><th>城市</th><th>品牌</th><th>车系</th><th>车型</th><th>创建时间</th><th>来源</th><th>操作</th></tr></thead><tbody id="leadRows"></tbody></table></div>
+        </div>
+      </section>
+      <section class="admin-section" data-panel="tasks" hidden><div class="admin-card"><div class="card-heading"><div><h2>任务概览</h2><p>任务由线索状态和跟进结果产生，管理员查看任务处理情况。</p></div></div><div class="task-board" id="taskBoard"></div></div></section>
+      <section class="admin-section" data-panel="config" hidden><div class="admin-card"><div class="card-heading"><div><h2>线索流转配置</h2><p>工作台的跟进结果从这里读取；保存后销售端刷新即可看到最新配置。</p></div><a class="button primary compact" href="admin-config.html">管理配置</a></div><div class="config-summary" id="configSummary"></div></div></section>
+      <section class="admin-section" data-panel="access" hidden><div class="admin-card"><div class="card-heading"><div><h2>权限范围</h2><p>当前管理员只能查看北汽租户下的线索与任务。</p></div></div><div class="access-grid"><div><span>租户</span><strong>北汽</strong></div><div><span>角色</span><strong>主机厂管理员</strong></div><div><span>品牌范围</span><strong>BAIC</strong></div><div><span>销售范围</span><strong>北汽销售 001</strong></div></div></div></section>
+    </section>
+  </main>
+  <dialog class="admin-dialog" id="leadDialog"><div class="dialog-heading"><div><p class="eyebrow">LEAD DETAIL</p><h2 id="dialogLeadTitle">线索详情</h2></div><button class="icon-button" id="closeLeadDialog" type="button">×</button></div><div class="detail-grid" id="leadDetail"></div><div class="dialog-actions"><a class="button primary" id="openWorkbench" href="index.html">打开工作台</a><button class="button secondary" id="cancelLeadDialog" type="button">关闭</button></div></dialog>
+  <div class="toast" id="adminToast" role="status" aria-live="polite"></div>
+  <script src="flow-config.js?v=20260902-3"></script><script src="data.js?v=20260902-3"></script><script src="config-table.js?v=20260902-3"></script><script src="admin.js?v=20260902-1"></script>
+</body>
+</html>
