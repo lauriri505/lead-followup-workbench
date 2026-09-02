@@ -12,6 +12,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .brand{display:flex;align-items:center;gap:10px;color:#fff;font-size:13px;font-weight:800;text-decoration:none;letter-spacing:.01em}
 .brand-mark{width:20px;height:20px;border-radius:4px;display:grid;place-items:center;background:#fff;color:var(--navy);font-size:7px;font-weight:900}
 .topbar-meta{display:flex;align-items:center;gap:10px;color:#9da8b9;font-size:10px}
+.admin-link{color:#c2cad7;text-decoration:none;font-size:9px}.admin-link:hover{color:#fff}
 .language-picker{display:flex;align-items:center;gap:6px;color:#9da8b9;font-size:9px}
 .language-picker select{width:auto;height:27px;padding:0 24px 0 8px;border:1px solid #344158;border-radius:6px;background:#172238;color:#d9e0ea;font-size:9px}
 .salesperson{color:#bdc6d4;font-weight:650}
@@ -28,6 +29,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .button{min-height:34px;padding:0 14px;border:1px solid #d6dde8;border-radius:7px;background:#fff;font-size:11px;font-weight:750;transition:.15s ease}
 .button:hover{border-color:#aeb9ca;box-shadow:0 4px 10px rgba(25,38,62,.06)}
 .button.primary{background:#26344b;border-color:#26344b;color:#fff}
+.button:disabled{cursor:not-allowed;opacity:.45;box-shadow:none}
 .button.secondary{background:#fff}
 .button.full{width:100%;margin-top:16px}
 .button.watching{color:#284f88;border-color:#a9bad4;background:#f5f8fc}
@@ -83,6 +85,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .result-fieldset legend{margin-bottom:8px;font-size:10px;font-weight:800}
 .result-fieldset legend span,.field-row label span,.two-field-row label span{color:var(--red)}
 .result-list{display:grid;gap:7px}
+.result-empty{padding:18px;border:1px dashed #d4dbe6;border-radius:7px;color:#8d98aa;text-align:center}
 .result-option{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px 11px;border:1px solid #dce2eb;border-radius:6px;cursor:pointer;transition:.12s ease}
 .result-option:hover{border-color:#aab6c7}
 .result-option.selected{border-color:#3c4f6d;background:#fafbfc;box-shadow:none}
