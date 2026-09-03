@@ -169,26 +169,36 @@ function readableTime(value) {
 
 function getTransition(lead, code) {
   const config = resultConfig(code);
+  const adminFlow = (flowConfig.adminFlows || []).find((flow) => flow.current === lead.state && flow.result === code);
+  const adminTaskRule = adminFlow?.taskRuleId ? (flowConfig.adminTaskRules || []).find((rule) => rule.id === adminFlow.taskRuleId && rule.enabled !== false) : null;
   const nextCount = code === "unreachable" ? lead.unreachableCount + 1 : lead.unreachableCount;
-  if (code === "unreachable" && nextCount >= flowConfig.policies.unreachableLimit) {
-    return { state: "lost", reason: flowConfig.policies.unreachableLimit + "次未接通", terminal: true, systemLost: true, nextCount };
+  const unreachableLimit = Number(adminFlow?.terminalAt || flowConfig.policies.unreachableLimit);
+  if (code === "unreachable" && nextCount >= unreachableLimit) {
+    return { state: adminFlow?.terminalNext || "lost", reason: unreachableLimit + "次未接通", terminal: true, systemLost: true, nextCount };
   }
-  let target = config.target === "same" ? lead.state : (config.target || lead.state);
+  let target = adminFlow?.next || (config.target === "same" ? lead.state : (config.target || lead.state));
   if (code === "callback" && ["unfollowed", "overdue"].includes(lead.state)) target = "followup";
   const terminal = Boolean(config.terminal || stateMeta(target).terminal);
-  const taskType = config.task ? flowConfig.taskTypes[config.task] : null;
+  const taskCode = adminFlow?.task || config.task;
+  const taskType = taskCode ? flowConfig.taskTypes[taskCode] : null;
   const trigger = code === "unreachable" ? "累计第" + nextCount + "次未接通" : config.label;
+  const deadlineText = adminTaskRule?.deadline || adminFlow?.deadline || "";
+  let deadline = config.deadline;
+  if (deadlineText.includes("手动")) deadline = { type: "manual" };
+  else if (/\+?\s*30\s*天/.test(deadlineText)) deadline = { type: "days", value: 30 };
+  else if (/\+?\s*2\s*小时/.test(deadlineText)) deadline = { type: "minutes", value: 120 };
+  else if (/30\s*分钟/.test(deadlineText)) deadline = { type: "minutes", value: 30 };
   return {
     state: target,
     reason: config.lostReason || "",
     terminal,
-    taskCode: config.task,
-    task: taskType?.name,
-    trigger,
-    time: deadlineValue(config.deadline),
-    manualTime: config.deadline?.type === "manual",
-    requireReason: Boolean(config.requireReason),
-    requireNote: Boolean(config.requireNote),
+    taskCode,
+    task: adminTaskRule?.type || taskType?.name,
+    trigger: adminTaskRule?.trigger || trigger,
+    time: deadlineValue(deadline),
+    manualTime: deadline?.type === "manual",
+    requireReason: Boolean(adminFlow?.reason || config.requireReason),
+    requireNote: Boolean(config.requireNote || resultConfig(code)?.requireNote),
     nextCount
   };
 }
@@ -647,7 +657,7 @@ function reloadFlowConfiguration() {
 }
 
 window.addEventListener("storage", (event) => {
-  if (event.key === window.LEAD_FLOW_CONFIG.storageKey) reloadFlowConfiguration();
+  if ([window.LEAD_FLOW_CONFIG.storageKey, "autocava_admin_demo_config_v1"].includes(event.key)) reloadFlowConfiguration();
 });
 window.addEventListener("focus", reloadFlowConfiguration);
 

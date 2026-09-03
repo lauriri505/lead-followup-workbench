@@ -56,12 +56,55 @@
     return output;
   };
 
+  function applyAdminConfiguration(config) {
+    try {
+      const saved = JSON.parse(localStorage.getItem("autocava_admin_demo_config_v1") || "null");
+      if (!saved?.transitionConfig) return config;
+      const transition = saved.transitionConfig;
+      const output = clone(config);
+      output.version = transition.brand?.version || output.version;
+      output.updatedAt = transition.brand?.updatedAt || output.updatedAt;
+      output.adminFlows = clone(transition.flows || []);
+      output.adminTaskRules = clone(saved.taskRules || []);
+      (transition.states || []).forEach((item) => {
+        if (item.code === "issued") return;
+        const existing = output.states[item.code] || {};
+        output.states[item.code] = {
+          ...existing,
+          main: item.businessStage || existing.main || item.name,
+          sub: item.name || existing.sub || "—",
+          terminal: Boolean(item.terminal)
+        };
+      });
+      (transition.results || []).filter((item) => item.actor !== "system").forEach((item) => {
+        const existing = output.results[item.code] || {};
+        output.results[item.code] = {
+          ...existing,
+          label: item.name,
+          enabled: item.enabled !== false,
+          requireReason: Boolean(item.requiresReason),
+          requireNote: Boolean(item.requiresCallbackTime)
+        };
+      });
+      output.routes = {};
+      output.adminFlows.forEach((flow) => {
+        const result = (transition.results || []).find((item) => item.code === flow.result);
+        if (!result || result.actor === "system") return;
+        if (!output.routes[flow.current]) output.routes[flow.current] = [];
+        if (!output.routes[flow.current].includes(flow.result)) output.routes[flow.current].push(flow.result);
+      });
+      return output;
+    } catch (error) {
+      return config;
+    }
+  }
+
   function load() {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
-      return merge(defaults, saved);
+      return applyAdminConfiguration(merge(defaults, saved));
     } catch (error) {
-      return clone(defaults);
+      return applyAdminConfiguration(clone(defaults));
     }
   }
 

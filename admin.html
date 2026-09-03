@@ -3,40 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>北汽线索管理后台</title>
-  <link rel="stylesheet" href="styles.css?v=20260902-3">
-  <link rel="stylesheet" href="admin.css?v=20260902-1">
+  <meta name="description" content="AutoCava CRM 管理员后台演示">
+  <title>AutoCava 管理员后台</title>
+  <link rel="stylesheet" href="admin.css?v=20260903-1">
 </head>
-<body class="admin-page">
-  <header class="topbar">
-    <a class="brand" href="index.html"><span class="brand-mark">AC</span><span>AUTOCAVA CRM</span></a>
-    <div class="topbar-meta"><span>租户：北汽</span><span>当前角色：主机厂管理员</span><a class="admin-link" href="index.html">销售工作台</a><span class="account-avatar">BA</span></div>
-  </header>
-  <main class="admin-shell">
-    <aside class="admin-nav" aria-label="管理员导航">
-      <div class="admin-nav-title">北汽线索管理</div>
-      <button class="admin-nav-item active" data-section="leads">线索中心</button>
-      <button class="admin-nav-item" data-section="tasks">任务概览</button>
-      <button class="admin-nav-item" data-section="config">线索流转配置</button>
-      <button class="admin-nav-item" data-section="access">权限范围</button>
-      <div class="admin-scope"><span>数据权限</span><strong>北汽品牌</strong><small>仅展示北汽及授权经销商线索</small></div>
+<body>
+  <div class="admin-app">
+    <aside class="admin-sidebar">
+      <a class="admin-brand" href="admin.html"><span class="brand-mark">AC</span><span><strong>AUTOCAVA CRM</strong><small>PLATFORM ADMIN</small></span></a>
+      <div class="tenant-card"><span>当前平台</span><strong>AutoCava · Platform</strong><small>普通线索一期数据</small></div>
+      <nav class="admin-nav" aria-label="管理员功能">
+        <button class="nav-item active" data-view="dashboard" type="button"><span>01</span>后台总览</button>
+        <button class="nav-item" data-view="leads" type="button"><span>02</span>线索数据</button>
+        <button class="nav-item" data-view="accounts" type="button"><span>03</span>账号与角色</button>
+        <button class="nav-item" data-view="tasks" type="button"><span>04</span>任务配置</button>
+        <button class="nav-item" data-view="nodes" type="button"><span>05</span>线索流转配置</button>
+      </nav>
+      <a class="workbench-link" href="index.html">返回销售工作台 →</a>
     </aside>
-    <section class="admin-content">
-      <div class="admin-heading"><div><p class="eyebrow">BAIC LEAD CENTER</p><h1>线索管理后台</h1><p>查看北汽线索、销售任务与当前配置效果。</p></div><a class="button secondary" href="admin-config.html">打开完整配置</a></div>
-      <section class="admin-section" data-panel="leads">
-        <div class="metric-grid"><article><span>全部线索</span><strong id="metricAll">0</strong><small>权限范围内</small></article><article><span>待处理任务</span><strong id="metricPending">0</strong><small>销售工作台队列</small></article><article><span>跟进中</span><strong id="metricFollowing">0</strong><small>需要持续联系</small></article><article><span>战败</span><strong id="metricLost">0</strong><small>已停止派发</small></article></div>
-        <div class="admin-card"><div class="card-heading"><div><h2>线索列表</h2><p>管理员可查看北汽权限范围内的线索全量信息。</p></div><span class="table-count" id="tableCount">0 条</span></div>
-          <div class="filters"><input id="searchInput" type="search" placeholder="搜索姓名、手机号、线索ID"><select id="stateFilter"><option value="all">全部状态</option></select><select id="brandFilter"><option value="all">全部品牌</option><option value="BAIC">BAIC</option></select><button class="button primary compact" id="clearFilters">重置</button></div>
-          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>线索ID</th><th>状态</th><th>线索类型</th><th>姓名</th><th>手机号</th><th>城市</th><th>品牌</th><th>车系</th><th>车型</th><th>创建时间</th><th>来源</th><th>操作</th></tr></thead><tbody id="leadRows"></tbody></table></div>
-        </div>
-      </section>
-      <section class="admin-section" data-panel="tasks" hidden><div class="admin-card"><div class="card-heading"><div><h2>任务概览</h2><p>任务由线索状态和跟进结果产生，管理员查看任务处理情况。</p></div></div><div class="task-board" id="taskBoard"></div></div></section>
-      <section class="admin-section" data-panel="config" hidden><div class="admin-card"><div class="card-heading"><div><h2>线索流转配置</h2><p>工作台的跟进结果从这里读取；保存后销售端刷新即可看到最新配置。</p></div><a class="button primary compact" href="admin-config.html">管理配置</a></div><div class="config-summary" id="configSummary"></div></div></section>
-      <section class="admin-section" data-panel="access" hidden><div class="admin-card"><div class="card-heading"><div><h2>权限范围</h2><p>当前管理员只能查看北汽租户下的线索与任务。</p></div></div><div class="access-grid"><div><span>租户</span><strong>北汽</strong></div><div><span>角色</span><strong>主机厂管理员</strong></div><div><span>品牌范围</span><strong>BAIC</strong></div><div><span>销售范围</span><strong>北汽销售 001</strong></div></div></div></section>
-    </section>
-  </main>
-  <dialog class="admin-dialog" id="leadDialog"><div class="dialog-heading"><div><p class="eyebrow">LEAD DETAIL</p><h2 id="dialogLeadTitle">线索详情</h2></div><button class="icon-button" id="closeLeadDialog" type="button">×</button></div><div class="detail-grid" id="leadDetail"></div><div class="dialog-actions"><a class="button primary" id="openWorkbench" href="index.html">打开工作台</a><button class="button secondary" id="cancelLeadDialog" type="button">关闭</button></div></dialog>
-  <div class="toast" id="adminToast" role="status" aria-live="polite"></div>
-  <script src="flow-config.js?v=20260902-3"></script><script src="data.js?v=20260902-3"></script><script src="config-table.js?v=20260902-3"></script><script src="admin.js?v=20260902-1"></script>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button class="menu-button" id="menuButton" type="button" aria-label="打开菜单">☰</button>
+        <div><p>AutoCava 管理空间</p><strong id="viewTitle">后台总览</strong></div>
+        <div class="admin-account"><span><small>当前账号</small><strong>autocava_admin_001 · 超级管理员</strong></span><span class="admin-avatar">管</span></div>
+      </header>
+
+      <main class="admin-content">
+        <section class="admin-view active" id="dashboardView">
+          <div class="view-heading"><div><p class="eyebrow">AUTOCAVA OVERVIEW</p><h1>AutoCava 线索运营总览</h1><p>统计 AutoCava 普通线索一期的线索、任务与账号。</p></div><span class="scope-chip">数据范围：AutoCava</span></div>
+          <div class="metric-grid" id="metricGrid"></div>
+          <div class="dashboard-grid">
+            <section class="admin-panel"><div class="panel-title"><div><h2>线索阶段分布</h2><p>当前普通线索池</p></div><button class="text-action" data-go="leads" type="button">查看全部</button></div><div class="stage-bars" id="stageBars"></div></section>
+            <section class="admin-panel"><div class="panel-title"><div><h2>今日任务概况</h2><p>按任务状态统计</p></div><button class="text-action" data-go="tasks" type="button">配置规则</button></div><div class="task-summary" id="taskSummary"></div></section>
+          </div>
+          <section class="admin-panel recent-panel"><div class="panel-title"><div><h2>最新普通线索</h2><p>按创建时间倒序</p></div></div><div class="table-wrap"><table><thead><tr><th>线索ID</th><th>用户</th><th>来源</th><th>车型</th><th>线索状态</th><th>有效性</th><th>负责人</th><th>当前任务</th><th>创建时间</th></tr></thead><tbody id="recentLeadRows"></tbody></table></div></section>
+        </section>
+
+        <section class="admin-view" id="leadsView" hidden>
+          <div class="view-heading"><div><p class="eyebrow">LEAD DATA</p><h1>普通线索数据</h1><p>管理员可查看 AutoCava 平台普通线索一期的全部品牌数据。</p></div><span class="scope-chip">共 <strong id="leadTotal">0</strong> 条</span></div>
+          <section class="admin-panel"><div class="filter-row"><input id="leadSearch" type="search" placeholder="搜索线索ID、姓名或手机号"><select id="leadStatusFilter"><option value="">全部线索状态</option></select><select id="leadAssigneeFilter"><option value="">全部负责人</option></select><button class="secondary-button" id="resetLeadFilters" type="button">重置</button></div><div class="table-wrap"><table><thead><tr><th>线索ID</th><th>用户</th><th>来源</th><th>车型</th><th>状态</th><th>有效性</th><th>负责人</th><th>任务状态</th><th>创建时间</th></tr></thead><tbody id="leadRows"></tbody></table></div><div class="empty-state" id="leadEmpty" hidden>没有符合条件的普通线索</div></section>
+        </section>
+
+        <section class="admin-view" id="accountsView" hidden>
+          <div class="view-heading"><div><p class="eyebrow">ACCOUNT & ROLE</p><h1>账号与角色</h1><p>配置超级管理员和 AutoCava 销售的角色、状态及数据权限。</p></div><button class="primary-button" id="showAccountForm" type="button">+ 新增账号</button></div>
+          <form class="inline-create admin-panel" id="accountForm" hidden><div><label for="accountId">销售ID / 账号ID</label><input id="accountId" required placeholder="例如：sales_004"></div><div><label for="accountName">用户名</label><input id="accountName" required placeholder="例如：Sales 004"></div><div><label for="accountRole">角色</label><select id="accountRole"><option value="sales">AutoCava销售</option><option value="super_admin">超级管理员</option></select></div><button class="primary-button" type="submit">创建账号</button><button class="secondary-button cancel-inline" type="button">取消</button></form>
+          <section class="admin-panel"><div class="panel-title panel-pad"><div><h2>账号列表</h2><p>角色调整后立即应用对应数据范围</p></div></div><div class="table-wrap"><table><thead><tr><th>账号ID</th><th>用户名</th><th>角色</th><th>数据范围</th><th>账号状态</th><th>最近登录</th></tr></thead><tbody id="accountRows"></tbody></table></div></section>
+          <section class="admin-panel role-panel"><div class="panel-title"><div><h2>角色权限</h2><p>配置角色能够访问的管理功能</p></div><button class="secondary-button" id="savePermissions" type="button">保存权限</button></div><div class="role-grid" id="roleGrid"></div></section>
+        </section>
+
+        <section class="admin-view" id="tasksView" hidden>
+          <div class="view-heading"><div><p class="eyebrow">TASK RULES</p><h1>任务配置</h1><p>任务业务组只保留“首次联系”和“普通回访”；不同触发场景可以分别配置完成时限。</p></div><button class="primary-button" id="showTaskForm" type="button">+ 新增任务规则</button></div>
+          <div class="rule-note"><strong>规则优先级</strong><span>销售手动时间 ＞ AutoCava任务规则 ＞ 平台默认规则</span></div>
+          <form class="inline-create admin-panel" id="taskForm" hidden><div><label for="taskType">任务类型</label><input id="taskType" required placeholder="例如：普通回访"></div><div><label for="taskTriggerInput">触发事件</label><input id="taskTriggerInput" required placeholder="例如：首次联系未接通"></div><div><label for="taskDeadline">默认截止时间</label><input id="taskDeadline" required placeholder="例如：+2小时"></div><button class="primary-button" type="submit">添加规则</button><button class="secondary-button cancel-inline" type="button">取消</button></form>
+          <div class="task-rule-list" id="taskRuleList"></div>
+          <div class="sticky-save"><span id="taskSaveHint">修改后需保存才会应用到新生成的任务</span><button class="primary-button" id="saveTaskRules" type="button">保存任务配置</button></div>
+        </section>
+
+        <section class="admin-view" id="nodesView" hidden>
+          <div class="view-heading transition-heading"><div><p class="eyebrow">LEAD TRANSITION RULES</p><h1>AutoCava线索流转配置</h1><p>统一管理状态节点、跟进结果、状态流转和后续任务。</p></div><span class="scope-chip">当前范围：普通线索一期</span></div>
+          <div class="transition-summary" id="transitionSummary"></div>
+          <section class="admin-panel transition-panel">
+            <div class="config-tabs" role="tablist" aria-label="线索流转配置">
+              <button class="config-tab active" data-config-tab="states" type="button">节点字典</button>
+              <button class="config-tab" data-config-tab="results" type="button">跟进结果</button>
+              <button class="config-tab" data-config-tab="strategies" type="button">跟进策略</button>
+              <button class="config-tab" data-config-tab="diagram" type="button">流转图</button>
+              <button class="config-tab" data-config-tab="preview" type="button">配置预览</button>
+            </div>
+
+            <div class="config-pane active" id="configStatesPane">
+              <div class="config-toolbar"><div><h2>主状态与子状态</h2><p>主状态用于销售筛选，子状态用于说明当前具体结果。</p></div><button class="primary-button" id="showStateForm" type="button">+ 添加状态</button></div>
+              <div class="lead-tag-panel"><div><strong>有效性与业务补充字段</strong><small>有效性用于质量统计；购车方式与终态用于描述普通线索推进结果</small></div><div class="lead-tag-list" id="leadTagList"></div></div>
+              <div class="state-tree" id="stateTree"></div>
+              <div class="table-wrap transition-table"><table><thead><tr><th>主状态</th><th>子状态</th><th>状态编码</th><th>状态性质</th><th>父节点</th><th>操作</th></tr></thead><tbody id="stateRows"></tbody></table></div>
+            </div>
+
+            <div class="config-pane" id="configResultsPane" hidden>
+              <div class="config-toolbar"><div><h2>销售跟进结果</h2><p>配置销售对本次联系事实的判断；跟进结果是流转条件，不等于下一个状态节点。</p></div><button class="primary-button" id="showResultForm" type="button">+ 添加跟进结果</button></div>
+              <div class="result-source-note"><strong>关系说明</strong><span>当前状态 + 跟进结果 → 新状态 + 有效性 + 下一任务。跟进结果与流转策略共同决定新的线索状态和后续任务。</span></div>
+              <div class="table-wrap transition-table"><table><thead><tr><th>顺序</th><th>结果名称</th><th>结果编码</th><th>结果分类</th><th>填写要求</th><th>已配置节点</th><th>状态</th><th>操作</th></tr></thead><tbody id="resultRows"></tbody></table></div>
+            </div>
+
+            <div class="config-pane" id="configStrategiesPane" hidden>
+              <div class="config-toolbar"><div><h2>跟进策略</h2><p>当前节点 + 跟进结果 → 新节点 + 后续任务。</p></div><button class="primary-button" id="showStrategyForm" type="button">+ 添加策略</button></div>
+              <div class="strategy-filter"><select id="strategyStateFilter"><option value="">全部当前节点</option></select><span id="strategyCount"></span></div>
+              <div class="table-wrap transition-table"><table><thead><tr><th>当前节点</th><th>跟进结果</th><th>流转至</th><th>附加更新</th><th>后续任务</th><th>截止规则</th><th>操作</th></tr></thead><tbody id="strategyRows"></tbody></table></div>
+              <section class="progress-rule-panel"><div><h3>工作台推进字段</h3><p>本表决定“本次跟进”的补充字段、填写要求及提交后的任务，工作台直接读取该配置。</p></div><div class="table-wrap transition-table"><table><thead><tr><th>顺序</th><th>字段名称</th><th>适用场景</th><th>出现条件</th><th>提交后行为</th></tr></thead><tbody id="progressFieldRows"></tbody></table></div></section>
+              <section class="progress-rule-panel"><div><h3>客户推进节点判定</h3><p>系统按已配置的优先级判断线索进入的下一节点。</p></div><div class="table-wrap transition-table"><table><thead><tr><th>优先级</th><th>推进字段</th><th>取值</th><th>附加条件</th><th>判定节点</th></tr></thead><tbody id="progressStateRows"></tbody></table></div></section>
+            </div>
+
+            <div class="config-pane" id="configDiagramPane" hidden>
+              <div class="config-toolbar"><div><h2>状态流转图</h2><p>点击节点查看所有进入和离开该节点的规则。</p></div><span class="diagram-hint">实线为跨节点流转 · 虚线为状态保持</span></div>
+              <div class="flow-legend" id="flowLegend"></div>
+              <div class="flow-board" id="flowBoard"></div>
+              <div class="flow-detail" id="flowDetail"></div>
+            </div>
+
+            <div class="config-pane" id="configPreviewPane" hidden>
+              <div class="config-toolbar"><div><h2>配置预览</h2><p>用于评审、备份或交给开发初始化配置。</p></div><div class="toolbar-actions"><button class="secondary-button" id="copyTransitionConfig" type="button">复制配置</button><button class="primary-button" id="exportTransitionConfig" type="button">导出 JSON</button></div></div>
+              <pre class="json-preview" id="transitionJson"></pre>
+            </div>
+          </section>
+          <div class="sticky-save"><span id="transitionSaveHint">修改后需保存才会应用到后续线索，不追溯历史记录。</span><button class="primary-button" id="saveTransitions" type="button">保存线索流转配置</button></div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div class="admin-modal" id="transitionModal" hidden>
+    <div class="admin-modal-card" role="dialog" aria-modal="true" aria-labelledby="transitionModalTitle">
+      <div class="modal-header"><div><p class="eyebrow" id="transitionModalEyebrow">TRANSITION CONFIG</p><h2 id="transitionModalTitle">添加节点</h2></div><button class="modal-close" id="closeTransitionModal" type="button" aria-label="关闭">×</button></div>
+      <form id="transitionModalForm"><div class="modal-body" id="transitionModalBody"></div><div class="modal-footer"><button class="secondary-button" id="cancelTransitionModal" type="button">取消</button><button class="primary-button" type="submit">保存配置</button></div></form>
+    </div>
+  </div>
+  <div class="admin-toast" id="adminToast" role="status" aria-live="polite"></div>
+  <script src="flow-config.js?v=20260903-1"></script>
+  <script src="data.js?v=20260903-1"></script>
+  <script src="config-table.js?v=20260903-1"></script>
+  <script src="admin-data.js?v=20260903-1"></script>
+  <script src="admin.js?v=20260903-1"></script>
 </body>
 </html>

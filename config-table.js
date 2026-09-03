@@ -6,9 +6,9 @@
  */
 window.CRM_CONFIG_TABLE = {
   tenant: {
-    id: "TENANT-BAIC",
-    name: "北汽",
-    scope: "仅可查看北汽品牌线索"
+    id: "PLATFORM-AUTOCAVA",
+    name: "AutoCava",
+    scope: "普通线索一期平台数据"
   },
   leadProfiles: {
     "LEAD-1533": {
