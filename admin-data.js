@@ -85,7 +85,7 @@
 
   const mergedLeads = demo.leads.map((lead) => ({ ...lead, ...(profiles[lead.id] || {}) }));
   const stateMap = Object.fromEntries(stateDefinitions.map((item) => [item.code, item]));
-  const leads = mergedLeads.map((lead) => {
+  const initialLeads = mergedLeads.map((lead) => {
     const state = stateMap[lead.state] || stateMap.unfollowed;
     const invalid = lead.state === "lost" && /号码错误|未接通/.test(lead.lostReason || "");
     const quality = ["unfollowed", "overdue"].includes(lead.state) ? "UNKNOWN" : invalid ? "INVALID" : "VALID";
@@ -93,8 +93,12 @@
       id: lead.id,
       name: lead.name,
       phone: lead.phone,
-      source: lead.source,
-      type: lead.leadType,
+      source: lead.entryType === "人工" ? "" : (lead.source || ["车型详情页", "AICTA选车推荐", "金融机构", "首页banner"][Math.abs(String(lead.id).length) % 4]),
+      channel: lead.entryType === "人工" ? "" : (["Meta", "Google", "Ins", "官网"][Math.abs(String(lead.id).length) % 4]),
+      type: ["金融", "试驾"].includes(lead.leadType) ? lead.leadType : "金融",
+      leadType: ["金融", "试驾"].includes(lead.leadType) ? lead.leadType : "金融",
+      entryType: lead.entryType === "人工" ? "人工" : "自动",
+      city: lead.region || "Ciudad de México",
       brand: lead.brand,
       series: lead.series,
       model: lead.model,
@@ -107,6 +111,16 @@
       taskStatus: lead.task ? "处理中" : (state.terminal ? "已结束" : "待处理")
     };
   });
+  const demoNames = ["Sofía Ramírez", "Luis Torres", "María González", "Diego Hernández", "Ana Martínez", "Carlos Mendoza", "Fernanda Ruiz", "Ricardo Sánchez", "Valeria Cruz", "Jorge Navarro"];
+  const demoCities = ["Ciudad de México", "Guadalajara", "Monterrey", "Puebla", "Querétaro", "Mérida"];
+  const demoVehicles = [["NISSAN", "X-TRAIL", "Advance 2 Row"], ["MAZDA", "CX-30", "i Grand Touring"], ["FORD", "Territory", "Titanium"], ["KIA", "Sportage", "EX Pack"], ["TOYOTA", "RAV4", "XLE"]];
+  const generatedLeads = Array.from({ length: Math.max(0, 100 - initialLeads.length) }, (_, index) => {
+    const number = index + initialLeads.length + 1; const vehicle = demoVehicles[index % demoVehicles.length]; const date = `2026-09-${String(1 + (index % 30)).padStart(2, "0")} ${String(8 + (index % 10)).padStart(2, "0")}:${String((index * 7) % 60).padStart(2, "0")}`;
+    const statusCases = [["unfollowed", "正常等待跟进"], ["followup", "待确认购车方式"], ["overdue", "超过72小时"], ["dormantCash", "明确表示全款"], ["dormantTestDrive", "表示要先试驾"], ["lost", index % 2 ? "放弃购买" : "号码错误"]]; const current = statusCases[index % statusCases.length];
+    const manual = index % 7 === 0; const channel = ["Meta", "Google", "Ins", "官网"][index % 4]; const source = ["车型详情页", "AICTA选车推荐", "金融机构", "首页banner"][index % 4];
+    return { id: `LEAD-${String(1600 + number).padStart(4, "0")}`, name: demoNames[index % demoNames.length], phone: `55${String(10000000 + index * 137).slice(0, 8)}`, city: demoCities[index % demoCities.length], region: demoCities[index % demoCities.length], brand: vehicle[0], series: vehicle[1], model: vehicle[2], type: index % 3 === 0 ? "试驾" : "金融", leadType: index % 3 === 0 ? "试驾" : "金融", entryType: manual ? "人工" : "自动", channel: manual ? "" : channel, source: manual ? "" : source, createdAt: date, status: stateMap[current[0]].businessStage, subStatus: current[1], quality: ["unfollowed", "overdue"].includes(current[0]) ? "UNKNOWN" : current[0] === "lost" ? "INVALID" : "VALID", assignee: ["sales 001 Deng Yao", "sales 002 María López", "sales 003 Carlos Ruiz"][index % 3], task: current[0] === "lost" ? "—" : index % 2 ? "普通回访" : "首次联系", taskStatus: current[0] === "lost" ? "已结束" : index % 3 === 0 ? "待处理" : "处理中" };
+  });
+  const leads = [...initialLeads, ...generatedLeads];
 
   const journeyDiagram = {
     width: 1960,

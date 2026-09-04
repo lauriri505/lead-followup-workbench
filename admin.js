@@ -90,16 +90,29 @@ function renderDashboard() {
   $("taskSummary").innerHTML = ["待处理", "处理中", "已逾期", "已完成", "已结束"].map((name) => `<div class="summary-cell"><span>${name}</span><strong>${state.leads.filter((lead) => lead.taskStatus === name).length}</strong></div>`).join("");
   $("recentLeadRows").innerHTML = state.leads.slice(0, 5).map(compactLeadRow).join("");
 }
-function buildLeadFilters() {
-  $("leadStatusFilter").innerHTML = `<option value="">全部线索状态</option>${[...new Set(state.leads.map((lead) => lead.status))].map((item) => `<option>${esc(item)}</option>`).join("")}`;
-  $("leadAssigneeFilter").innerHTML = `<option value="">全部负责人</option>${[...new Set(state.leads.map((lead) => lead.assignee))].map((item) => `<option>${esc(item)}</option>`).join("")}`;
+let leadPage = 1;
+const leadPageSize = 30;
+const leadSource = (lead) => lead.channel || lead.source || "—";
+function buildLeadFilters() {}
+function renderLeadPagination(total) {
+  const pages = Math.max(1, Math.ceil(total / leadPageSize));
+  leadPage = Math.min(leadPage, pages);
+  $("leadPagination").innerHTML = total ? `<span>第 ${leadPage} / ${pages} 页，共 ${total} 条</span><div><button class="page-button" data-page="${Math.max(1, leadPage - 1)}" ${leadPage === 1 ? "disabled" : ""}>上一页</button><button class="page-button" data-page="${Math.min(pages, leadPage + 1)}" ${leadPage === pages ? "disabled" : ""}>下一页</button></div>` : "";
 }
 function renderLeads() {
-  const query = $("leadSearch").value.trim().toLowerCase();
-  const filtered = state.leads.filter((lead) => (!query || [lead.id, lead.name, lead.phone].some((value) => value.toLowerCase().includes(query))) && (!$("leadStatusFilter").value || lead.status === $("leadStatusFilter").value) && (!$("leadAssigneeFilter").value || lead.assignee === $("leadAssigneeFilter").value));
+  const id = $("leadIdFilter").value.trim().toLowerCase();
+  const type = $("leadTypeFilter").value;
+  const phone = $("leadPhoneFilter").value.trim().toLowerCase();
+  const source = $("leadSourceFilter").value;
+  const entryType = $("leadEntryTypeFilter").value;
+  const start = $("leadCreatedStart").value;
+  const end = $("leadCreatedEnd").value;
+  const filtered = state.leads.filter((lead) => (!id || String(lead.id).toLowerCase().includes(id)) && (!type || lead.type === type) && (!phone || String(lead.phone).toLowerCase().includes(phone)) && (!source || leadSource(lead) === source) && (!entryType || (lead.entryType || "自动") === entryType) && (!start || String(lead.createdAt).slice(0, 10) >= start) && (!end || String(lead.createdAt).slice(0, 10) <= end)).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
   $("leadTotal").textContent = filtered.length;
-  $("leadRows").innerHTML = filtered.map(leadRow).join("");
+  const startIndex = (leadPage - 1) * leadPageSize;
+  $("leadRows").innerHTML = filtered.slice(startIndex, startIndex + leadPageSize).map(leadRow).join("");
   $("leadEmpty").hidden = filtered.length > 0;
+  renderLeadPagination(filtered.length);
 }
 function importEligibleAccounts() {
   return state.accounts.filter((account) => account.status === "启用" && (state.permissions[account.role] || []).includes("允许接收导入线索"));
@@ -126,6 +139,35 @@ function submitImport(event) {
   const prefix = state.tenant?.brand === "BAIC" ? "BAIC-LD" : "AC-LD";
   const lead = { id: `${prefix}-${Date.now()}`, name: $("importName").value.trim(), phone: $("importPhone").value.trim(), city: $("importCity").value.trim(), region: $("importCity").value.trim(), brand: $("importBrand").value.trim(), series: $("importSeries").value.trim(), model: $("importModel").value.trim(), type: $("importType").value, leadType: $("importType").value, entryType: $("importEntryType").value, channel: manual ? "" : $("importChannel").value, source: manual ? "" : $("importSource").value, createdAt: $("importCreatedAt").value.replace("T", " "), status: "未跟进", subStatus: "正常等待跟进", quality: "UNKNOWN", assignee: assignee.id + " " + assignee.username, task: "首次联系", taskStatus: "待处理" };
   state.leads.unshift(lead); persist(); renderLeads(); renderDashboard(); $("importModal").hidden = true; event.target.reset(); syncImportFields(); toast("线索已导入并分配给 " + assignee.id + " " + assignee.username);
+}
+function downloadImportTemplate() {
+  const headers = ["线索类型", "录入类型", "姓名", "手机号", "城市", "品牌", "车系", "车型", "创建时间（UTC-6）", "线索来源", "线索渠道"];
+  const example = ["金融", "系统", "Sofía Ramírez", "5612345454", "Ciudad de México", "NISSAN", "X-TRAIL", "Advance 2 Row", "2026-09-04 10:30", "车型详情页", "Meta"];
+  const table = `<table><tr>${headers.map((item) => `<th>${item}</th>`).join("")}</tr><tr>${example.map((item) => `<td>${item}</td>`).join("")}</tr><tr>${headers.map((item) => `<td>${item === "录入类型" ? "人工" : ""}</td>`).join("")}</tr></table>`;
+  const blob = new Blob([`<html><meta charset="UTF-8"><style>table{border-collapse:collapse}th,td{border:1px solid #999;padding:6px 10px;white-space:nowrap}th{background:#eaf1fb}</style>${table}</html>`], { type: "application/vnd.ms-excel;charset=utf-8" });
+  const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "线索导入模板.xls"; link.click(); URL.revokeObjectURL(link.href); toast("导入线索模板已下载");
+}
+function parseImportCsv(text) {
+  const rows = []; let row = []; let cell = ""; let quoted = false;
+  for (let i = 0; i < text.length; i += 1) { const char = text[i]; const next = text[i + 1]; if (char === '"' && quoted && next === '"') { cell += '"'; i += 1; } else if (char === '"') quoted = !quoted; else if (char === "," && !quoted) { row.push(cell.trim()); cell = ""; } else if ((char === "\n" || char === "\r") && !quoted) { if (char === "\r" && next === "\n") i += 1; row.push(cell.trim()); if (row.some(Boolean)) rows.push(row); row = []; cell = ""; } else cell += char; }
+  row.push(cell.trim()); if (row.some(Boolean)) rows.push(row); return rows;
+}
+function parseImportFile(text) {
+  if (!/<table[\s>]/i.test(text)) return parseImportCsv(text);
+  const documentFromFile = new DOMParser().parseFromString(text, "text/html");
+  return Array.from(documentFromFile.querySelectorAll("tr")).map((row) => Array.from(row.children).map((cell) => cell.textContent.trim())).filter((row) => row.some(Boolean));
+}
+function importUploadedFile(event) {
+  const file = event.target.files[0]; if (!file) return;
+  $("importFileName").textContent = file.name;
+  if (!/\.(csv|xls)$/i.test(file.name)) return toast("已选择文件；请使用 CSV 或下载的 Excel 模板上传");
+  const reader = new FileReader(); reader.onload = () => {
+    const rows = parseImportFile(reader.result); if (rows.length < 2) return toast("文件中没有可导入的线索数据");
+    const headers = rows[0]; const index = Object.fromEntries(headers.map((header, i) => [header.replace(/\s/g, ""), i])); const get = (row, name) => row[index[name.replace(/\s/g, "")]] || "";
+    const assignee = importEligibleAccounts().find((account) => account.id === $("importAssignee").value); if (!assignee) return toast("当前没有具备导入线索权限的可用账号");
+    const leads = rows.slice(1).filter((row) => row.length > 1 && get(row, "姓名")).map((row, offset) => { const manual = get(row, "录入类型") === "人工"; return { id: `LEAD-${Date.now()}-${offset + 1}`, type: get(row, "线索类型") || "金融", leadType: get(row, "线索类型") || "金融", entryType: get(row, "录入类型") || "系统", name: get(row, "姓名"), phone: get(row, "手机号"), city: get(row, "城市"), region: get(row, "城市"), brand: get(row, "品牌"), series: get(row, "车系"), model: get(row, "车型"), createdAt: get(row, "创建时间（UTC-6）") || new Date().toISOString().slice(0, 16).replace("T", " "), source: manual ? "" : get(row, "线索来源"), channel: manual ? "" : get(row, "线索渠道"), status: "未跟进", subStatus: "正常等待跟进", quality: "UNKNOWN", assignee: assignee.id + " " + assignee.username, task: "首次联系", taskStatus: "待处理" }; });
+    if (!leads.length) return toast("请检查模板中的姓名和字段表头"); state.leads.unshift(...leads); persist(); buildLeadFilters(); renderLeads(); renderDashboard(); $("importModal").hidden = true; toast(`已导入 ${leads.length} 条线索并分配给 ${assignee.id} ${assignee.username}`);
+  }; reader.readAsText(file, "UTF-8");
 }
 function renderAccounts() {
   $("accountRows").innerHTML = state.accounts.map((account, index) => `<tr><td><strong>${esc(account.id)}</strong></td><td>${esc(account.username)}</td><td><select class="account-role" data-index="${index}"><option value="super_admin" ${account.role === "super_admin" ? "selected" : ""}>超级管理员</option><option value="sales" ${account.role === "sales" ? "selected" : ""}>AutoCava销售</option></select></td><td>${account.role === "super_admin" ? "平台全部普通线索" : "本人负责线索"}</td><td><select class="account-status" data-index="${index}"><option ${account.status === "启用" ? "selected" : ""}>启用</option><option ${account.status === "停用" ? "selected" : ""}>停用</option></select></td><td>${esc(account.lastLogin)}</td></tr>`).join("");
@@ -402,8 +444,10 @@ qsa(".nav-item").forEach((button) => button.addEventListener("click", () => open
 $("accountSwitcher").addEventListener("change", (event) => { currentRole = event.target.value; try { localStorage.setItem(accountSessionKey, currentRole); } catch (error) {} renderAccountSession(); openView("dashboard"); toast(currentRole === "super_admin" ? "已切换为超级管理员" : "已切换为 AutoCava销售；配置页面无权限"); });
 qsa("[data-go]").forEach((button) => button.addEventListener("click", () => openView(button.dataset.go)));
 $("menuButton").addEventListener("click", () => document.querySelector(".admin-sidebar").classList.toggle("open"));
-["leadSearch", "leadStatusFilter", "leadAssigneeFilter"].forEach((id) => $(id).addEventListener(id === "leadSearch" ? "input" : "change", renderLeads));
-$("resetLeadFilters").addEventListener("click", () => { $("leadSearch").value = ""; $("leadStatusFilter").value = ""; $("leadAssigneeFilter").value = ""; renderLeads(); });
+["leadIdFilter", "leadPhoneFilter"].forEach((id) => $(id).addEventListener("input", () => { leadPage = 1; renderLeads(); }));
+["leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => $(id).addEventListener("change", () => { leadPage = 1; renderLeads(); }));
+$("resetLeadFilters").addEventListener("click", () => { ["leadIdFilter", "leadPhoneFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => { $(id).value = ""; }); leadPage = 1; renderLeads(); });
+$("leadPagination").addEventListener("click", (event) => { const button = event.target.closest("[data-page]"); if (!button || button.disabled) return; leadPage = Number(button.dataset.page); renderLeads(); });
 $("showAccountForm").addEventListener("click", () => { $("accountForm").hidden = false; $("accountId").focus(); });
 $("showTaskForm").addEventListener("click", () => { $("taskForm").hidden = false; $("taskType").focus(); });
 qsa(".cancel-inline").forEach((button) => button.addEventListener("click", () => { button.closest("form").hidden = true; button.closest("form").reset(); }));
@@ -434,6 +478,8 @@ $("copyTransitionConfig").addEventListener("click", async () => { try { await na
 $("exportTransitionConfig").addEventListener("click", () => { const blob = new Blob([JSON.stringify(state.transitionConfig, null, 2)], { type: "application/json" }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `autocava-lead-transition-${state.transitionConfig.brand.version}.json`; link.click(); URL.revokeObjectURL(link.href); });
 
 $("openImportButton").addEventListener("click", openImportModal);
+$("downloadImportTemplate").addEventListener("click", downloadImportTemplate);
+$("importFile").addEventListener("change", importUploadedFile);
 $("importEntryType").addEventListener("change", syncImportFields);
 $("importForm").addEventListener("submit", submitImport);
 [$("closeImport"), $("cancelImport")].forEach((button) => button.addEventListener("click", () => { $("importModal").hidden = true; }));
