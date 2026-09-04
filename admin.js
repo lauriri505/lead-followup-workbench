@@ -20,7 +20,7 @@ const $ = (id) => document.getElementById(id);
 const qsa = (selector) => Array.from(document.querySelectorAll(selector));
 const esc = (value = "") => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const roleLabels = { super_admin: "超级管理员", sales: "AutoCava销售" };
-const permissionOptions = ["查看平台全部普通线索", "查看本人负责线索", "配置账号与角色", "配置任务规则", "配置线索流转", "查看操作记录", "处理销售任务", "提交跟进结果", "编辑用户当前信息", "添加跟踪记事"];
+const permissionOptions = ["查看平台全部普通线索", "查看本人负责线索", "配置账号与角色", "配置任务规则", "配置线索流转", "查看操作记录", "允许接收导入线索", "处理销售任务", "提交跟进结果", "编辑用户当前信息", "添加跟踪记事"];
 const viewNames = { dashboard: "后台总览", leads: "线索数据", accounts: "账号与角色", tasks: "任务配置", nodes: "线索流转配置" };
 const groupLabels = { entry: "系统入口", not_followed: "未跟进", followed: "跟进中", dormant: "暂存", overdue: "过期未跟进", success: "确认金融购车", lost: "战败" };
 const mainStatusGroups = Object.fromEntries(Object.entries(groupLabels).map(([group, label]) => [label, group]));
@@ -70,7 +70,10 @@ function renderAccountSession() {
 const qualityLabels = { UNKNOWN: "待判定", VALID: "有效", INVALID: "无效" };
 function statusClass(status) { return status === "战败" ? "lost" : ["暂存", "过期未跟进"].includes(status) ? "dormant" : ["跟进中", "确认金融购车"].includes(status) ? "won" : ""; }
 function leadRow(lead) {
-  return `<tr><td><strong>${esc(lead.id)}</strong></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td>${esc(lead.source)}</td><td>${esc(lead.brand)} ${esc(lead.series)} ${esc(lead.model)}</td><td><span class="table-status ${statusClass(lead.status)}">${esc(lead.status)} · ${esc(lead.subStatus)}</span></td><td><span class="quality-chip ${(lead.quality || "UNKNOWN").toLowerCase()}">${esc(qualityLabels[lead.quality] || "待判定")}</span></td><td>${esc(lead.assignee)}</td><td><span class="task-state ${lead.taskStatus === "处理中" ? "processing" : ""}">${esc(lead.task)} · ${esc(lead.taskStatus)}</span></td><td>${esc(lead.createdAt)}</td></tr>`;
+  return `<tr><td><strong>${esc(lead.id)}</strong></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td>${esc(lead.type || lead.leadType)}</td><td>${esc(lead.entryType || "系统")}</td><td>${esc(lead.channel || "—")}</td><td>${esc(lead.source || "—")}</td><td>${esc(lead.city || lead.region || "—")}</td><td>${esc(lead.brand)} ${esc(lead.series)} ${esc(lead.model)}</td><td><span class="table-status ${statusClass(lead.status)}">${esc(lead.status)} · ${esc(lead.subStatus)}</span></td><td><span class="quality-chip ${(lead.quality || "UNKNOWN").toLowerCase()}">${esc(qualityLabels[lead.quality] || "待判定")}</span></td><td>${esc(lead.assignee)}</td><td><span class="task-state ${lead.taskStatus === "处理中" ? "processing" : ""}">${esc(lead.task)} · ${esc(lead.taskStatus)}</span></td><td>${esc(lead.createdAt)}</td></tr>`;
+}
+function compactLeadRow(lead) {
+  return `<tr><td><strong>${esc(lead.id)}</strong></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td>${esc(lead.source || lead.channel || "—")}</td><td>${esc(lead.brand)} ${esc(lead.series)} ${esc(lead.model)}</td><td><span class="table-status ${statusClass(lead.status)}">${esc(lead.status)} · ${esc(lead.subStatus)}</span></td><td><span class="quality-chip ${(lead.quality || "UNKNOWN").toLowerCase()}">${esc(qualityLabels[lead.quality] || "待判定")}</span></td><td>${esc(lead.assignee)}</td><td><span class="task-state ${lead.taskStatus === "处理中" ? "processing" : ""}">${esc(lead.task)} · ${esc(lead.taskStatus)}</span></td><td>${esc(lead.createdAt)}</td></tr>`;
 }
 function renderDashboard() {
   const activeTasks = state.leads.filter((lead) => ["待处理", "处理中"].includes(lead.taskStatus)).length;
@@ -85,7 +88,7 @@ function renderDashboard() {
   const max = Math.max(...stages.map((item) => item[1]), 1);
   $("stageBars").innerHTML = stages.map(([name, count]) => `<div class="stage-row"><span>${name}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.max(5, count / max * 100)}%"></div></div><strong>${count}</strong></div>`).join("");
   $("taskSummary").innerHTML = ["待处理", "处理中", "已逾期", "已完成", "已结束"].map((name) => `<div class="summary-cell"><span>${name}</span><strong>${state.leads.filter((lead) => lead.taskStatus === name).length}</strong></div>`).join("");
-  $("recentLeadRows").innerHTML = state.leads.slice(0, 5).map(leadRow).join("");
+  $("recentLeadRows").innerHTML = state.leads.slice(0, 5).map(compactLeadRow).join("");
 }
 function buildLeadFilters() {
   $("leadStatusFilter").innerHTML = `<option value="">全部线索状态</option>${[...new Set(state.leads.map((lead) => lead.status))].map((item) => `<option>${esc(item)}</option>`).join("")}`;
@@ -97,6 +100,32 @@ function renderLeads() {
   $("leadTotal").textContent = filtered.length;
   $("leadRows").innerHTML = filtered.map(leadRow).join("");
   $("leadEmpty").hidden = filtered.length > 0;
+}
+function importEligibleAccounts() {
+  return state.accounts.filter((account) => account.status === "启用" && (state.permissions[account.role] || []).includes("允许接收导入线索"));
+}
+function syncImportFields() {
+  const manual = $("importEntryType").value === "人工";
+  $("importChannel").disabled = manual;
+  $("importSource").disabled = manual;
+  if (manual) { $("importChannel").value = ""; $("importSource").value = ""; }
+}
+function openImportModal() {
+  if (!(state.permissions[currentRole] || []).includes("允许接收导入线索")) return toast("当前账号没有导入线索权限");
+  const accounts = importEligibleAccounts();
+  if (!accounts.length) return toast("没有可分配的账号，请先在账号与角色中勾选“允许接收导入线索”");
+  $("importAssignee").innerHTML = accounts.map((account) => `<option value="${esc(account.id)}">${esc(account.id)} · ${esc(account.username)}</option>`).join("");
+  if (!$('importCreatedAt').value) $('importCreatedAt').value = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString().slice(0, 16);
+  $("importModal").hidden = false; $("importName").focus();
+}
+function submitImport(event) {
+  event.preventDefault();
+  const assignee = importEligibleAccounts().find((account) => account.id === $("importAssignee").value);
+  if (!assignee) return toast("当前账号没有导入线索权限，请先配置后再分配");
+  const manual = $("importEntryType").value === "人工";
+  const prefix = state.tenant?.brand === "BAIC" ? "BAIC-LD" : "AC-LD";
+  const lead = { id: `${prefix}-${Date.now()}`, name: $("importName").value.trim(), phone: $("importPhone").value.trim(), city: $("importCity").value.trim(), region: $("importCity").value.trim(), brand: $("importBrand").value.trim(), series: $("importSeries").value.trim(), model: $("importModel").value.trim(), type: $("importType").value, leadType: $("importType").value, entryType: $("importEntryType").value, channel: manual ? "" : $("importChannel").value, source: manual ? "" : $("importSource").value, createdAt: $("importCreatedAt").value.replace("T", " "), status: "未跟进", subStatus: "正常等待跟进", quality: "UNKNOWN", assignee: assignee.id + " " + assignee.username, task: "首次联系", taskStatus: "待处理" };
+  state.leads.unshift(lead); persist(); renderLeads(); renderDashboard(); $("importModal").hidden = true; event.target.reset(); syncImportFields(); toast("线索已导入并分配给 " + assignee.id + " " + assignee.username);
 }
 function renderAccounts() {
   $("accountRows").innerHTML = state.accounts.map((account, index) => `<tr><td><strong>${esc(account.id)}</strong></td><td>${esc(account.username)}</td><td><select class="account-role" data-index="${index}"><option value="super_admin" ${account.role === "super_admin" ? "selected" : ""}>超级管理员</option><option value="sales" ${account.role === "sales" ? "selected" : ""}>AutoCava销售</option></select></td><td>${account.role === "super_admin" ? "平台全部普通线索" : "本人负责线索"}</td><td><select class="account-status" data-index="${index}"><option ${account.status === "启用" ? "selected" : ""}>启用</option><option ${account.status === "停用" ? "selected" : ""}>停用</option></select></td><td>${esc(account.lastLogin)}</td></tr>`).join("");
@@ -404,4 +433,8 @@ $("saveTransitions").addEventListener("click", () => { const errors = validateTr
 $("copyTransitionConfig").addEventListener("click", async () => { try { await navigator.clipboard.writeText(JSON.stringify(state.transitionConfig, null, 2)); toast("配置已复制"); } catch (error) { toast("浏览器未允许复制，请手动选择配置内容"); } });
 $("exportTransitionConfig").addEventListener("click", () => { const blob = new Blob([JSON.stringify(state.transitionConfig, null, 2)], { type: "application/json" }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `autocava-lead-transition-${state.transitionConfig.brand.version}.json`; link.click(); URL.revokeObjectURL(link.href); });
 
-renderAccountSession(); buildLeadFilters(); renderDashboard(); renderAccounts(); renderTaskRules(); renderTransitions(); openView("dashboard");
+$("openImportButton").addEventListener("click", openImportModal);
+$("importEntryType").addEventListener("change", syncImportFields);
+$("importForm").addEventListener("submit", submitImport);
+[$("closeImport"), $("cancelImport")].forEach((button) => button.addEventListener("click", () => { $("importModal").hidden = true; }));
+renderAccountSession(); buildLeadFilters(); renderDashboard(); renderAccounts(); renderTaskRules(); renderTransitions(); openView("dashboard"); syncImportFields();
