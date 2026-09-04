@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="AutoCava CRM 管理员后台演示">
   <title>AutoCava 管理员后台</title>
-  <link rel="stylesheet" href="admin.css?v=20260903-1">
+  <link rel="stylesheet" href="admin.css?v=20260904-1">
 </head>
 <body>
   <div class="admin-app">
@@ -121,10 +121,10 @@
   </div>
   <div class="admin-toast" id="adminToast" role="status" aria-live="polite"></div>
   <div class="admin-modal" id="importModal" hidden><div class="admin-modal-card import-card" role="dialog" aria-modal="true" aria-labelledby="importTitle"><div class="modal-header"><div><p class="eyebrow">LEAD IMPORT</p><h2 id="importTitle">导入线索</h2></div><button class="modal-close" id="closeImport" type="button" aria-label="关闭">×</button></div><form id="importForm"><div class="modal-body"><div class="import-tip">先下载模板填写线索表，再上传文件；导入后会生成首次联系任务。只能分配给已勾选“允许接收导入线索”权限的账号。</div><div class="import-file-actions"><label class="upload-button"><input id="importFile" type="file" accept=".csv,.xls,.xlsx">上传线索表</label><button class="secondary-button" id="downloadImportTemplate" type="button">下载导入线索模板</button><span id="importFileName">未选择文件</span></div><div class="modal-form-grid"><label><span>线索类型</span><select id="importType" required><option value="金融">金融</option><option value="试驾">试驾</option></select></label><label><span>录入类型</span><select id="importEntryType" required><option value="系统">系统</option><option value="人工">人工</option></select></label><label><span>姓名</span><input id="importName" required></label><label><span>手机号</span><input id="importPhone" required></label><label><span>城市</span><input id="importCity" required placeholder="例如：Ciudad de México"></label><label><span>品牌</span><input id="importBrand" required placeholder="例如：NISSAN"></label><label><span>车系</span><input id="importSeries" required></label><label><span>车型</span><input id="importModel" required></label><label><span>创建时间（UTC-6）</span><input id="importCreatedAt" type="datetime-local" required></label><label><span>线索渠道</span><select id="importChannel"><option value="">请选择</option><option>Meta</option><option>Google</option><option>Ins</option><option>官网</option></select></label><label class="modal-wide"><span>线索来源</span><select id="importSource"><option value="">请选择</option><option>车型详情页</option><option>AICTA选车推荐</option><option>金融机构</option><option>首页banner</option></select></label><label class="modal-wide"><span>分配给</span><select id="importAssignee" required></select></label></div></div><div class="modal-footer"><button class="secondary-button" id="cancelImport" type="button">取消</button><button class="primary-button" type="submit">确认导入</button></div></form></div></div>
-  <script src="flow-config.js?v=20260903-1"></script>
-  <script src="data.js?v=20260903-1"></script>
-  <script src="config-table.js?v=20260903-1"></script>
-  <script src="admin-data.js?v=20260903-1"></script>
-  <script src="admin.js?v=20260903-1"></script>
+  <script src="flow-config.js?v=20260904-1"></script>
+  <script src="data.js?v=20260904-1"></script>
+  <script src="config-table.js?v=20260904-1"></script>
+  <script src="admin-data.js?v=20260904-1"></script>
+  <script src="admin.js?v=20260904-1"></script>
 </body>
 </html>
