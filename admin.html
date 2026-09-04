@@ -26,7 +26,7 @@
       <header class="admin-topbar">
         <button class="menu-button" id="menuButton" type="button" aria-label="打开菜单">☰</button>
         <div><p>AutoCava 管理空间</p><strong id="viewTitle">后台总览</strong></div>
-        <div class="admin-account"><span><small>当前账号</small><strong>autocava_admin_001 · 超级管理员</strong></span><span class="admin-avatar">管</span></div>
+        <div class="admin-account"><label><small>切换演示账号</small><select id="accountSwitcher" aria-label="切换演示账号"></select></label><span><small>当前账号</small><strong id="currentAccountLabel">autocava_admin_001 · 超级管理员</strong></span><span class="admin-avatar" id="currentAccountAvatar">管</span></div>
       </header>
 
       <main class="admin-content">
@@ -46,6 +46,7 @@
         </section>
 
         <section class="admin-view" id="accountsView" hidden>
+          <div class="permission-denied" data-permission-message hidden><strong>没有权限</strong><span>当前账号无权查看账号与角色配置内容。</span></div>
           <div class="view-heading"><div><p class="eyebrow">ACCOUNT & ROLE</p><h1>账号与角色</h1><p>配置超级管理员和 AutoCava 销售的角色、状态及数据权限。</p></div><button class="primary-button" id="showAccountForm" type="button">+ 新增账号</button></div>
           <form class="inline-create admin-panel" id="accountForm" hidden><div><label for="accountId">销售ID / 账号ID</label><input id="accountId" required placeholder="例如：sales_004"></div><div><label for="accountName">用户名</label><input id="accountName" required placeholder="例如：Sales 004"></div><div><label for="accountRole">角色</label><select id="accountRole"><option value="sales">AutoCava销售</option><option value="super_admin">超级管理员</option></select></div><button class="primary-button" type="submit">创建账号</button><button class="secondary-button cancel-inline" type="button">取消</button></form>
           <section class="admin-panel"><div class="panel-title panel-pad"><div><h2>账号列表</h2><p>角色调整后立即应用对应数据范围</p></div></div><div class="table-wrap"><table><thead><tr><th>账号ID</th><th>用户名</th><th>角色</th><th>数据范围</th><th>账号状态</th><th>最近登录</th></tr></thead><tbody id="accountRows"></tbody></table></div></section>
@@ -53,6 +54,7 @@
         </section>
 
         <section class="admin-view" id="tasksView" hidden>
+          <div class="permission-denied" data-permission-message hidden><strong>没有权限</strong><span>当前账号无权查看或修改任务配置内容。</span></div>
           <div class="view-heading"><div><p class="eyebrow">TASK RULES</p><h1>任务配置</h1><p>任务业务组只保留“首次联系”和“普通回访”；不同触发场景可以分别配置完成时限。</p></div><button class="primary-button" id="showTaskForm" type="button">+ 新增任务规则</button></div>
           <div class="rule-note"><strong>规则优先级</strong><span>销售手动时间 ＞ AutoCava任务规则 ＞ 平台默认规则</span></div>
           <form class="inline-create admin-panel" id="taskForm" hidden><div><label for="taskType">任务类型</label><input id="taskType" required placeholder="例如：普通回访"></div><div><label for="taskTriggerInput">触发事件</label><input id="taskTriggerInput" required placeholder="例如：首次联系未接通"></div><div><label for="taskDeadline">默认截止时间</label><input id="taskDeadline" required placeholder="例如：+2小时"></div><button class="primary-button" type="submit">添加规则</button><button class="secondary-button cancel-inline" type="button">取消</button></form>
@@ -61,6 +63,7 @@
         </section>
 
         <section class="admin-view" id="nodesView" hidden>
+          <div class="permission-denied" data-permission-message hidden><strong>没有权限</strong><span>当前账号无权查看或修改线索流转配置内容。</span></div>
           <div class="view-heading transition-heading"><div><p class="eyebrow">LEAD TRANSITION RULES</p><h1>AutoCava线索流转配置</h1><p>统一管理状态节点、跟进结果、状态流转和后续任务。</p></div><span class="scope-chip">当前范围：普通线索一期</span></div>
           <div class="transition-summary" id="transitionSummary"></div>
           <section class="admin-panel transition-panel">

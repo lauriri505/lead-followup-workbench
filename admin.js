@@ -26,6 +26,10 @@ const groupLabels = { entry: "系统入口", not_followed: "未跟进", followed
 const mainStatusGroups = Object.fromEntries(Object.entries(groupLabels).map(([group, label]) => [label, group]));
 const categoryLabels = { contact: "联系", unreachable: "未接通", callback: "约定回访", dormant: "暂存", lost: "终止" };
 const taskLabels = { FIRST_CONTACT: "首次联系", FOLLOW_UP: "普通回访" };
+const accountSessionKey = "autocava_admin_current_account";
+let currentRole = (() => { try { return localStorage.getItem(accountSessionKey) || "super_admin"; } catch (error) { return "super_admin"; } })();
+const protectedViews = new Set(["accounts", "tasks", "nodes"]);
+const canAccess = (view) => currentRole === "super_admin" || !protectedViews.has(view);
 
 function persist() {
   localStorage.setItem(storageKey, JSON.stringify({ accounts: state.accounts, permissions: state.permissions, taskRules: state.taskRules, transitionConfig: state.transitionConfig }));
@@ -44,8 +48,23 @@ function openView(view) {
   });
   qsa(".nav-item").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
   $("viewTitle").textContent = viewNames[view];
+  const locked = !canAccess(view);
+  const selectedSection = $(view + "View");
+  selectedSection?.classList.toggle("permission-locked", locked);
+  selectedSection?.querySelector("[data-permission-message]")?.toggleAttribute("hidden", !locked);
   document.querySelector(".admin-sidebar").classList.remove("open");
-  ({ leads: renderLeads, accounts: renderAccounts, tasks: renderTaskRules, nodes: renderTransitions })[view]?.();
+  if (!locked) ({ leads: renderLeads, accounts: renderAccounts, tasks: renderTaskRules, nodes: renderTransitions })[view]?.();
+}
+
+function renderAccountSession() {
+  const accounts = state.accounts.filter((account) => ["super_admin", "sales"].includes(account.role));
+  const switcher = $("accountSwitcher");
+  switcher.innerHTML = accounts.map((account) => `<option value="${esc(account.role)}">${esc(account.id)} · ${esc(roleLabels[account.role])}</option>`).join("");
+  if (!accounts.some((account) => account.role === currentRole)) currentRole = "super_admin";
+  switcher.value = currentRole;
+  const account = accounts.find((item) => item.role === currentRole) || accounts[0];
+  $("currentAccountLabel").textContent = account.id + " · " + roleLabels[account.role];
+  $("currentAccountAvatar").textContent = currentRole === "super_admin" ? "管" : "销";
 }
 
 const qualityLabels = { UNKNOWN: "待判定", VALID: "有效", INVALID: "无效" };
@@ -351,6 +370,7 @@ function validateTransitions() {
 }
 
 qsa(".nav-item").forEach((button) => button.addEventListener("click", () => openView(button.dataset.view)));
+$("accountSwitcher").addEventListener("change", (event) => { currentRole = event.target.value; try { localStorage.setItem(accountSessionKey, currentRole); } catch (error) {} renderAccountSession(); openView("dashboard"); toast(currentRole === "super_admin" ? "已切换为超级管理员" : "已切换为 AutoCava销售；配置页面无权限"); });
 qsa("[data-go]").forEach((button) => button.addEventListener("click", () => openView(button.dataset.go)));
 $("menuButton").addEventListener("click", () => document.querySelector(".admin-sidebar").classList.toggle("open"));
 ["leadSearch", "leadStatusFilter", "leadAssigneeFilter"].forEach((id) => $(id).addEventListener(id === "leadSearch" ? "input" : "change", renderLeads));
@@ -384,4 +404,4 @@ $("saveTransitions").addEventListener("click", () => { const errors = validateTr
 $("copyTransitionConfig").addEventListener("click", async () => { try { await navigator.clipboard.writeText(JSON.stringify(state.transitionConfig, null, 2)); toast("配置已复制"); } catch (error) { toast("浏览器未允许复制，请手动选择配置内容"); } });
 $("exportTransitionConfig").addEventListener("click", () => { const blob = new Blob([JSON.stringify(state.transitionConfig, null, 2)], { type: "application/json" }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `autocava-lead-transition-${state.transitionConfig.brand.version}.json`; link.click(); URL.revokeObjectURL(link.href); });
 
-buildLeadFilters(); renderDashboard(); renderAccounts(); renderTaskRules(); renderTransitions();
+renderAccountSession(); buildLeadFilters(); renderDashboard(); renderAccounts(); renderTaskRules(); renderTransitions(); openView("dashboard");
