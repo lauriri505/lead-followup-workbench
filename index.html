@@ -25,7 +25,7 @@
     <div class="workspace-grid">
       <div class="left-column">
         <section class="panel user-panel" aria-labelledby="userInfoTitle">
-          <div class="panel-heading"><div><h2 id="userInfoTitle"><span data-i18n="user.title">用户信息</span> <span class="changed-badge" id="changedBadge" hidden data-i18n="user.changed">信息已修改</span></h2></div></div>
+          <div class="panel-heading"><div><h2 id="userInfoTitle"><span data-i18n="user.title">用户信息</span> <span class="changed-badge" id="changedBadge" hidden data-i18n="user.changed">信息已修改</span></h2></div><button class="text-button" id="editUserButton" type="button" data-i18n="user.edit">编辑信息</button></div>
           <div class="person-summary"><div class="avatar" id="avatar">SR</div><div><h3 id="userName">Sofía Ramírez</h3><p id="userPhone">5612345454</p></div></div>
           <div class="info-sections">
             <div class="info-section"><h3 data-i18n="lead.info">线索信息</h3><dl class="info-grid"><div><dt data-i18n="lead.source">线索来源</dt><dd id="source">车型详情页</dd></div><div><dt data-i18n="lead.type">线索类型</dt><dd id="leadType">金融</dd></div><div><dt data-i18n="lead.state">当前线索状态</dt><dd id="leadStateInUser">未跟进 · 正常等待跟进</dd></div><div><dt data-i18n="field.brand">品牌</dt><dd id="brand">NISSAN</dd></div><div><dt data-i18n="field.series">车系</dt><dd id="series">X-TRAIL</dd></div><div><dt data-i18n="field.model">车型</dt><dd id="model">Advance 2 Row</dd></div><div><dt data-i18n="lead.created">创建时间</dt><dd id="createdAt">2026-09-02 09:30</dd></div></dl></div>
@@ -47,8 +47,9 @@
         </section>
       </div>
       <aside class="panel activity-panel" aria-labelledby="recordsTitle">
-        <div class="activity-heading"><div class="tabs" role="tablist"><button class="tab active" id="operationsTab" type="button" role="tab" aria-selected="true" aria-controls="operationsPanel" data-i18n="records.operations">操作记录</button><button class="tab" id="notesTab" type="button" role="tab" aria-selected="false" aria-controls="notesPanel"><span data-i18n="records.notes">跟踪记事</span> <span id="noteCount">2</span></button></div><button class="text-button" id="editUserButton" type="button" data-i18n="user.edit">编辑信息</button></div>
+        <div class="activity-heading"><div class="tabs" role="tablist"><button class="tab active" id="operationsTab" type="button" role="tab" aria-selected="true" aria-controls="operationsPanel" data-i18n="records.operations">操作记录</button><button class="tab" id="editRecordsTab" type="button" role="tab" aria-selected="false" aria-controls="editRecordsPanel"><span data-i18n="records.edits">编辑记录</span> <span id="editRecordCount">0</span></button><button class="tab" id="notesTab" type="button" role="tab" aria-selected="false" aria-controls="notesPanel"><span data-i18n="records.notes">跟踪记事</span> <span id="noteCount">2</span></button></div></div>
         <section id="operationsPanel" role="tabpanel" aria-labelledby="operationsTab"><div class="activity-intro"><h2 id="recordsTitle" data-i18n="records.operations">操作记录</h2><p data-i18n="records.description">系统自动记录，按时间倒序展示。</p></div><ol class="timeline" id="operationTimeline"></ol></section>
+        <section id="editRecordsPanel" role="tabpanel" aria-labelledby="editRecordsTab" hidden><div class="activity-intro"><h2 data-i18n="edit.historyTitle">信息编辑记录</h2><p data-i18n="edit.historyOrder">按修改时间倒序展示；原始信息为第一条记录。</p></div><ol class="timeline edit-records-list" id="editRecordsTimeline"></ol></section>
         <section id="notesPanel" role="tabpanel" aria-labelledby="notesTab" hidden><div class="activity-intro"><h2 data-i18n="notes.addTitle">销售手动添加跟踪记录</h2><p data-i18n="notes.description">记录沟通中的关键信息。</p></div><form class="note-form" id="noteForm"><label for="noteInput" data-i18n="notes.content">跟踪内容</label><textarea id="noteInput" rows="3" placeholder="只记录用户输入或销售确认的关键信息" data-i18n-placeholder="notes.placeholder"></textarea><button class="button secondary" type="submit" data-i18n="notes.add">添加记录</button></form><ol class="timeline notes" id="noteTimeline"></ol></section>
       </aside>
     </div>
@@ -57,21 +58,7 @@
     <form method="dialog" id="editForm">
       <div class="dialog-heading"><div><p class="eyebrow">EDIT USER</p><h2 data-i18n="edit.title">编辑用户信息</h2></div><button class="icon-button" id="closeEditButton" type="button" aria-label="关闭" data-i18n-aria-label="action.close">×</button></div>
       <p class="dialog-tip" data-i18n="edit.tip">修改后保留原始信息，并生成信息变更记录，不覆盖原始线索。</p>
-      <div class="edit-tabs" role="tablist" aria-label="用户信息类型" data-i18n-aria-label="edit.tabsLabel">
-        <button class="edit-tab" id="editOriginalTab" type="button" role="tab" aria-selected="false" aria-controls="editOriginalPanel" data-i18n="edit.original">原始信息</button>
-        <button class="edit-tab active" id="editCurrentTab" type="button" role="tab" aria-selected="true" aria-controls="editCurrentPanel" data-i18n="edit.current">当前信息</button>
-        <button class="edit-tab" id="editHistoryTab" type="button" role="tab" aria-selected="false" aria-controls="editHistoryPanel"><span data-i18n="edit.history">编辑记录</span> <span id="editHistoryCount">0</span></button>
-      </div>
-      <section class="edit-tab-panel" id="editOriginalPanel" role="tabpanel" aria-labelledby="editOriginalTab" hidden>
-        <div class="readonly-notice" data-i18n="edit.originalNotice">首次进入 CRM 时保存的线索信息，只读且不会被后续编辑覆盖。</div>
-        <dl class="original-grid">
-          <div><dt data-i18n="field.name">姓名</dt><dd id="originalName">—</dd></div><div><dt data-i18n="field.phone">手机号</dt><dd id="originalPhone">—</dd></div>
-          <div><dt data-i18n="field.brand">品牌</dt><dd id="originalBrand">—</dd></div><div><dt data-i18n="field.series">车系</dt><dd id="originalSeries">—</dd></div>
-          <div><dt data-i18n="field.model">车型</dt><dd id="originalModel">—</dd></div><div><dt data-i18n="dealer.name">经销商</dt><dd id="originalDealer">—</dd></div>
-          <div><dt data-i18n="field.region">地区</dt><dd id="originalRegion">—</dd></div><div><dt data-i18n="field.address">地址</dt><dd id="originalAddress">—</dd></div>
-        </dl>
-      </section>
-      <section class="edit-tab-panel" id="editCurrentPanel" role="tabpanel" aria-labelledby="editCurrentTab">
+      <section class="edit-tab-panel" id="editCurrentPanel" role="region" aria-label="当前信息" data-i18n-aria-label="edit.current">
         <div class="current-notice"><strong data-i18n="edit.currentNoticeTitle">工作台当前展示信息</strong><span data-i18n="edit.currentNoticeText">保存修改后，用户信息卡片立即更新。</span></div>
         <div class="edit-grid">
           <div><label for="editName" data-i18n="field.name">姓名</label><input id="editName" type="text" required></div>
@@ -84,14 +71,10 @@
           <div><label for="editAddress" data-i18n="field.address">地址</label><input id="editAddress" type="text" readonly></div>
         </div>
       </section>
-      <section class="edit-tab-panel" id="editHistoryPanel" role="tabpanel" aria-labelledby="editHistoryTab" hidden>
-        <div class="history-heading"><strong data-i18n="edit.historyTitle">信息编辑记录</strong><span data-i18n="edit.historyOrder">按修改时间倒序展示</span></div>
-        <ol class="edit-history-list" id="editHistoryList"></ol>
-      </section>
       <div class="dialog-actions"><button class="button secondary" id="cancelEditButton" type="button" data-i18n="action.cancel">取消</button><button class="button primary" id="saveUserButton" type="submit" data-i18n="action.save">保存修改</button></div>
     </form>
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="flow-config.js?v=20260903-1"></script><script src="data.js?v=20260903-1"></script><script src="config-table.js?v=20260903-1"></script><script src="app.js?v=20260903-1"></script>
+  <script src="flow-config.js?v=20260903-1"></script><script src="data.js?v=20260903-1"></script><script src="config-table.js?v=20260903-1"></script><script src="app.js?v=20260907-1"></script>
 </body>
 </html>

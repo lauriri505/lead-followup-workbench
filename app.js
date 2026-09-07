@@ -21,7 +21,7 @@ const messages = {
     "field.name": "姓名", "field.phone": "手机号", "field.brand": "品牌", "field.series": "车系", "field.model": "车型", "field.region": "地区", "field.address": "地址",
     "dealer.finance": "经销商与金融信息", "dealer.name": "经销商", "dealer.placeholder": "输入或选择经销商", "dealer.hint": "可输入名称联想选择", "finance.price": "车价格", "finance.rate": "年利率", "finance.term": "贷款期数",
     "follow.title": "本次跟进", "follow.description": "当前任务决定跟进内容，业务状态随跟进结果流转", "follow.scenario": "切换普通线索演示场景", "follow.currentState": "当前状态", "follow.result": "跟进结果", "follow.reason": "原因", "follow.reasonPlaceholder": "请输入具体原因", "follow.callbackNote": "用户约定说明", "follow.callbackPlaceholder": "例如：下班后方便接听", "follow.nextTime": "下一次联系时间", "follow.timeHint": "系统已按规则给出默认值，销售可以调整。", "follow.afterState": "提交后状态", "follow.nextTask": "下一任务", "follow.waiting": "等待选择跟进结果", "follow.noTask": "不再生成任务", "follow.attempts": "未接通 {count} 次",
-    "records.operations": "操作记录", "records.notes": "跟踪记事", "records.description": "系统自动记录，按时间倒序展示。", "records.operator": "操作人：{operator}",
+    "records.operations": "操作记录", "records.edits": "编辑记录", "records.notes": "跟踪记事", "records.description": "系统自动记录，按时间倒序展示。", "records.operator": "操作人：{operator}",
     "notes.addTitle": "销售手动添加跟踪记录", "notes.description": "记录沟通中的关键信息。", "notes.content": "跟踪内容", "notes.placeholder": "只记录用户输入或销售确认的关键信息", "notes.add": "添加记录", "notes.record": "跟踪记录",
     "edit.title": "编辑用户信息", "edit.tip": "修改后保留原始信息，并生成信息变更记录，不覆盖原始线索。", "edit.tabsLabel": "用户信息类型", "edit.original": "原始信息", "edit.current": "当前信息", "edit.history": "编辑记录", "edit.originalNotice": "首次进入 CRM 时保存的线索信息，只读且不会被后续编辑覆盖。", "edit.currentNoticeTitle": "工作台当前展示信息", "edit.currentNoticeText": "保存修改后，用户信息卡片立即更新。", "edit.historyTitle": "信息编辑记录", "edit.historyOrder": "按修改时间倒序展示", "edit.noHistory": "暂无编辑记录", "edit.initialRecord": "原始线索信息", "edit.initialValue": "原始值：{value}", "edit.close": "关闭",
     "watch.on": "★ 已关注", "watch.off": "☆ 关注",
@@ -38,7 +38,7 @@ const messages = {
     "field.name": "Nombre", "field.phone": "Teléfono", "field.brand": "Marca", "field.series": "Línea", "field.model": "Versión", "field.region": "Región", "field.address": "Dirección",
     "dealer.finance": "Distribuidor e información financiera", "dealer.name": "Distribuidor", "dealer.placeholder": "Escribe o selecciona un distribuidor", "dealer.hint": "Escribe para buscar por nombre", "finance.price": "Precio del vehículo", "finance.rate": "Tasa anual", "finance.term": "Plazo del crédito",
     "follow.title": "Seguimiento actual", "follow.description": "La tarea define las acciones disponibles y el resultado actualiza el estado comercial", "follow.scenario": "Cambiar escenario de prospecto", "follow.currentState": "Estado actual", "follow.result": "Resultado del seguimiento", "follow.reason": "Motivo", "follow.reasonPlaceholder": "Ingresa el motivo específico", "follow.callbackNote": "Acuerdo con el cliente", "follow.callbackPlaceholder": "Ejemplo: llamar después del trabajo", "follow.nextTime": "Próximo contacto", "follow.timeHint": "El sistema propone una fecha según las reglas; el vendedor puede ajustarla.", "follow.afterState": "Estado después de enviar", "follow.nextTask": "Siguiente tarea", "follow.waiting": "Selecciona un resultado", "follow.noTask": "No se generará otra tarea", "follow.attempts": "Sin respuesta: {count} intento(s)",
-    "records.operations": "Registro de operaciones", "records.notes": "Notas de seguimiento", "records.description": "Registro automático en orden cronológico inverso.", "records.operator": "Operador: {operator}",
+    "records.operations": "Registro de operaciones", "records.edits": "Historial de edición", "records.notes": "Notas de seguimiento", "records.description": "Registro automático en orden cronológico inverso.", "records.operator": "Operador: {operator}",
     "notes.addTitle": "Agregar nota de seguimiento", "notes.description": "Registra la información clave de la conversación.", "notes.content": "Contenido de la nota", "notes.placeholder": "Registra únicamente información proporcionada o confirmada por el cliente", "notes.add": "Agregar nota", "notes.record": "Nota de seguimiento",
     "edit.title": "Editar información del cliente", "edit.tip": "Los datos originales se conservan y cada cambio genera un registro de edición.", "edit.tabsLabel": "Tipo de información del cliente", "edit.original": "Información original", "edit.current": "Información actual", "edit.history": "Historial de cambios", "edit.originalNotice": "Información guardada al ingresar por primera vez al CRM. Es de solo lectura y no se sobrescribe.", "edit.currentNoticeTitle": "Información mostrada en la mesa", "edit.currentNoticeText": "Al guardar, la tarjeta del cliente se actualiza de inmediato.", "edit.historyTitle": "Historial de edición", "edit.historyOrder": "Del más reciente al más antiguo", "edit.noHistory": "No hay cambios registrados", "edit.initialRecord": "Información original del prospecto", "edit.initialValue": "Valor original: {value}", "edit.close": "Cerrar",
     "watch.on": "★ Siguiendo", "watch.off": "☆ Seguir",
@@ -235,6 +235,7 @@ function renderScenarioOptions() {
 
 function renderLead() {
   const lead = activeLead();
+  ensureLeadEditData(lead);
   selectedResult = null;
   fillText("leadId", lead.id);
   const todayPendingTasks = leads.filter((item) => item.task);
@@ -261,13 +262,15 @@ function renderLead() {
   fillText("currentState", stateLabel(lead.state, lead));
   fillText("leadStateInUser", stateLabel(lead.state, lead));
   fillText("attemptCount", t("follow.attempts", { count: lead.unreachableCount }));
-  $("changedBadge").hidden = !lead.changed && !(lead.editRecords && lead.editRecords.length);
+  const hasEdits = (lead.editRecords || []).some((record) => record.type !== "original");
+  $("changedBadge").hidden = !lead.changed && !hasEdits;
   $("watchButton").classList.toggle("watching", Boolean(lead.watched));
   $("watchButton").textContent = lead.watched ? t("watch.on") : t("watch.off");
   $("watchButton").setAttribute("aria-pressed", String(Boolean(lead.watched)));
   renderScenarioOptions();
   renderResults();
   renderRecords();
+  renderEditHistory(lead);
   resetDynamicFields();
   $("submitButton").disabled = !lead.task;
   $("submitTopButton").disabled = !lead.task;
@@ -433,13 +436,17 @@ function showToast(message) {
 }
 
 function switchTab(tab) {
-  const operationsActive = tab === "operations";
-  $("operationsTab").classList.toggle("active", operationsActive);
-  $("notesTab").classList.toggle("active", !operationsActive);
-  $("operationsTab").setAttribute("aria-selected", String(operationsActive));
-  $("notesTab").setAttribute("aria-selected", String(!operationsActive));
-  $("operationsPanel").hidden = !operationsActive;
-  $("notesPanel").hidden = operationsActive;
+  const tabs = {
+    operations: { button: $("operationsTab"), panel: $("operationsPanel") },
+    edits: { button: $("editRecordsTab"), panel: $("editRecordsPanel") },
+    notes: { button: $("notesTab"), panel: $("notesPanel") }
+  };
+  Object.entries(tabs).forEach(([name, item]) => {
+    const active = name === tab;
+    item.button.classList.toggle("active", active);
+    item.button.setAttribute("aria-selected", String(active));
+    item.panel.hidden = !active;
+  });
 }
 
 const editableUserFields = [
@@ -521,30 +528,10 @@ function syncDealerLocation() {
   return dealer;
 }
 
-function switchEditTab(tabName) {
-  const tabs = {
-    original: { button: $("editOriginalTab"), panel: $("editOriginalPanel") },
-    current: { button: $("editCurrentTab"), panel: $("editCurrentPanel") },
-    history: { button: $("editHistoryTab"), panel: $("editHistoryPanel") }
-  };
-  Object.entries(tabs).forEach(([name, item]) => {
-    const active = name === tabName;
-    item.button.classList.toggle("active", active);
-    item.button.setAttribute("aria-selected", String(active));
-    item.panel.hidden = !active;
-  });
-  $("saveUserButton").hidden = tabName !== "current";
-  $("cancelEditButton").textContent = tabName === "current" ? t("action.cancel") : t("edit.close");
-}
-
-function renderOriginalInfo(lead) {
-  editableUserFields.forEach((field) => fillText(field.original, lead.original[field.key] || "—"));
-}
-
 function renderEditHistory(lead) {
-  const list = $("editHistoryList");
+  const list = $("editRecordsTimeline");
   list.innerHTML = "";
-  fillText("editHistoryCount", lead.editRecords.length);
+  fillText("editRecordCount", lead.editRecords.length);
   if (!lead.editRecords.length) {
     list.appendChild(el("li", "edit-history-empty", t("edit.noHistory")));
     return;
@@ -553,13 +540,14 @@ function renderEditHistory(lead) {
     const item = el("li", "edit-history-item");
     const meta = el("div", "edit-history-meta");
     meta.append(el("span", "", record.time), el("span", "edit-history-operator", t("records.operator", { operator: record.operator })));
+    const title = el("div", "timeline-title", record.type === "original" ? t("edit.initialRecord") : t("edit.history"));
     const changes = el("div", "edit-history-change");
     record.changes.forEach((change) => {
       const row = el("div");
       row.append(el("span", "", change.field), el("strong", "", record.type === "original" ? t("edit.initialValue", { value: change.value }) : "修改前：" + change.before + "；修改后：" + change.after));
       changes.appendChild(row);
     });
-    item.append(meta, changes);
+    item.append(meta, title, changes);
     list.appendChild(item);
   });
 }
@@ -571,9 +559,6 @@ function openEditDialog() {
   populateDealerOptions();
   editableUserFields.forEach((field) => { $(field.input).value = lead[field.key] || ""; });
   syncDealerLocation();
-  renderOriginalInfo(lead);
-  renderEditHistory(lead);
-  switchEditTab("current");
   $("editDialog").showModal();
 }
 
@@ -620,6 +605,7 @@ $("watchButton").addEventListener("click", () => {
   showToast(lead.watched ? t("toast.watched") : t("toast.unwatched"));
 });
 $("operationsTab").addEventListener("click", () => switchTab("operations"));
+$("editRecordsTab").addEventListener("click", () => switchTab("edits"));
 $("notesTab").addEventListener("click", () => switchTab("notes"));
 $("noteForm").addEventListener("submit", (event) => {
   event.preventDefault();
@@ -641,9 +627,6 @@ $("editBrand").addEventListener("change", () => {
 $("editSeries").addEventListener("change", () => populateModelOptions());
 $("editDealer").addEventListener("input", syncDealerLocation);
 $("editDealer").addEventListener("change", syncDealerLocation);
-$("editOriginalTab").addEventListener("click", () => switchEditTab("original"));
-$("editCurrentTab").addEventListener("click", () => switchEditTab("current"));
-$("editHistoryTab").addEventListener("click", () => switchEditTab("history"));
 $("closeEditButton").addEventListener("click", () => $("editDialog").close());
 $("cancelEditButton").addEventListener("click", () => $("editDialog").close());
 
