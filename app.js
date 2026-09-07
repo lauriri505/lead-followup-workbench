@@ -309,8 +309,6 @@ function resetDynamicFields() {
   $("callbackNote").value = "";
   $("nextTime").value = "";
   $("nextTimeDefault").value = "";
-  fillText("previewState", stateLabel(activeLead().state, activeLead()));
-  fillText("previewTask", t("follow.waiting"));
   $("submitButton").disabled = !activeLead().task;
   $("submitTopButton").disabled = !activeLead().task;
 }
@@ -327,8 +325,6 @@ function selectResult(code, selectedLabel) {
   $("nextTimeRow").hidden = transition.manualTime || transition.terminal;
   if (transition.manualTime) $("nextTime").value = addHours(2);
   else $("nextTimeDefault").value = transition.time || "";
-  fillText("previewState", stateLabel(transition.state, { lostReason: transition.reason }));
-  fillText("previewTask", transition.terminal ? t("follow.noTask") : transition.task + " · " + transition.trigger);
 }
 
 function renderRecords() {
@@ -392,8 +388,7 @@ function submitFollowUp() {
     ["刚刚", "任务完成", lead.task.group + "任务 " + lead.task.id + " 已由处理中更新为已完成", operator]
   ];
   if (oldState !== newState) newOperations.push(["刚刚", "状态流转", oldState + " → " + newState, "系统"]);
-  if (!transition.terminal) newOperations.push(["刚刚", "任务生成", "生成" + transition.task + "；触发原因：" + transition.trigger + "；截止时间：" + readableTime(nextTime), "系统"]);
-  else newOperations.push(["刚刚", "任务结束", transition.state === "confirmedFinance" ? "线索已确认金融购车，普通线索流程结束" : "线索进入战败终态，不再生成后续任务", "系统"]);
+  if (transition.terminal) newOperations.push(["刚刚", "任务结束", transition.state === "confirmedFinance" ? "线索已确认金融购车，普通线索流程结束" : "线索进入战败终态，不再生成后续任务", "系统"]);
   lead.operations = newOperations.concat(lead.operations);
   lead.state = transition.state;
   lead.unreachableCount = transition.nextCount;

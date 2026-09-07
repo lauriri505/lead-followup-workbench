@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="AutoCava 普通线索跟进工作台演示原型">
   <title>线索跟进工作台</title>
-  <link rel="stylesheet" href="styles.css?v=20260902-2">
+  <link rel="stylesheet" href="styles.css?v=20260907-2">
 </head>
 <body>
   <header class="topbar">
@@ -42,7 +42,6 @@
             <div class="two-field-row" id="callbackRow" hidden><div><label for="callbackNote"><span data-i18n="follow.callbackNote">用户约定说明</span> <span>*</span></label><input id="callbackNote" type="text" placeholder="例如：下班后方便接听" data-i18n-placeholder="follow.callbackPlaceholder"></div><div><label for="nextTime"><span data-i18n="follow.nextTime">下一次联系时间</span> <span>*</span></label><input id="nextTime" type="datetime-local"></div></div>
             <div class="field-row" id="nextTimeRow"><label for="nextTimeDefault"><span data-i18n="follow.nextTime">下一次联系时间</span> <span>*</span></label><input id="nextTimeDefault" type="datetime-local"><small id="timeHint" data-i18n="follow.timeHint">系统已按规则给出默认值，销售可以调整。</small></div>
           </div>
-          <div class="execution-preview" id="executionPreview"><div><span data-i18n="follow.afterState">提交后状态</span><strong id="previewState">待跟进 · —</strong></div><div><span data-i18n="follow.nextTask">下一任务</span><strong id="previewTask">等待选择跟进结果</strong></div></div>
           <button class="button primary full" id="submitButton" type="button"><span data-i18n="action.submitNext">提交并进入下一条</span> →</button>
         </section>
       </div>
@@ -75,6 +74,6 @@
     </form>
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="flow-config.js?v=20260903-1"></script><script src="data.js?v=20260903-1"></script><script src="config-table.js?v=20260903-1"></script><script src="app.js?v=20260907-1"></script>
+  <script src="flow-config.js?v=20260903-1"></script><script src="data.js?v=20260907-2"></script><script src="config-table.js?v=20260903-1"></script><script src="app.js?v=20260907-2"></script>
 </body>
 </html>

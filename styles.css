@@ -101,10 +101,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .field-row label,.two-field-row label{display:block;color:#657185;font-size:9px;font-weight:700}
 .two-field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .two-field-row label{margin-bottom:5px}
-.execution-preview{margin-top:13px;padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#f2f4f7;border-radius:6px}
-.execution-preview div{display:grid;gap:2px}
-.execution-preview span{color:#8994a6;font-size:8px}
-.execution-preview strong{font-size:9px}
 .activity-panel{position:sticky;top:66px;min-height:460px;max-height:calc(100vh - 86px);overflow:auto}
 .tabs{display:flex;align-items:center;gap:20px;border-bottom:1px solid var(--line)}
 .tab{position:relative;padding:0 0 11px;border:0;background:none;color:#9ba5b5;font-size:11px;font-weight:750}
@@ -221,7 +217,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   .person-summary{flex-wrap:wrap}
   .result-option{grid-template-columns:16px minmax(0,1fr)}
   .result-deadline{grid-column:2;text-align:left}
-  .field-row,.two-field-row,.execution-preview,.edit-grid,.original-grid,.order-editor{grid-template-columns:1fr}
+  .field-row,.two-field-row,.edit-grid,.original-grid,.order-editor{grid-template-columns:1fr}
   .field-row small{grid-column:1}
   .edit-tab-panel{min-height:0}
   .current-notice{align-items:flex-start;flex-direction:column}
