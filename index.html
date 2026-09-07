@@ -25,7 +25,7 @@
     <div class="workspace-grid">
       <div class="left-column">
         <section class="panel user-panel" aria-labelledby="userInfoTitle">
-          <div class="panel-heading"><div><h2 id="userInfoTitle"><span data-i18n="user.title">用户信息</span> <span class="changed-badge" id="changedBadge" hidden data-i18n="user.changed">信息已修改</span></h2></div><button class="text-button" id="editUserButton" type="button" data-i18n="user.edit">编辑信息</button></div>
+          <div class="panel-heading"><div><h2 id="userInfoTitle"><span data-i18n="user.title">用户信息</span> <span class="changed-badge" id="changedBadge" hidden data-i18n="user.changed">信息已修改</span></h2></div></div>
           <div class="person-summary"><div class="avatar" id="avatar">SR</div><div><h3 id="userName">Sofía Ramírez</h3><p id="userPhone">5612345454</p></div></div>
           <div class="info-sections">
             <div class="info-section"><h3 data-i18n="lead.info">线索信息</h3><dl class="info-grid"><div><dt data-i18n="lead.source">线索来源</dt><dd id="source">车型详情页</dd></div><div><dt data-i18n="lead.type">线索类型</dt><dd id="leadType">金融</dd></div><div><dt data-i18n="lead.state">当前线索状态</dt><dd id="leadStateInUser">未跟进 · 正常等待跟进</dd></div><div><dt data-i18n="field.brand">品牌</dt><dd id="brand">NISSAN</dd></div><div><dt data-i18n="field.series">车系</dt><dd id="series">X-TRAIL</dd></div><div><dt data-i18n="field.model">车型</dt><dd id="model">Advance 2 Row</dd></div><div><dt data-i18n="lead.created">创建时间</dt><dd id="createdAt">2026-09-02 09:30</dd></div></dl></div>
@@ -47,7 +47,7 @@
         </section>
       </div>
       <aside class="panel activity-panel" aria-labelledby="recordsTitle">
-        <div class="tabs" role="tablist"><button class="tab active" id="operationsTab" type="button" role="tab" aria-selected="true" aria-controls="operationsPanel" data-i18n="records.operations">操作记录</button><button class="tab" id="notesTab" type="button" role="tab" aria-selected="false" aria-controls="notesPanel"><span data-i18n="records.notes">跟踪记事</span> <span id="noteCount">2</span></button></div>
+        <div class="activity-heading"><div class="tabs" role="tablist"><button class="tab active" id="operationsTab" type="button" role="tab" aria-selected="true" aria-controls="operationsPanel" data-i18n="records.operations">操作记录</button><button class="tab" id="notesTab" type="button" role="tab" aria-selected="false" aria-controls="notesPanel"><span data-i18n="records.notes">跟踪记事</span> <span id="noteCount">2</span></button></div><button class="text-button" id="editUserButton" type="button" data-i18n="user.edit">编辑信息</button></div>
         <section id="operationsPanel" role="tabpanel" aria-labelledby="operationsTab"><div class="activity-intro"><h2 id="recordsTitle" data-i18n="records.operations">操作记录</h2><p data-i18n="records.description">系统自动记录，按时间倒序展示。</p></div><ol class="timeline" id="operationTimeline"></ol></section>
         <section id="notesPanel" role="tabpanel" aria-labelledby="notesTab" hidden><div class="activity-intro"><h2 data-i18n="notes.addTitle">销售手动添加跟踪记录</h2><p data-i18n="notes.description">记录沟通中的关键信息。</p></div><form class="note-form" id="noteForm"><label for="noteInput" data-i18n="notes.content">跟踪内容</label><textarea id="noteInput" rows="3" placeholder="只记录用户输入或销售确认的关键信息" data-i18n-placeholder="notes.placeholder"></textarea><button class="button secondary" type="submit" data-i18n="notes.add">添加记录</button></form><ol class="timeline notes" id="noteTimeline"></ol></section>
       </aside>
