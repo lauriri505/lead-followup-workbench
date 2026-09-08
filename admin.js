@@ -93,7 +93,13 @@ function renderDashboard() {
 let leadPage = 1;
 const leadPageSize = 30;
 const leadSource = (lead) => lead.channel || lead.source || "—";
-function buildLeadFilters() {}
+function buildLeadFilters() {
+  const select = $("leadBrandFilter");
+  const current = select.value;
+  const brands = [...new Set(state.leads.map((lead) => lead.brand).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  select.innerHTML = `<option value="">全部品牌</option>${brands.map((brand) => `<option value="${esc(brand)}">${esc(brand)}</option>`).join("")}`;
+  select.value = brands.includes(current) ? current : "";
+}
 function renderLeadPagination(total) {
   const pages = Math.max(1, Math.ceil(total / leadPageSize));
   leadPage = Math.min(leadPage, pages);
@@ -101,13 +107,14 @@ function renderLeadPagination(total) {
 }
 function renderLeads() {
   const id = $("leadIdFilter").value.trim().toLowerCase();
+  const brand = $("leadBrandFilter").value;
   const type = $("leadTypeFilter").value;
   const phone = $("leadPhoneFilter").value.trim().toLowerCase();
   const source = $("leadSourceFilter").value;
   const entryType = $("leadEntryTypeFilter").value;
   const start = $("leadCreatedStart").value;
   const end = $("leadCreatedEnd").value;
-  const filtered = state.leads.filter((lead) => (!id || String(lead.id).toLowerCase().includes(id)) && (!type || lead.type === type) && (!phone || String(lead.phone).toLowerCase().includes(phone)) && (!source || leadSource(lead) === source) && (!entryType || (lead.entryType || "自动") === entryType) && (!start || String(lead.createdAt).slice(0, 10) >= start) && (!end || String(lead.createdAt).slice(0, 10) <= end)).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  const filtered = state.leads.filter((lead) => (!id || String(lead.id).toLowerCase().includes(id)) && (!brand || lead.brand === brand) && (!type || lead.type === type) && (!phone || String(lead.phone).toLowerCase().includes(phone)) && (!source || leadSource(lead) === source) && (!entryType || (lead.entryType || "自动") === entryType) && (!start || String(lead.createdAt).slice(0, 10) >= start) && (!end || String(lead.createdAt).slice(0, 10) <= end)).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
   $("leadTotal").textContent = filtered.length;
   const startIndex = (leadPage - 1) * leadPageSize;
   $("leadRows").innerHTML = filtered.slice(startIndex, startIndex + leadPageSize).map(leadRow).join("");
@@ -138,7 +145,7 @@ function submitImport(event) {
   const manual = $("importEntryType").value === "人工";
   const prefix = state.tenant?.brand === "BAIC" ? "BAIC-LD" : "AC-LD";
   const lead = { id: `${prefix}-${Date.now()}`, name: $("importName").value.trim(), phone: $("importPhone").value.trim(), city: $("importCity").value.trim(), region: $("importCity").value.trim(), brand: $("importBrand").value.trim(), series: $("importSeries").value.trim(), model: $("importModel").value.trim(), type: $("importType").value, leadType: $("importType").value, entryType: $("importEntryType").value, channel: manual ? "" : $("importChannel").value, source: manual ? "" : $("importSource").value, createdAt: $("importCreatedAt").value.replace("T", " "), status: "未跟进", subStatus: "正常等待跟进", quality: "UNKNOWN", assignee: assignee.id + " " + assignee.username, task: "首次联系", taskStatus: "待处理" };
-  state.leads.unshift(lead); persist(); renderLeads(); renderDashboard(); $("importModal").hidden = true; event.target.reset(); syncImportFields(); toast("线索已导入并分配给 " + assignee.id + " " + assignee.username);
+  state.leads.unshift(lead); persist(); buildLeadFilters(); renderLeads(); renderDashboard(); $("importModal").hidden = true; event.target.reset(); syncImportFields(); toast("线索已导入并分配给 " + assignee.id + " " + assignee.username);
 }
 function downloadImportTemplate() {
   const headers = ["线索类型", "录入类型", "姓名", "手机号", "城市", "品牌", "车系", "车型", "创建时间（UTC-6）", "线索来源", "线索渠道"];
@@ -445,8 +452,8 @@ $("accountSwitcher").addEventListener("change", (event) => { currentRole = event
 qsa("[data-go]").forEach((button) => button.addEventListener("click", () => openView(button.dataset.go)));
 $("menuButton").addEventListener("click", () => document.querySelector(".admin-sidebar").classList.toggle("open"));
 ["leadIdFilter", "leadPhoneFilter"].forEach((id) => $(id).addEventListener("input", () => { leadPage = 1; renderLeads(); }));
-["leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => $(id).addEventListener("change", () => { leadPage = 1; renderLeads(); }));
-$("resetLeadFilters").addEventListener("click", () => { ["leadIdFilter", "leadPhoneFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => { $(id).value = ""; }); leadPage = 1; renderLeads(); });
+["leadBrandFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => $(id).addEventListener("change", () => { leadPage = 1; renderLeads(); }));
+$("resetLeadFilters").addEventListener("click", () => { ["leadIdFilter", "leadPhoneFilter", "leadBrandFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => { $(id).value = ""; }); leadPage = 1; renderLeads(); });
 $("leadPagination").addEventListener("click", (event) => { const button = event.target.closest("[data-page]"); if (!button || button.disabled) return; leadPage = Number(button.dataset.page); renderLeads(); });
 $("showAccountForm").addEventListener("click", () => { $("accountForm").hidden = false; $("accountId").focus(); });
 $("showTaskForm").addEventListener("click", () => { $("taskForm").hidden = false; $("taskType").focus(); });

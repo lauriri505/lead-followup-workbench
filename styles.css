@@ -24,8 +24,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .page-heading h1{margin:0;font-size:24px;line-height:1.15;letter-spacing:-.025em}
 .lead-id-chip{padding:3px 7px;border-radius:4px;background:#253249;color:#fff;font-size:9px;letter-spacing:.02em}
 .today-task-count{padding-left:9px;border-left:1px solid #d8dde6;color:#8792a6;font-size:9px;font-weight:650}
-.brand-filter{display:inline-flex;align-items:center;gap:6px;margin-left:2px;padding-left:10px;border-left:1px solid #d8dde6;color:#8792a6;font-size:9px;font-weight:650}
-.brand-filter select{height:27px;min-width:104px;padding:0 25px 0 8px;border:1px solid #ccd5e2;border-radius:5px;background:#fff;color:#29364c;font-size:9px;font-weight:700}
 .heading-copy{margin:5px 0 0;color:#68748a;font-size:11px}
 .heading-actions{display:flex;gap:9px}
 .button{min-height:34px;padding:0 14px;border:1px solid #d6dde8;border-radius:7px;background:#fff;font-size:11px;font-weight:750;transition:.15s ease}
@@ -206,8 +204,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   .page-shell{padding:16px 12px 32px}
   .page-heading{display:block}
   .title-line{flex-wrap:wrap}
-  .brand-filter{width:100%;margin-top:4px;padding-left:0;border-left:0}
-  .brand-filter select{flex:1;min-width:0}
   .page-heading h1{font-size:21px}
   .heading-actions{margin-top:13px}
   .heading-actions .button{flex:1}
