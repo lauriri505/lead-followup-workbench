@@ -113,7 +113,16 @@
   });
   const demoNames = ["Sofía Ramírez", "Luis Torres", "María González", "Diego Hernández", "Ana Martínez", "Carlos Mendoza", "Fernanda Ruiz", "Ricardo Sánchez", "Valeria Cruz", "Jorge Navarro"];
   const demoCities = ["Ciudad de México", "Guadalajara", "Monterrey", "Puebla", "Querétaro", "Mérida"];
-  const demoVehicles = [["NISSAN", "X-TRAIL", "Advance 2 Row"], ["MAZDA", "CX-30", "i Grand Touring"], ["FORD", "Territory", "Titanium"], ["KIA", "Sportage", "EX Pack"], ["TOYOTA", "RAV4", "XLE"]];
+  const demoVehicles = [
+    ["BAIC", "BJ40", "Plus"],
+    ["NISSAN", "X-TRAIL", "Advance 2 Row"],
+    ["MAZDA", "CX-30", "i Grand Touring"],
+    ["BAIC", "BJ40", "Honor"],
+    ["FORD", "Territory", "Titanium"],
+    ["KIA", "Sportage", "EX Pack"],
+    ["BAIC", "X55", "Luxury"],
+    ["TOYOTA", "RAV4", "XLE"]
+  ];
   const generatedLeads = Array.from({ length: Math.max(0, 100 - initialLeads.length) }, (_, index) => {
     const number = index + initialLeads.length + 1; const vehicle = demoVehicles[index % demoVehicles.length]; const date = `2026-09-${String(1 + (index % 30)).padStart(2, "0")} ${String(8 + (index % 10)).padStart(2, "0")}:${String((index * 7) % 60).padStart(2, "0")}`;
     const statusCases = [["unfollowed", "正常等待跟进"], ["followup", "待确认购车方式"], ["overdue", "超过72小时"], ["dormantCash", "明确表示全款"], ["dormantTestDrive", "表示要先试驾"], ["lost", index % 2 ? "放弃购买" : "号码错误"]]; const current = statusCases[index % statusCases.length];
