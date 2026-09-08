@@ -4,7 +4,26 @@ const copy = (value) => JSON.parse(JSON.stringify(value));
 let state = (() => {
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey));
-    return saved ? { ...copy(sourceData), ...saved, leads: copy(sourceData.leads) } : copy(sourceData);
+    if (!saved) return copy(sourceData);
+    const cleaningOverrides = saved.cleaningOverrides || {};
+    const sourceIds = new Set(sourceData.leads.map((lead) => lead.id));
+    const importedLeads = (saved.importedLeads || []).filter((lead) => !sourceIds.has(lead.id));
+    const leads = [...copy(importedLeads), ...copy(sourceData.leads)].map((lead) => {
+      const override = cleaningOverrides[lead.id] || {};
+      const cleaningData = {
+        brand: override.brand ?? lead.brand,
+        cleaningStatus: override.cleaningStatus ?? lead.cleaningStatus,
+        cleaningResult: override.cleaningResult ?? lead.cleaningResult,
+        cleaningOperator: override.cleaningOperator ?? lead.cleaningOperator,
+        cleaningTime: override.cleaningTime ?? lead.cleaningTime,
+        cleaningNote: override.cleaningNote ?? lead.cleaningNote,
+        cleaningHistory: override.cleaningHistory ?? lead.cleaningHistory,
+        cleaningActionApplied: Boolean(override.cleaningActionApplied)
+      };
+      const taskData = override.cleaningActionApplied ? { assignee: override.assignee, task: override.task, taskStatus: override.taskStatus, status: override.status, subStatus: override.subStatus, quality: override.quality } : {};
+      return { ...lead, ...cleaningData, ...taskData };
+    });
+    return { ...copy(sourceData), ...saved, leads };
   } catch (error) { return copy(sourceData); }
 })();
 if (!state.transitionConfig) state.transitionConfig = copy(sourceData.transitionConfig);
@@ -15,12 +34,14 @@ state.transitionConfig.results.forEach((result, index) => {
 Object.keys(state.permissions || {}).forEach((role) => {
   state.permissions[role] = state.permissions[role].map((permission) => permission === "配置跟进节点" ? "配置线索流转" : permission);
 });
+if (!state.permissions.super_admin) state.permissions.super_admin = copy(sourceData.permissions.super_admin || []);
+if (!state.permissions.super_admin.includes("清洗和分配线索")) state.permissions.super_admin.push("清洗和分配线索");
 
 const $ = (id) => document.getElementById(id);
 const qsa = (selector) => Array.from(document.querySelectorAll(selector));
 const esc = (value = "") => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const roleLabels = { super_admin: "超级管理员", sales: "AutoCava销售" };
-const permissionOptions = ["查看平台全部普通线索", "查看本人负责线索", "配置账号与角色", "配置任务规则", "配置线索流转", "查看操作记录", "允许接收导入线索", "处理销售任务", "提交跟进结果", "编辑用户当前信息", "添加跟踪记事"];
+const permissionOptions = ["查看平台全部普通线索", "查看本人负责线索", "清洗和分配线索", "配置账号与角色", "配置任务规则", "配置线索流转", "查看操作记录", "允许接收导入线索", "处理销售任务", "提交跟进结果", "编辑用户当前信息", "添加跟踪记事"];
 const viewNames = { dashboard: "后台总览", leads: "线索数据", accounts: "账号与角色", tasks: "任务配置", nodes: "线索流转配置" };
 const groupLabels = { entry: "系统入口", not_followed: "未跟进", followed: "跟进中", dormant: "暂存", overdue: "过期未跟进", success: "确认金融购车", lost: "战败" };
 const mainStatusGroups = Object.fromEntries(Object.entries(groupLabels).map(([group, label]) => [label, group]));
@@ -32,7 +53,20 @@ const protectedViews = new Set(["accounts", "tasks", "nodes"]);
 const canAccess = (view) => currentRole === "super_admin" || !protectedViews.has(view);
 
 function persist() {
-  localStorage.setItem(storageKey, JSON.stringify({ accounts: state.accounts, permissions: state.permissions, taskRules: state.taskRules, transitionConfig: state.transitionConfig }));
+  const sourceLeadIds = new Set(sourceData.leads.map((lead) => lead.id));
+  const importedLeads = state.leads.filter((lead) => !sourceLeadIds.has(lead.id));
+  const cleaningOverrides = Object.fromEntries(state.leads.map((lead) => [lead.id, {
+    brand: lead.brand,
+    cleaningStatus: lead.cleaningStatus,
+    cleaningResult: lead.cleaningResult,
+    cleaningOperator: lead.cleaningOperator,
+    cleaningTime: lead.cleaningTime,
+    cleaningNote: lead.cleaningNote,
+    cleaningHistory: lead.cleaningHistory || [],
+    cleaningActionApplied: Boolean(lead.cleaningActionApplied),
+    ...(lead.cleaningActionApplied ? { assignee: lead.assignee, task: lead.task, taskStatus: lead.taskStatus, status: lead.status, subStatus: lead.subStatus, quality: lead.quality } : {})
+  }]));
+  localStorage.setItem(storageKey, JSON.stringify({ accounts: state.accounts, permissions: state.permissions, taskRules: state.taskRules, transitionConfig: state.transitionConfig, importedLeads, cleaningOverrides }));
 }
 let toastTimer;
 function toast(message) {
@@ -68,9 +102,18 @@ function renderAccountSession() {
 }
 
 const qualityLabels = { UNKNOWN: "待判定", VALID: "有效", INVALID: "无效" };
+const cleaningClasses = { "待清洗": "pending", "待补充": "supplement", "清洗通过": "passed", "清洗不通过": "rejected" };
+const canCleanLeads = () => (state.permissions[currentRole] || []).includes("清洗和分配线索");
 function statusClass(status) { return status === "战败" ? "lost" : ["暂存", "过期未跟进"].includes(status) ? "dormant" : ["跟进中", "确认金融购车"].includes(status) ? "won" : ""; }
 function leadRow(lead) {
-  return `<tr><td><strong>${esc(lead.id)}</strong></td><td>${esc(lead.type || lead.leadType)}</td><td>${esc(lead.entryType || "自动")}</td><td class="lead-person"><strong>${esc(lead.name)}</strong></td><td>${esc(lead.phone)}</td><td>${esc(lead.city || lead.region || "—")}</td><td>${esc(lead.brand || "—")}</td><td>${esc(lead.series || "—")}</td><td>${esc(lead.model || "—")}</td><td>${esc(lead.createdAt || "—")}</td><td>${esc(lead.channel || "—")}</td><td>${esc(lead.source || "—")}</td><td><span class="table-status ${statusClass(lead.status)}">${esc(lead.status)} · ${esc(lead.subStatus)}</span></td><td>${esc(lead.assignee)}</td></tr>`;
+  const cleaningStatus = lead.cleaningStatus || "待清洗";
+    const taskText = lead.task && lead.task !== "—"
+      ? `${lead.task} · ${lead.taskStatus}`
+      : lead.taskStatus === "已结束"
+        ? "已结束"
+        : "未生成";
+  const actionLabel = canCleanLeads() ? "清洗 / 查看" : "查看";
+  return `<tr><td><strong>${esc(lead.id)}</strong><small class="table-code">${esc(lead.type || lead.leadType)} · ${esc(lead.entryType || "自动")}</small></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td><strong>${esc(lead.brand || "—")}</strong><small class="table-code">${esc(lead.series || "—")} · ${esc(lead.model || "—")}</small></td><td>${esc(lead.channel || "—")}<small class="table-code">${esc(lead.source || "—")}</small></td><td>${esc(lead.createdAt || "—")}</td><td><span class="cleaning-chip ${cleaningClasses[cleaningStatus] || "pending"}">${esc(cleaningStatus)}</span></td><td>${esc(lead.cleaningResult || "—")}</td><td>${esc(lead.cleaningOperator || "—")}<small class="table-code">${esc(lead.cleaningTime || "—")}</small></td><td>${esc(lead.assignee || "—")}</td><td><span class="task-state ${lead.taskStatus === "处理中" ? "processing" : ""}">${esc(taskText)}</span></td><td><button class="cleaning-action" data-clean-lead="${esc(lead.id)}" type="button">${actionLabel}</button></td></tr>`;
 }
 function compactLeadRow(lead) {
   return `<tr><td><strong>${esc(lead.id)}</strong></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td>${esc(lead.source || lead.channel || "—")}</td><td>${esc(lead.brand)} ${esc(lead.series)} ${esc(lead.model)}</td><td><span class="table-status ${statusClass(lead.status)}">${esc(lead.status)} · ${esc(lead.subStatus)}</span></td><td><span class="quality-chip ${(lead.quality || "UNKNOWN").toLowerCase()}">${esc(qualityLabels[lead.quality] || "待判定")}</span></td><td>${esc(lead.assignee)}</td><td><span class="task-state ${lead.taskStatus === "处理中" ? "processing" : ""}">${esc(lead.task)} · ${esc(lead.taskStatus)}</span></td><td>${esc(lead.createdAt)}</td></tr>`;
@@ -108,21 +151,116 @@ function renderLeadPagination(total) {
 function renderLeads() {
   const id = $("leadIdFilter").value.trim().toLowerCase();
   const brand = $("leadBrandFilter").value;
+  const cleaningStatus = $("leadCleaningFilter").value;
   const type = $("leadTypeFilter").value;
   const phone = $("leadPhoneFilter").value.trim().toLowerCase();
   const source = $("leadSourceFilter").value;
   const entryType = $("leadEntryTypeFilter").value;
   const start = $("leadCreatedStart").value;
   const end = $("leadCreatedEnd").value;
-  const filtered = state.leads.filter((lead) => (!id || String(lead.id).toLowerCase().includes(id)) && (!brand || lead.brand === brand) && (!type || lead.type === type) && (!phone || String(lead.phone).toLowerCase().includes(phone)) && (!source || leadSource(lead) === source) && (!entryType || (lead.entryType || "自动") === entryType) && (!start || String(lead.createdAt).slice(0, 10) >= start) && (!end || String(lead.createdAt).slice(0, 10) <= end)).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  const filtered = state.leads.filter((lead) => (!id || String(lead.id).toLowerCase().includes(id)) && (!brand || lead.brand === brand) && (!cleaningStatus || (lead.cleaningStatus || "待清洗") === cleaningStatus) && (!type || lead.type === type) && (!phone || String(lead.phone).toLowerCase().includes(phone)) && (!source || leadSource(lead) === source) && (!entryType || (lead.entryType || "自动") === entryType) && (!start || String(lead.createdAt).slice(0, 10) >= start) && (!end || String(lead.createdAt).slice(0, 10) <= end)).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  const cleaningCounts = ["待清洗", "待补充", "清洗通过", "清洗不通过"].map((name) => [name, state.leads.filter((lead) => (lead.cleaningStatus || "待清洗") === name).length]);
+  $("cleaningSummary").innerHTML = cleaningCounts.map(([name, count]) => `<button class="${cleaningStatus === name ? "active" : ""}" type="button" data-cleaning-filter="${name}"><span>${name}</span><strong>${count}</strong></button>`).join("");
   $("leadTotal").textContent = filtered.length;
   const startIndex = (leadPage - 1) * leadPageSize;
   $("leadRows").innerHTML = filtered.slice(startIndex, startIndex + leadPageSize).map(leadRow).join("");
   $("leadEmpty").hidden = filtered.length > 0;
   renderLeadPagination(filtered.length);
 }
-function importEligibleAccounts() {
-  return state.accounts.filter((account) => account.status === "启用" && (state.permissions[account.role] || []).includes("允许接收导入线索"));
+
+let currentCleaningLeadId = null;
+function cleaningSalesAccounts() {
+  return state.accounts.filter((account) => account.role === "sales" && account.status === "启用");
+}
+function syncCleaningForm() {
+  const status = $("cleaningStatus").value;
+  const passed = status === "清洗通过";
+  $("cleaningAssignee").disabled = !canCleanLeads() || !passed;
+  if (passed) $("cleaningResult").value = "有效";
+  if (status === "待补充") { $("cleaningResult").value = "信息不完整"; $("cleaningAssignee").value = ""; }
+  if (status === "待清洗") { $("cleaningResult").value = ""; $("cleaningAssignee").value = ""; }
+  if (status === "清洗不通过") {
+    if (["", "有效", "信息不完整"].includes($("cleaningResult").value)) $("cleaningResult").value = "重复线索";
+    $("cleaningAssignee").value = "";
+  }
+}
+function renderCleaningHistory(lead) {
+  const history = lead.cleaningHistory || [];
+  $("cleaningHistory").innerHTML = history.length ? history.map((record) => `<li><div><strong>${esc(record.status)}</strong><span>${esc(record.result || "未填写结果")}</span></div><p>${esc(record.note || "无补充备注")}</p><small>${esc(record.time)} · ${esc(record.operator)}</small></li>`).join("") : `<li class="empty-history">尚未产生清洗记录</li>`;
+}
+function openCleaningModal(leadId) {
+  const lead = state.leads.find((item) => item.id === leadId);
+  if (!lead) return;
+  currentCleaningLeadId = leadId;
+  $("cleaningLeadSummary").innerHTML = `<div><span>线索ID</span><strong>${esc(lead.id)}</strong></div><div><span>客户</span><strong>${esc(lead.name)} · ${esc(lead.phone)}</strong></div><div><span>原始车型</span><strong>${esc(lead.brand || "—")} ${esc(lead.series || "—")} ${esc(lead.model || "—")}</strong></div>`;
+  const brands = [...new Set(state.leads.map((item) => item.brand).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  $("cleaningBrand").innerHTML = `<option value="">请选择品牌</option>${brands.map((brand) => `<option value="${esc(brand)}">${esc(brand)}</option>`).join("")}`;
+  $("cleaningAssignee").innerHTML = `<option value="">暂不分配</option>${cleaningSalesAccounts().map((account) => `<option value="${esc(account.id)}">${esc(account.id)} · ${esc(account.username)}</option>`).join("")}`;
+  $("cleaningStatus").value = lead.cleaningStatus || "待清洗";
+  $("cleaningResult").value = lead.cleaningResult || "";
+  $("cleaningBrand").value = lead.brand || "";
+  const matchedAccount = cleaningSalesAccounts().find((account) => String(lead.assignee || "").startsWith(account.id));
+  $("cleaningAssignee").value = matchedAccount?.id || "";
+  $("cleaningNote").value = lead.cleaningNote || "";
+  ["cleaningStatus", "cleaningResult", "cleaningBrand", "cleaningAssignee", "cleaningNote"].forEach((id) => { $(id).disabled = !canCleanLeads(); });
+  $("cleaningForm").querySelector('button[type="submit"]').hidden = !canCleanLeads();
+  renderCleaningHistory(lead);
+  syncCleaningForm();
+  $("cleaningModal").hidden = false;
+  document.body.classList.add("modal-open");
+}
+function closeCleaningModal() {
+  $("cleaningModal").hidden = true;
+  document.body.classList.remove("modal-open");
+  currentCleaningLeadId = null;
+}
+function saveCleaningResult(event) {
+  event.preventDefault();
+  if (!canCleanLeads()) return toast("当前账号没有清洗和分配线索的权限");
+  const lead = state.leads.find((item) => item.id === currentCleaningLeadId);
+  if (!lead) return closeCleaningModal();
+  const status = $("cleaningStatus").value;
+  const result = $("cleaningResult").value;
+  const brand = $("cleaningBrand").value;
+  const assignee = cleaningSalesAccounts().find((account) => account.id === $("cleaningAssignee").value);
+  const note = $("cleaningNote").value.trim();
+  if (status === "清洗通过" && (!brand || !assignee)) return toast("清洗通过前必须选择归属品牌和销售负责人");
+  if (status === "清洗通过" && result !== "有效") return toast("清洗通过时，清洗结果必须为“有效”");
+  if (status === "待补充" && result !== "信息不完整") return toast("待补充线索的清洗结果应为“信息不完整”");
+  if (status === "清洗不通过" && ["", "有效"].includes(result)) return toast("清洗不通过时必须选择具体原因");
+  if (result === "其他" && !note) return toast("选择“其他”时必须填写清洗备注");
+  const previousStatus = lead.cleaningStatus || "待清洗";
+  const account = state.accounts.find((item) => item.role === currentRole) || state.accounts[0];
+  const operator = `${account.id} ${account.username}`;
+  const now = new Date().toLocaleString("zh-CN", { hour12: false });
+  lead.brand = brand || lead.brand;
+  lead.cleaningStatus = status;
+  lead.cleaningResult = status === "待清洗" ? "" : result;
+  lead.cleaningOperator = operator;
+  lead.cleaningTime = now;
+  lead.cleaningNote = note;
+  lead.cleaningActionApplied = true;
+  lead.cleaningHistory = [{ status, result: lead.cleaningResult, note, operator, time: now }, ...(lead.cleaningHistory || [])];
+  if (status === "清洗通过") {
+    lead.assignee = `${assignee.id} ${assignee.username}`;
+    if (previousStatus !== "清洗通过" || !lead.task || lead.task === "—") {
+      lead.status = "未跟进";
+      lead.subStatus = "正常等待跟进";
+      lead.quality = "UNKNOWN";
+      lead.task = "首次联系";
+      lead.taskStatus = "待处理";
+    }
+  } else {
+    lead.assignee = "—";
+    lead.task = "—";
+    lead.taskStatus = "未生成";
+  }
+  persist();
+  buildLeadFilters();
+  renderLeads();
+  renderDashboard();
+  closeCleaningModal();
+  toast(status === "清洗通过" ? "清洗已通过，首次联系任务已生成" : "清洗结果已保存，未生成销售任务");
 }
 function syncImportFields() {
   const manual = $("importEntryType").value === "人工";
@@ -132,20 +270,15 @@ function syncImportFields() {
 }
 function openImportModal() {
   if (!(state.permissions[currentRole] || []).includes("允许接收导入线索")) return toast("当前账号没有导入线索权限");
-  const accounts = importEligibleAccounts();
-  if (!accounts.length) return toast("没有可分配的账号，请先在账号与角色中勾选“允许接收导入线索”");
-  $("importAssignee").innerHTML = accounts.map((account) => `<option value="${esc(account.id)}">${esc(account.id)} · ${esc(account.username)}</option>`).join("");
   if (!$('importCreatedAt').value) $('importCreatedAt').value = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString().slice(0, 16);
   $("importModal").hidden = false; $("importName").focus();
 }
 function submitImport(event) {
   event.preventDefault();
-  const assignee = importEligibleAccounts().find((account) => account.id === $("importAssignee").value);
-  if (!assignee) return toast("当前账号没有导入线索权限，请先配置后再分配");
   const manual = $("importEntryType").value === "人工";
   const prefix = state.tenant?.brand === "BAIC" ? "BAIC-LD" : "AC-LD";
-  const lead = { id: `${prefix}-${Date.now()}`, name: $("importName").value.trim(), phone: $("importPhone").value.trim(), city: $("importCity").value.trim(), region: $("importCity").value.trim(), brand: $("importBrand").value.trim(), series: $("importSeries").value.trim(), model: $("importModel").value.trim(), type: $("importType").value, leadType: $("importType").value, entryType: $("importEntryType").value, channel: manual ? "" : $("importChannel").value, source: manual ? "" : $("importSource").value, createdAt: $("importCreatedAt").value.replace("T", " "), status: "未跟进", subStatus: "正常等待跟进", quality: "UNKNOWN", assignee: assignee.id + " " + assignee.username, task: "首次联系", taskStatus: "待处理" };
-  state.leads.unshift(lead); persist(); buildLeadFilters(); renderLeads(); renderDashboard(); $("importModal").hidden = true; event.target.reset(); syncImportFields(); toast("线索已导入并分配给 " + assignee.id + " " + assignee.username);
+  const lead = { id: `${prefix}-${Date.now()}`, name: $("importName").value.trim(), phone: $("importPhone").value.trim(), city: $("importCity").value.trim(), region: $("importCity").value.trim(), brand: $("importBrand").value.trim(), series: $("importSeries").value.trim(), model: $("importModel").value.trim(), type: $("importType").value, leadType: $("importType").value, entryType: $("importEntryType").value, channel: manual ? "" : $("importChannel").value, source: manual ? "" : $("importSource").value, createdAt: $("importCreatedAt").value.replace("T", " "), status: "未跟进", subStatus: "正常等待跟进", quality: "UNKNOWN", assignee: "—", task: "—", taskStatus: "未生成", cleaningStatus: "待清洗", cleaningResult: "", cleaningOperator: "—", cleaningTime: "—", cleaningNote: "", cleaningHistory: [] };
+  state.leads.unshift(lead); persist(); buildLeadFilters(); renderLeads(); renderDashboard(); $("importModal").hidden = true; event.target.reset(); syncImportFields(); toast("线索已导入，等待清洗和分配");
 }
 function downloadImportTemplate() {
   const headers = ["线索类型", "录入类型", "姓名", "手机号", "城市", "品牌", "车系", "车型", "创建时间（UTC-6）", "线索来源", "线索渠道"];
@@ -171,9 +304,8 @@ function importUploadedFile(event) {
   const reader = new FileReader(); reader.onload = () => {
     const rows = parseImportFile(reader.result); if (rows.length < 2) return toast("文件中没有可导入的线索数据");
     const headers = rows[0]; const index = Object.fromEntries(headers.map((header, i) => [header.replace(/\s/g, ""), i])); const get = (row, name) => row[index[name.replace(/\s/g, "")]] || "";
-    const assignee = importEligibleAccounts().find((account) => account.id === $("importAssignee").value); if (!assignee) return toast("当前没有具备导入线索权限的可用账号");
-    const leads = rows.slice(1).filter((row) => row.length > 1 && get(row, "姓名")).map((row, offset) => { const manual = get(row, "录入类型") === "人工"; return { id: `LEAD-${Date.now()}-${offset + 1}`, type: get(row, "线索类型") || "金融", leadType: get(row, "线索类型") || "金融", entryType: get(row, "录入类型") || "系统", name: get(row, "姓名"), phone: get(row, "手机号"), city: get(row, "城市"), region: get(row, "城市"), brand: get(row, "品牌"), series: get(row, "车系"), model: get(row, "车型"), createdAt: get(row, "创建时间（UTC-6）") || new Date().toISOString().slice(0, 16).replace("T", " "), source: manual ? "" : get(row, "线索来源"), channel: manual ? "" : get(row, "线索渠道"), status: "未跟进", subStatus: "正常等待跟进", quality: "UNKNOWN", assignee: assignee.id + " " + assignee.username, task: "首次联系", taskStatus: "待处理" }; });
-    if (!leads.length) return toast("请检查模板中的姓名和字段表头"); state.leads.unshift(...leads); persist(); buildLeadFilters(); renderLeads(); renderDashboard(); $("importModal").hidden = true; toast(`已导入 ${leads.length} 条线索并分配给 ${assignee.id} ${assignee.username}`);
+    const leads = rows.slice(1).filter((row) => row.length > 1 && get(row, "姓名")).map((row, offset) => { const manual = get(row, "录入类型") === "人工"; return { id: `LEAD-${Date.now()}-${offset + 1}`, type: get(row, "线索类型") || "金融", leadType: get(row, "线索类型") || "金融", entryType: get(row, "录入类型") || "系统", name: get(row, "姓名"), phone: get(row, "手机号"), city: get(row, "城市"), region: get(row, "城市"), brand: get(row, "品牌"), series: get(row, "车系"), model: get(row, "车型"), createdAt: get(row, "创建时间（UTC-6）") || new Date().toISOString().slice(0, 16).replace("T", " "), source: manual ? "" : get(row, "线索来源"), channel: manual ? "" : get(row, "线索渠道"), status: "未跟进", subStatus: "正常等待跟进", quality: "UNKNOWN", assignee: "—", task: "—", taskStatus: "未生成", cleaningStatus: "待清洗", cleaningResult: "", cleaningOperator: "—", cleaningTime: "—", cleaningNote: "", cleaningHistory: [] }; });
+    if (!leads.length) return toast("请检查模板中的姓名和字段表头"); state.leads.unshift(...leads); persist(); buildLeadFilters(); renderLeads(); renderDashboard(); $("importModal").hidden = true; toast(`已导入 ${leads.length} 条线索，等待清洗和分配`);
   }; reader.readAsText(file, "UTF-8");
 }
 function renderAccounts() {
@@ -452,9 +584,14 @@ $("accountSwitcher").addEventListener("change", (event) => { currentRole = event
 qsa("[data-go]").forEach((button) => button.addEventListener("click", () => openView(button.dataset.go)));
 $("menuButton").addEventListener("click", () => document.querySelector(".admin-sidebar").classList.toggle("open"));
 ["leadIdFilter", "leadPhoneFilter"].forEach((id) => $(id).addEventListener("input", () => { leadPage = 1; renderLeads(); }));
-["leadBrandFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => $(id).addEventListener("change", () => { leadPage = 1; renderLeads(); }));
-$("resetLeadFilters").addEventListener("click", () => { ["leadIdFilter", "leadPhoneFilter", "leadBrandFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => { $(id).value = ""; }); leadPage = 1; renderLeads(); });
+["leadBrandFilter", "leadCleaningFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => $(id).addEventListener("change", () => { leadPage = 1; renderLeads(); }));
+$("resetLeadFilters").addEventListener("click", () => { ["leadIdFilter", "leadPhoneFilter", "leadBrandFilter", "leadCleaningFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => { $(id).value = ""; }); leadPage = 1; renderLeads(); });
 $("leadPagination").addEventListener("click", (event) => { const button = event.target.closest("[data-page]"); if (!button || button.disabled) return; leadPage = Number(button.dataset.page); renderLeads(); });
+$("leadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-clean-lead]"); if (button) openCleaningModal(button.dataset.cleanLead); });
+$("cleaningSummary").addEventListener("click", (event) => { const button = event.target.closest("[data-cleaning-filter]"); if (!button) return; $("leadCleaningFilter").value = button.dataset.cleaningFilter; leadPage = 1; renderLeads(); });
+$("cleaningStatus").addEventListener("change", syncCleaningForm);
+$("cleaningForm").addEventListener("submit", saveCleaningResult);
+[$("closeCleaning"), $("cancelCleaning")].forEach((button) => button.addEventListener("click", closeCleaningModal));
 $("showAccountForm").addEventListener("click", () => { $("accountForm").hidden = false; $("accountId").focus(); });
 $("showTaskForm").addEventListener("click", () => { $("taskForm").hidden = false; $("taskType").focus(); });
 qsa(".cancel-inline").forEach((button) => button.addEventListener("click", () => { button.closest("form").hidden = true; button.closest("form").reset(); }));

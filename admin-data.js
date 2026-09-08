@@ -108,7 +108,13 @@
       assignee: demo.salesperson.id + " " + demo.salesperson.name,
       createdAt: lead.createdAt,
       task: lead.task?.group || "—",
-      taskStatus: lead.task ? "处理中" : (state.terminal ? "已结束" : "待处理")
+      taskStatus: lead.task ? "处理中" : (state.terminal ? "已结束" : "待处理"),
+      cleaningStatus: "清洗通过",
+      cleaningResult: "有效",
+      cleaningOperator: "autocava_admin_001 超级管理员",
+      cleaningTime: lead.createdAt,
+      cleaningNote: "已核对手机号、意向品牌与车型信息，可以进入销售跟进。",
+      cleaningHistory: [{ status: "清洗通过", result: "有效", operator: "autocava_admin_001 超级管理员", time: lead.createdAt, note: "已核对基础信息并完成分配。" }]
     };
   });
   const demoNames = ["Sofía Ramírez", "Luis Torres", "María González", "Diego Hernández", "Ana Martínez", "Carlos Mendoza", "Fernanda Ruiz", "Ricardo Sánchez", "Valeria Cruz", "Jorge Navarro"];
@@ -127,7 +133,32 @@
     const number = index + initialLeads.length + 1; const vehicle = demoVehicles[index % demoVehicles.length]; const date = `2026-09-${String(1 + (index % 30)).padStart(2, "0")} ${String(8 + (index % 10)).padStart(2, "0")}:${String((index * 7) % 60).padStart(2, "0")}`;
     const statusCases = [["unfollowed", "正常等待跟进"], ["followup", "待确认购车方式"], ["overdue", "超过72小时"], ["dormantCash", "明确表示全款"], ["dormantTestDrive", "表示要先试驾"], ["lost", index % 2 ? "放弃购买" : "号码错误"]]; const current = statusCases[index % statusCases.length];
     const manual = index % 7 === 0; const channel = ["Meta", "Google", "Ins", "官网"][index % 4]; const source = ["车型详情页", "AICTA选车推荐", "金融机构", "首页banner"][index % 4];
-    return { id: `LEAD-${String(1600 + number).padStart(4, "0")}`, name: demoNames[index % demoNames.length], phone: `55${String(10000000 + index * 137).slice(0, 8)}`, city: demoCities[index % demoCities.length], region: demoCities[index % demoCities.length], brand: vehicle[0], series: vehicle[1], model: vehicle[2], type: index % 3 === 0 ? "试驾" : "金融", leadType: index % 3 === 0 ? "试驾" : "金融", entryType: manual ? "人工" : "自动", channel: manual ? "" : channel, source: manual ? "" : source, createdAt: date, status: stateMap[current[0]].businessStage, subStatus: current[1], quality: ["unfollowed", "overdue"].includes(current[0]) ? "UNKNOWN" : current[0] === "lost" ? "INVALID" : "VALID", assignee: ["sales 001 Deng Yao", "sales 002 María López", "sales 003 Carlos Ruiz"][index % 3], task: current[0] === "lost" ? "—" : index % 2 ? "普通回访" : "首次联系", taskStatus: current[0] === "lost" ? "已结束" : index % 3 === 0 ? "待处理" : "处理中" };
+    const cleaningCases = ["待清洗", "待补充", "清洗不通过", "清洗通过"];
+    const cleaningStatus = current[0] === "unfollowed" ? cleaningCases[Math.floor(index / 6) % cleaningCases.length] : "清洗通过";
+    const cleaningResult = cleaningStatus === "清洗通过" ? "有效" : cleaningStatus === "待补充" ? "信息不完整" : cleaningStatus === "清洗不通过" ? (index % 2 ? "重复线索" : "非目标品牌") : "";
+    const cleaned = cleaningStatus === "清洗通过";
+    const assignee = ["sales 001 Deng Yao", "sales 002 María López", "sales 003 Carlos Ruiz"][index % 3];
+    return {
+      id: `LEAD-${String(1600 + number).padStart(4, "0")}`,
+      name: demoNames[index % demoNames.length],
+      phone: `55${String(10000000 + index * 137).slice(0, 8)}`,
+      city: demoCities[index % demoCities.length],
+      region: demoCities[index % demoCities.length],
+      brand: vehicle[0], series: vehicle[1], model: vehicle[2],
+      type: index % 3 === 0 ? "试驾" : "金融", leadType: index % 3 === 0 ? "试驾" : "金融",
+      entryType: manual ? "人工" : "自动", channel: manual ? "" : channel, source: manual ? "" : source,
+      createdAt: date, status: stateMap[current[0]].businessStage, subStatus: current[1],
+      quality: ["unfollowed", "overdue"].includes(current[0]) ? "UNKNOWN" : current[0] === "lost" ? "INVALID" : "VALID",
+      assignee: cleaned ? assignee : "—",
+      task: cleaned && current[0] !== "lost" ? (index % 2 ? "普通回访" : "首次联系") : "—",
+      taskStatus: cleaned ? (current[0] === "lost" ? "已结束" : index % 3 === 0 ? "待处理" : "处理中") : "未生成",
+      cleaningStatus,
+      cleaningResult,
+      cleaningOperator: cleaningStatus === "待清洗" ? "—" : "autocava_admin_001 超级管理员",
+      cleaningTime: cleaningStatus === "待清洗" ? "—" : date,
+      cleaningNote: cleaningStatus === "待补充" ? "缺少可确认的车型信息，等待补充。" : cleaningStatus === "清洗不通过" ? "清洗校验未通过，不进入销售任务。" : cleaned ? "基础信息已核对，可以进入销售跟进。" : "",
+      cleaningHistory: cleaningStatus === "待清洗" ? [] : [{ status: cleaningStatus, result: cleaningResult, operator: "autocava_admin_001 超级管理员", time: date, note: cleaningStatus === "待补充" ? "等待补充线索信息。" : "完成线索清洗。" }]
+    };
   });
   const leads = [...initialLeads, ...generatedLeads];
 
@@ -171,7 +202,7 @@
       { id: "sales_003", username: "Carlos Ruiz", role: "sales", dataScope: "本人负责线索", status: "停用", lastLogin: "08-29 17:44" }
     ],
     permissions: {
-      super_admin: ["查看平台全部普通线索", "配置账号与角色", "配置任务规则", "配置线索流转", "查看操作记录", "允许接收导入线索"],
+      super_admin: ["查看平台全部普通线索", "清洗和分配线索", "配置账号与角色", "配置任务规则", "配置线索流转", "查看操作记录", "允许接收导入线索"],
       sales: ["查看本人负责线索", "处理销售任务", "提交跟进结果", "编辑用户当前信息", "添加跟踪记事"]
     },
     taskRules,
