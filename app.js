@@ -7,13 +7,14 @@ const vehicleCatalog = data.vehicleCatalog || {};
 const dealerDirectory = data.dealers || [];
 let flowConfig = window.LEAD_FLOW_CONFIG.load();
 let currentIndex = 0;
+let selectedBrand = "all";
 let selectedResult = null;
 let toastTimer;
 
 const messages = {
   "zh-CN": {
     "brand.home": "返回工作台首页", "language.label": "界面语言", "account.role": "当前角色：销售",
-    "page.title": "线索跟进工作台", "page.subtitle": "集中管理普通线索信息、跟进动作与客户沟通上下文", "page.todayTasks": "今日待处理任务 {count}",
+    "page.title": "线索跟进工作台", "page.subtitle": "集中管理普通线索信息、跟进动作与客户沟通上下文", "page.todayTasks": "今日待处理任务 {count}", "filter.brand": "品牌", "filter.allBrands": "全部品牌",
     "action.submit": "提交", "action.submitNext": "提交并进入下一条", "action.close": "关闭", "action.cancel": "取消", "action.save": "保存修改",
     "task.current": "我的当前任务", "task.processing": "处理中", "task.trigger": "触发原因：", "task.id": "任务 ID",
     "user.title": "用户信息", "user.changed": "信息已修改", "user.edit": "编辑信息",
@@ -30,7 +31,7 @@ const messages = {
   },
   "es-MX": {
     "brand.home": "Volver al inicio", "language.label": "Idioma", "account.role": "Rol actual: Ventas",
-    "page.title": "Seguimiento de Leads", "page.subtitle": "Administra prospectos, acciones de seguimiento y el contexto de comunicación con clientes", "page.todayTasks": "Tareas pendientes hoy: {count}",
+    "page.title": "Seguimiento de Leads", "page.subtitle": "Administra prospectos, acciones de seguimiento y el contexto de comunicación con clientes", "page.todayTasks": "Tareas pendientes hoy: {count}", "filter.brand": "Marca", "filter.allBrands": "Todas las marcas",
     "action.submit": "Enviar", "action.submitNext": "Enviar y abrir el siguiente", "action.close": "Cerrar", "action.cancel": "Cancelar", "action.save": "Guardar cambios",
     "task.current": "Mi tarea actual", "task.processing": "En proceso", "task.trigger": "Motivo de activación: ", "task.id": "ID de tarea",
     "user.title": "Información del cliente", "user.changed": "Información modificada", "user.edit": "Editar información",
@@ -210,7 +211,11 @@ function activeLead() {
 function selectLeadFromUrl() {
   const requested = new URLSearchParams(window.location.search).get("lead");
   const index = leads.findIndex((lead) => lead.id === requested && lead.task);
-  if (index >= 0) currentIndex = index;
+  if (index >= 0) {
+    currentIndex = index;
+    return true;
+  }
+  return false;
 }
 
 function initials(name) {
@@ -221,11 +226,44 @@ function fillText(id, value) {
   $(id).textContent = value ?? "—";
 }
 
+function taskIndexesForSelectedBrand() {
+  return leads
+    .map((lead, index) => ({ lead, index }))
+    .filter(({ lead }) => lead.task && (selectedBrand === "all" || lead.brand === selectedBrand))
+    .sort((a, b) => {
+      if (selectedBrand === "all") {
+        const brandPriority = Number(b.lead.brand === "BAIC") - Number(a.lead.brand === "BAIC");
+        if (brandPriority) return brandPriority;
+      }
+      return String(a.lead.task?.due || "").localeCompare(String(b.lead.task?.due || ""))
+        || String(a.lead.createdAt || "").localeCompare(String(b.lead.createdAt || ""));
+    })
+    .map(({ index }) => index);
+}
+
+function renderBrandFilterOptions() {
+  const select = $("brandFilter");
+  const brands = [...new Set(leads.map((lead) => lead.brand).filter(Boolean))].sort((a, b) => {
+    if (a === "BAIC") return -1;
+    if (b === "BAIC") return 1;
+    return a.localeCompare(b);
+  });
+  select.innerHTML = `<option value="all">${t("filter.allBrands")}</option>${brands.map((brand) => `<option value="${brand}">${brand}</option>`).join("")}`;
+  select.value = selectedBrand;
+}
+
+function selectFirstTaskForBrand() {
+  const indexes = taskIndexesForSelectedBrand();
+  if (!indexes.length) return false;
+  currentIndex = indexes[0];
+  return true;
+}
+
 function renderScenarioOptions() {
   const select = $("scenarioSelect");
   select.innerHTML = "";
-  leads.forEach((lead, index) => {
-    if (!lead.task) return;
+  taskIndexesForSelectedBrand().forEach((index) => {
+    const lead = leads[index];
     const option = el("option", "", lead.task.group + "｜" + stateLabel(lead.state, lead) + "｜" + lead.name);
     option.value = String(index);
     option.selected = index === currentIndex;
@@ -238,7 +276,7 @@ function renderLead() {
   ensureLeadEditData(lead);
   selectedResult = null;
   fillText("leadId", lead.id);
-  const todayPendingTasks = leads.filter((item) => item.task);
+  const todayPendingTasks = taskIndexesForSelectedBrand();
   fillText("todayTaskCount", t("page.todayTasks", { count: todayPendingTasks.length }));
   fillText("taskTitle", lead.task?.group || "当前任务已完成");
   fillText("taskTrigger", lead.task?.trigger || "没有待处理任务");
@@ -413,14 +451,7 @@ function submitFollowUp() {
 }
 
 function moveToNextActiveLead() {
-  for (let step = 1; step <= leads.length; step += 1) {
-    const candidate = (currentIndex + step) % leads.length;
-    if (leads[candidate].task) {
-      currentIndex = candidate;
-      return true;
-    }
-  }
-  return false;
+  return selectFirstTaskForBrand();
 }
 
 function showToast(message) {
@@ -591,6 +622,11 @@ $("scenarioSelect").addEventListener("change", (event) => {
   currentIndex = Number(event.target.value);
   renderLead();
 });
+$("brandFilter").addEventListener("change", (event) => {
+  selectedBrand = event.target.value;
+  selectFirstTaskForBrand();
+  renderLead();
+});
 $("submitButton").addEventListener("click", submitFollowUp);
 $("submitTopButton").addEventListener("click", submitFollowUp);
 $("watchButton").addEventListener("click", () => {
@@ -629,6 +665,7 @@ $("languageSelect").addEventListener("change", (event) => {
   currentLocale = event.target.value;
   try { localStorage.setItem("crmLocale", currentLocale); } catch (error) { /* Storage may be unavailable in private mode. */ }
   applyStaticTranslations();
+  renderBrandFilterOptions();
   renderLead();
 });
 
@@ -642,7 +679,9 @@ window.addEventListener("storage", (event) => {
 });
 window.addEventListener("focus", reloadFlowConfiguration);
 
-selectLeadFromUrl();
+const selectedFromUrl = selectLeadFromUrl();
 applyStaticTranslations();
+renderBrandFilterOptions();
+if (!selectedFromUrl) selectFirstTaskForBrand();
 fillText("salespersonTop", data.salesperson.id + " " + data.salesperson.name);
 renderLead();
