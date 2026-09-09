@@ -99,9 +99,16 @@
       leadType: ["金融", "试驾"].includes(lead.leadType) ? lead.leadType : "金融",
       entryType: lead.entryType === "人工" ? "人工" : "自动",
       city: lead.region || "Ciudad de México",
+      region: lead.region || "Ciudad de México",
+      dealer: lead.dealer || "",
+      address: lead.address || "",
       brand: lead.brand,
       series: lead.series,
       model: lead.model,
+      price: lead.price || "—",
+      downPayment: lead.downPayment || "30%",
+      rate: lead.rate || "—",
+      term: lead.term || "—",
       status: state.businessStage,
       subStatus: lead.lostReason || state.name,
       quality,
@@ -145,6 +152,7 @@
       city: demoCities[index % demoCities.length],
       region: demoCities[index % demoCities.length],
       brand: vehicle[0], series: vehicle[1], model: vehicle[2],
+      dealer: "", address: "", price: `$${(429900 + index * 3500).toLocaleString("en-US")} MXN`, downPayment: `${20 + index % 4 * 5}%`, rate: `${(13.9 + index % 5 * 0.35).toFixed(2)}%`, term: `${48 + index % 3 * 12}期`,
       type: index % 3 === 0 ? "试驾" : "金融", leadType: index % 3 === 0 ? "试驾" : "金融",
       entryType: manual ? "人工" : "自动", channel: manual ? "" : channel, source: manual ? "" : source,
       createdAt: date, status: stateMap[current[0]].businessStage, subStatus: current[1],
@@ -200,6 +208,11 @@
       { id: "sales_001", username: "Deng Yao", role: "sales", dataScope: "本人负责线索", status: "启用", lastLogin: "今天 09:38" },
       { id: "sales_002", username: "María López", role: "sales", dataScope: "本人负责线索", status: "启用", lastLogin: "今天 09:26" },
       { id: "sales_003", username: "Carlos Ruiz", role: "sales", dataScope: "本人负责线索", status: "停用", lastLogin: "08-29 17:44" }
+    ],
+    baicDealers: [
+      { id: "BAIC-DLR-001", name: "BAIC Santa Fe", region: "Ciudad de México", address: "Vasco de Quiroga 3800", salesId: "baic_sales_001", salesName: "Roberto García" },
+      { id: "BAIC-DLR-002", name: "BAIC Lindavista", region: "Ciudad de México", address: "Av. Insurgentes Norte 1800", salesId: "baic_sales_002", salesName: "Daniela Hernández" },
+      { id: "BAIC-DLR-003", name: "BAIC Tlalnepantla", region: "Estado de México", address: "Av. Gustavo Baz 2160", salesId: "baic_sales_003", salesName: "Miguel Torres" }
     ],
     permissions: {
       super_admin: ["查看平台全部普通线索", "清洗和分配线索", "配置账号与角色", "配置任务规则", "配置线索流转", "查看操作记录", "允许接收导入线索"],

@@ -12,6 +12,11 @@ let state = (() => {
       const override = cleaningOverrides[lead.id] || {};
       const cleaningData = {
         brand: override.brand ?? lead.brand,
+        dealer: override.dealer ?? lead.dealer,
+        address: override.address ?? lead.address,
+        region: override.region ?? lead.region,
+        baicDealerId: override.baicDealerId ?? lead.baicDealerId,
+        baicSalesId: override.baicSalesId ?? lead.baicSalesId,
         cleaningStatus: override.cleaningStatus ?? lead.cleaningStatus,
         cleaningResult: override.cleaningResult ?? lead.cleaningResult,
         cleaningOperator: override.cleaningOperator ?? lead.cleaningOperator,
@@ -57,6 +62,11 @@ function persist() {
   const importedLeads = state.leads.filter((lead) => !sourceLeadIds.has(lead.id));
   const cleaningOverrides = Object.fromEntries(state.leads.map((lead) => [lead.id, {
     brand: lead.brand,
+    dealer: lead.dealer,
+    address: lead.address,
+    region: lead.region,
+    baicDealerId: lead.baicDealerId,
+    baicSalesId: lead.baicSalesId,
     cleaningStatus: lead.cleaningStatus,
     cleaningResult: lead.cleaningResult,
     cleaningOperator: lead.cleaningOperator,
@@ -110,8 +120,8 @@ function leadRow(lead) {
     : lead.taskStatus === "已结束"
       ? "已结束"
       : "未生成";
-  const actionLabel = canCleanLeads() ? "清洗处理" : "查看详情";
-  return `<tr><td><strong>${esc(lead.id)}</strong><small class="table-code">${esc(lead.type || lead.leadType)} · ${esc(lead.entryType || "自动")}</small></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td><strong>${esc(lead.brand || "—")}</strong><small class="table-code">${esc(lead.series || "—")} · ${esc(lead.model || "—")}</small></td><td>${esc(lead.channel || "—")}<small class="table-code">${esc(lead.source || "—")}</small></td><td>${esc(lead.createdAt || "—")}</td><td>${esc(lead.assignee || "—")}</td><td><span class="task-state ${lead.taskStatus === "处理中" ? "processing" : ""}">${esc(taskText)}</span></td><td><button class="cleaning-action" data-clean-lead="${esc(lead.id)}" type="button">${actionLabel}</button></td></tr>`;
+  const action = String(lead.brand || "").toUpperCase() === "BAIC" ? `<button class="cleaning-action" data-clean-lead="${esc(lead.id)}" type="button">详情</button>` : `<span class="muted-cell">—</span>`;
+  return `<tr><td><strong>${esc(lead.id)}</strong><small class="table-code">${esc(lead.type || lead.leadType)} · ${esc(lead.entryType || "自动")}</small></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td><strong>${esc(lead.brand || "—")}</strong><small class="table-code">${esc(lead.series || "—")} · ${esc(lead.model || "—")}</small></td><td>${esc(lead.channel || "—")}<small class="table-code">${esc(lead.source || "—")}</small></td><td>${esc(lead.createdAt || "—")}</td><td>${esc(lead.assignee || "—")}</td><td><span class="task-state ${lead.taskStatus === "处理中" ? "processing" : ""}">${esc(taskText)}</span></td><td>${action}</td></tr>`;
 }
 function compactLeadRow(lead) {
   return `<tr><td><strong>${esc(lead.id)}</strong></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td>${esc(lead.source || lead.channel || "—")}</td><td>${esc(lead.brand)} ${esc(lead.series)} ${esc(lead.model)}</td><td><span class="table-status ${statusClass(lead.status)}">${esc(lead.status)} · ${esc(lead.subStatus)}</span></td><td><span class="quality-chip ${(lead.quality || "UNKNOWN").toLowerCase()}">${esc(qualityLabels[lead.quality] || "待判定")}</span></td><td>${esc(lead.assignee)}</td><td><span class="task-state ${lead.taskStatus === "处理中" ? "processing" : ""}">${esc(lead.task)} · ${esc(lead.taskStatus)}</span></td><td>${esc(lead.createdAt)}</td></tr>`;
@@ -164,43 +174,35 @@ function renderLeads() {
 }
 
 let currentCleaningLeadId = null;
-function cleaningSalesAccounts() {
-  return state.accounts.filter((account) => account.role === "sales" && account.status === "启用");
-}
-function syncCleaningForm() {
-  const status = $("cleaningStatus").value;
-  const passed = status === "清洗通过";
-  $("cleaningAssignee").disabled = !canCleanLeads() || !passed;
-  if (passed) $("cleaningResult").value = "有效";
-  if (status === "待补充") { $("cleaningResult").value = "信息不完整"; $("cleaningAssignee").value = ""; }
-  if (status === "待清洗") { $("cleaningResult").value = ""; $("cleaningAssignee").value = ""; }
-  if (status === "清洗不通过") {
-    if (["", "有效", "信息不完整"].includes($("cleaningResult").value)) $("cleaningResult").value = "重复线索";
-    $("cleaningAssignee").value = "";
-  }
+const baicDealers = () => state.baicDealers || [];
+function updateDealerPreview() {
+  const dealer = baicDealers().find((item) => item.id === $("cleaningDealer").value);
+  $("dealerPreview").innerHTML = dealer
+    ? `<strong>${esc(dealer.name)}</strong><span>${esc(dealer.region)} · ${esc(dealer.address)}</span><span>将分配给：${esc(dealer.salesId)} ${esc(dealer.salesName)}</span>`
+    : "请选择经销商";
 }
 function renderCleaningHistory(lead) {
   const history = lead.cleaningHistory || [];
-  $("cleaningHistory").innerHTML = history.length ? history.map((record) => `<li><div><strong>${esc(record.status)}</strong><span>${esc(record.result || "未填写结果")}</span></div><p>${esc(record.note || "无补充备注")}</p><small>${esc(record.time)} · ${esc(record.operator)}</small></li>`).join("") : `<li class="empty-history">尚未产生清洗记录</li>`;
+  $("cleaningHistory").innerHTML = history.length ? history.map((record) => `<li><div><strong>${esc(record.dealer || record.status || "已处理")}</strong><span>${esc(record.sales || record.result || "")}</span></div><p>${esc(record.note || "完成线索分配")}</p><small>${esc(record.time)} · ${esc(record.operator)}</small></li>`).join("") : `<li class="empty-history">尚未产生分配记录</li>`;
 }
 function openCleaningModal(leadId) {
   const lead = state.leads.find((item) => item.id === leadId);
-  if (!lead) return;
+  if (!lead || String(lead.brand || "").toUpperCase() !== "BAIC") return;
   currentCleaningLeadId = leadId;
-  $("cleaningLeadSummary").innerHTML = `<div><span>线索ID</span><strong>${esc(lead.id)}</strong></div><div><span>客户</span><strong>${esc(lead.name)} · ${esc(lead.phone)}</strong></div><div><span>原始车型</span><strong>${esc(lead.brand || "—")} ${esc(lead.series || "—")} ${esc(lead.model || "—")}</strong></div>`;
-  const brands = [...new Set(state.leads.map((item) => item.brand).filter(Boolean))].sort((a, b) => a.localeCompare(b));
-  $("cleaningBrand").innerHTML = `<option value="">请选择品牌</option>${brands.map((brand) => `<option value="${esc(brand)}">${esc(brand)}</option>`).join("")}`;
-  $("cleaningAssignee").innerHTML = `<option value="">暂不分配</option>${cleaningSalesAccounts().map((account) => `<option value="${esc(account.id)}">${esc(account.id)} · ${esc(account.username)}</option>`).join("")}`;
-  $("cleaningStatus").value = lead.cleaningStatus || "待清洗";
-  $("cleaningResult").value = lead.cleaningResult || "";
-  $("cleaningBrand").value = lead.brand || "";
-  const matchedAccount = cleaningSalesAccounts().find((account) => String(lead.assignee || "").startsWith(account.id));
-  $("cleaningAssignee").value = matchedAccount?.id || "";
-  $("cleaningNote").value = lead.cleaningNote || "";
-  ["cleaningStatus", "cleaningResult", "cleaningBrand", "cleaningAssignee", "cleaningNote"].forEach((id) => { $(id).disabled = !canCleanLeads(); });
+  const detailFields = [
+    ["线索ID", lead.id], ["姓名", lead.name], ["手机号", lead.phone], ["线索类型", lead.type || lead.leadType],
+    ["品牌", lead.brand], ["车系", lead.series], ["车型", lead.model], ["线索来源", lead.source || "—"],
+    ["线索渠道", lead.channel || "—"], ["车辆价格", lead.price || "—"], ["首付", lead.downPayment || "—"],
+    ["年利率", lead.rate || "—"], ["贷款期数", lead.term || "—"], ["创建时间", lead.createdAt || "—"],
+    ["当前经销商", lead.dealer || "未分配"], ["地区 / 地址", [lead.region, lead.address].filter(Boolean).join(" · ") || "—"]
+  ];
+  $("cleaningLeadSummary").innerHTML = detailFields.map(([label, value]) => `<div><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join("");
+  $("cleaningDealer").innerHTML = `<option value="">请选择经销商</option>${baicDealers().map((dealer) => `<option value="${esc(dealer.id)}">${esc(dealer.name)}</option>`).join("")}`;
+  $("cleaningDealer").value = lead.baicDealerId || "";
+  $("cleaningDealer").disabled = !canCleanLeads();
   $("cleaningForm").querySelector('button[type="submit"]').hidden = !canCleanLeads();
   renderCleaningHistory(lead);
-  syncCleaningForm();
+  updateDealerPreview();
   $("cleaningModal").hidden = false;
   document.body.classList.add("modal-open");
 }
@@ -214,48 +216,36 @@ function saveCleaningResult(event) {
   if (!canCleanLeads()) return toast("当前账号没有清洗和分配线索的权限");
   const lead = state.leads.find((item) => item.id === currentCleaningLeadId);
   if (!lead) return closeCleaningModal();
-  const status = $("cleaningStatus").value;
-  const result = $("cleaningResult").value;
-  const brand = $("cleaningBrand").value;
-  const assignee = cleaningSalesAccounts().find((account) => account.id === $("cleaningAssignee").value);
-  const note = $("cleaningNote").value.trim();
-  if (status === "清洗通过" && (!brand || !assignee)) return toast("清洗通过前必须选择归属品牌和销售负责人");
-  if (status === "清洗通过" && result !== "有效") return toast("清洗通过时，清洗结果必须为“有效”");
-  if (status === "待补充" && result !== "信息不完整") return toast("待补充线索的清洗结果应为“信息不完整”");
-  if (status === "清洗不通过" && ["", "有效"].includes(result)) return toast("清洗不通过时必须选择具体原因");
-  if (result === "其他" && !note) return toast("选择“其他”时必须填写清洗备注");
-  const previousStatus = lead.cleaningStatus || "待清洗";
+  const dealer = baicDealers().find((item) => item.id === $("cleaningDealer").value);
+  if (!dealer) return toast("请选择北汽经销商");
   const account = state.accounts.find((item) => item.role === currentRole) || state.accounts[0];
   const operator = `${account.id} ${account.username}`;
   const now = new Date().toLocaleString("zh-CN", { hour12: false });
-  lead.brand = brand || lead.brand;
-  lead.cleaningStatus = status;
-  lead.cleaningResult = status === "待清洗" ? "" : result;
+  lead.dealer = dealer.name;
+  lead.region = dealer.region;
+  lead.city = dealer.region;
+  lead.address = dealer.address;
+  lead.baicDealerId = dealer.id;
+  lead.baicSalesId = dealer.salesId;
+  lead.cleaningStatus = "清洗通过";
+  lead.cleaningResult = "有效";
   lead.cleaningOperator = operator;
   lead.cleaningTime = now;
-  lead.cleaningNote = note;
+  lead.cleaningNote = `已分配至 ${dealer.name}`;
   lead.cleaningActionApplied = true;
-  lead.cleaningHistory = [{ status, result: lead.cleaningResult, note, operator, time: now }, ...(lead.cleaningHistory || [])];
-  if (status === "清洗通过") {
-    lead.assignee = `${assignee.id} ${assignee.username}`;
-    if (previousStatus !== "清洗通过" || !lead.task || lead.task === "—") {
-      lead.status = "未跟进";
-      lead.subStatus = "正常等待跟进";
-      lead.quality = "UNKNOWN";
-      lead.task = "首次联系";
-      lead.taskStatus = "待处理";
-    }
-  } else {
-    lead.assignee = "—";
-    lead.task = "—";
-    lead.taskStatus = "未生成";
-  }
+  lead.cleaningHistory = [{ dealer: dealer.name, sales: `${dealer.salesId} ${dealer.salesName}`, note: "保存信息并分配给北汽销售", operator, time: now }, ...(lead.cleaningHistory || [])];
+  lead.assignee = `${dealer.salesId} ${dealer.salesName}`;
+  lead.status = "未跟进";
+  lead.subStatus = "正常等待跟进";
+  lead.quality = "UNKNOWN";
+  lead.task = "首次联系";
+  lead.taskStatus = "待处理";
   persist();
   buildLeadFilters();
   renderLeads();
   renderDashboard();
   closeCleaningModal();
-  toast(status === "清洗通过" ? "清洗已通过，首次联系任务已生成" : "清洗结果已保存，未生成销售任务");
+  toast(`线索已分配给 ${dealer.salesId} ${dealer.salesName}`);
 }
 function syncImportFields() {
   const manual = $("importEntryType").value === "人工";
@@ -583,7 +573,7 @@ $("menuButton").addEventListener("click", () => document.querySelector(".admin-s
 $("resetLeadFilters").addEventListener("click", () => { ["leadIdFilter", "leadPhoneFilter", "leadBrandFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => { $(id).value = ""; }); leadPage = 1; renderLeads(); });
 $("leadPagination").addEventListener("click", (event) => { const button = event.target.closest("[data-page]"); if (!button || button.disabled) return; leadPage = Number(button.dataset.page); renderLeads(); });
 $("leadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-clean-lead]"); if (button) openCleaningModal(button.dataset.cleanLead); });
-$("cleaningStatus").addEventListener("change", syncCleaningForm);
+$("cleaningDealer").addEventListener("change", updateDealerPreview);
 $("cleaningForm").addEventListener("submit", saveCleaningResult);
 [$("closeCleaning"), $("cancelCleaning")].forEach((button) => button.addEventListener("click", closeCleaningModal));
 $("showAccountForm").addEventListener("click", () => { $("accountForm").hidden = false; $("accountId").focus(); });
