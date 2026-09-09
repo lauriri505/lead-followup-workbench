@@ -155,7 +155,7 @@
       dealer: "", address: "", price: `$${(429900 + index * 3500).toLocaleString("en-US")} MXN`, downPayment: `${20 + index % 4 * 5}%`, rate: `${(13.9 + index % 5 * 0.35).toFixed(2)}%`, term: `${48 + index % 3 * 12}期`,
       type: index % 3 === 0 ? "试驾" : "金融", leadType: index % 3 === 0 ? "试驾" : "金融",
       entryType: manual ? "人工" : "自动", channel: manual ? "" : channel, source: manual ? "" : source,
-      createdAt: date, status: stateMap[current[0]].businessStage, subStatus: current[1],
+      createdAt: date, status: cleaned ? stateMap[current[0]].businessStage : "", subStatus: cleaned ? current[1] : "",
       quality: ["unfollowed", "overdue"].includes(current[0]) ? "UNKNOWN" : current[0] === "lost" ? "INVALID" : "VALID",
       assignee: cleaned ? assignee : "—",
       task: cleaned && current[0] !== "lost" ? (index % 2 ? "普通回访" : "首次联系") : "—",
