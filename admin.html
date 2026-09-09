@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="AutoCava CRM 管理员后台演示">
   <title>AutoCava 管理员后台</title>
-  <link rel="stylesheet" href="admin.css?v=20260909-1">
+  <link rel="stylesheet" href="admin.css?v=20260909-2">
 </head>
 <body>
   <div class="admin-app">
@@ -31,13 +31,15 @@
 
       <main class="admin-content">
         <section class="admin-view active" id="dashboardView">
-          <div class="view-heading"><div><p class="eyebrow">AUTOCAVA OVERVIEW</p><h1>AutoCava 线索运营总览</h1><p>统计 AutoCava 普通线索一期的线索、任务与账号。</p></div><span class="scope-chip">数据范围：AutoCava</span></div>
-          <div class="metric-grid" id="metricGrid"></div>
-          <div class="dashboard-grid">
-            <section class="admin-panel"><div class="panel-title"><div><h2>线索阶段分布</h2><p>当前普通线索池</p></div><button class="text-action" data-go="leads" type="button">查看全部</button></div><div class="stage-bars" id="stageBars"></div></section>
-            <section class="admin-panel"><div class="panel-title"><div><h2>今日任务概况</h2><p>按任务状态统计</p></div><button class="text-action" data-go="tasks" type="button">配置规则</button></div><div class="task-summary" id="taskSummary"></div></section>
+          <div class="view-heading overview-heading"><div><p class="eyebrow">LEAD OVERVIEW</p><h1>线索概览</h1><p>查看北汽整体及各门店的线索质量、销售效率与转化结果。</p></div><span class="scope-chip">数据范围：北汽普通线索</span></div>
+          <section class="overview-filter" aria-label="看板筛选条件"><div><span>统计口径</span><strong>累计数据</strong></div><label><span>渠道</span><select id="overviewChannelFilter"><option value="">全部渠道</option></select></label><label><span>门店</span><select id="overviewDealerFilter"><option value="">北汽全部门店</option></select></label><button class="secondary-button" id="resetOverviewFilters" type="button">重置筛选</button><small id="overviewDataDate"></small></section>
+          <div class="overview-kpis" id="metricGrid"></div>
+          <div class="overview-main-grid">
+            <section class="admin-panel overview-volume-panel"><div class="panel-title"><div><h2>线索规模与质量</h2><p>北汽总量与门店分布</p></div><button class="text-action" data-go="leads" type="button">查看线索明细</button></div><div class="volume-totals" id="volumeTotals"></div><div class="store-breakdown" id="storeBreakdown"></div></section>
+            <section class="admin-panel efficiency-panel"><div class="panel-title"><div><h2>销售跟进效率</h2><p>仅管理账号可查看</p></div><span class="manager-only">管理视图</span></div><div class="efficiency-list" id="efficiencySummary"></div><div class="sales-throughput"><h3>销售每日处理任务量</h3><div id="salesThroughput"></div></div></section>
           </div>
-          <section class="admin-panel recent-panel"><div class="panel-title"><div><h2>最新普通线索</h2><p>按创建时间倒序</p></div></div><div class="table-wrap"><table><thead><tr><th>线索ID</th><th>用户</th><th>来源</th><th>车型</th><th>线索状态</th><th>有效性</th><th>负责人</th><th>当前任务</th><th>创建时间</th></tr></thead><tbody id="recentLeadRows"></tbody></table></div></section>
+          <section class="admin-panel funnel-panel"><div class="panel-title"><div><h2>客户转化漏斗</h2><p>从已下发线索到最终成交</p></div><span class="funnel-scope" id="funnelScope"></span></div><div class="funnel-layout"><div class="conversion-funnel" id="conversionFunnel"></div><div class="conversion-rates" id="conversionRates"></div></div></section>
+          <section class="admin-panel formula-panel"><div><h2>指标计算口径</h2><p>页面数据用于演示，正式上线后应由统一数据服务按同一口径计算。</p></div><div class="formula-grid" id="formulaGrid"></div></section>
         </section>
 
         <section class="admin-view" id="leadsView" hidden>
@@ -125,7 +127,7 @@
   <script src="flow-config.js?v=20260904-1"></script>
   <script src="data.js?v=20260904-1"></script>
   <script src="config-table.js?v=20260904-1"></script>
-  <script src="admin-data.js?v=20260909-2"></script>
-  <script src="admin.js?v=20260909-3"></script>
+  <script src="admin-data.js?v=20260909-3"></script>
+  <script src="admin.js?v=20260909-4"></script>
 </body>
 </html>

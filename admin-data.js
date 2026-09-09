@@ -138,7 +138,8 @@
   ];
   const generatedLeads = Array.from({ length: Math.max(0, 100 - initialLeads.length) }, (_, index) => {
     const number = index + initialLeads.length + 1; const vehicle = demoVehicles[index % demoVehicles.length]; const date = `2026-09-${String(1 + (index % 30)).padStart(2, "0")} ${String(8 + (index % 10)).padStart(2, "0")}:${String((index * 7) % 60).padStart(2, "0")}`;
-    const statusCases = [["unfollowed", "正常等待跟进"], ["followup", "待确认购车方式"], ["overdue", "超过72小时"], ["dormantCash", "明确表示全款"], ["dormantTestDrive", "表示要先试驾"], ["lost", index % 2 ? "放弃购买" : "号码错误"]]; const current = statusCases[index % statusCases.length];
+    const lostReasons = ["号码错误", "3次未接通", "放弃购买"];
+    const statusCases = [["unfollowed", "正常等待跟进"], ["followup", "待确认购车方式"], ["overdue", "超过72小时"], ["dormantCash", "明确表示全款"], ["dormantTestDrive", "表示要先试驾"], ["lost", lostReasons[Math.floor(index / 6) % lostReasons.length]]]; const current = statusCases[index % statusCases.length];
     const manual = index % 7 === 0; const channel = ["Meta", "Google", "Ins", "官网"][index % 4]; const source = ["车型详情页", "AICTA选车推荐", "金融机构", "首页banner"][index % 4];
     const cleaningCases = ["待清洗", "待补充", "清洗不通过", "清洗通过"];
     const cleaningStatus = current[0] === "unfollowed" ? cleaningCases[Math.floor(index / 6) % cleaningCases.length] : "清洗通过";
