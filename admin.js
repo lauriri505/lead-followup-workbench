@@ -114,8 +114,16 @@ function renderAccountSession() {
 const qualityLabels = { UNKNOWN: "待判定", VALID: "有效", INVALID: "无效" };
 const canCleanLeads = () => (state.permissions[currentRole] || []).includes("清洗和分配线索");
 function statusClass(status) { return status === "战败" ? "lost" : ["暂存", "过期未跟进"].includes(status) ? "dormant" : ["跟进中", "确认金融购车"].includes(status) ? "won" : ""; }
+function isEnteredFollowup(lead) { return Boolean(lead.cleaningActionApplied) || (lead.cleaningStatus === "清洗通过" && lead.assignee && lead.assignee !== "—"); }
+function processingStatus(lead) {
+  if (isEnteredFollowup(lead)) return "已下发";
+  if (lead.cleaningStatus === "待补充") return "待补充资料";
+  if (lead.cleaningStatus === "清洗不通过") return "线索无效";
+  return "待清洗";
+}
 function leadRow(lead) {
-  const enteredFollowup = Boolean(lead.cleaningActionApplied) || (lead.cleaningStatus === "清洗通过" && lead.assignee && lead.assignee !== "—");
+  const enteredFollowup = isEnteredFollowup(lead);
+  const processStatus = processingStatus(lead);
   const leadStatusText = enteredFollowup && lead.status ? `${lead.status}${lead.subStatus && lead.subStatus !== "—" ? ` · ${lead.subStatus}` : ""}` : "未进入销售跟进";
   const taskText = enteredFollowup && lead.task && lead.task !== "—"
     ? `${lead.task} · ${lead.taskStatus}`
@@ -123,10 +131,13 @@ function leadRow(lead) {
       ? "已结束"
       : "未生成";
   const action = String(lead.brand || "").toUpperCase() === "BAIC" ? `<button class="cleaning-action" data-clean-lead="${esc(lead.id)}" type="button">详情</button>` : `<span class="muted-cell">—</span>`;
-  return `<tr><td><strong>${esc(lead.id)}</strong><small class="table-code">${esc(lead.type || lead.leadType)} · ${esc(lead.entryType || "自动")}</small></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td><strong>${esc(lead.brand || "—")}</strong><small class="table-code">${esc(lead.series || "—")} · ${esc(lead.model || "—")}</small></td><td>${esc(lead.channel || "—")}<small class="table-code">${esc(lead.source || "—")}</small></td><td>${esc(lead.createdAt || "—")}</td><td><span class="table-status ${enteredFollowup ? statusClass(lead.status) : "pending-entry"}">${esc(leadStatusText)}</span></td><td>${esc(enteredFollowup ? lead.assignee || "—" : "—")}</td><td><span class="task-state ${enteredFollowup && lead.taskStatus === "处理中" ? "processing" : ""}">${esc(taskText)}</span></td><td>${action}</td></tr>`;
+  return `<tr><td><strong>${esc(lead.id)}</strong><small class="table-code">${esc(lead.type || lead.leadType)} · ${esc(lead.entryType || "自动")}</small></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td><strong>${esc(lead.brand || "—")}</strong><small class="table-code">${esc(lead.series || "—")} · ${esc(lead.model || "—")}</small></td><td>${esc(lead.channel || "—")}<small class="table-code">${esc(lead.source || "—")}</small></td><td>${esc(lead.createdAt || "—")}</td><td><span class="processing-chip ${processStatus === "已下发" ? "distributed" : processStatus === "线索无效" ? "invalid" : processStatus === "待补充资料" ? "supplement" : "pending"}">${esc(processStatus)}</span></td><td><span class="table-status ${enteredFollowup ? statusClass(lead.status) : "pending-entry"}">${esc(leadStatusText)}</span></td><td>${esc(enteredFollowup ? lead.assignee || "—" : "—")}</td><td><span class="task-state ${enteredFollowup && lead.taskStatus === "处理中" ? "processing" : ""}">${esc(taskText)}</span></td><td>${action}</td></tr>`;
 }
 function compactLeadRow(lead) {
-  return `<tr><td><strong>${esc(lead.id)}</strong></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td>${esc(lead.source || lead.channel || "—")}</td><td>${esc(lead.brand)} ${esc(lead.series)} ${esc(lead.model)}</td><td><span class="table-status ${statusClass(lead.status)}">${esc(lead.status)} · ${esc(lead.subStatus)}</span></td><td><span class="quality-chip ${(lead.quality || "UNKNOWN").toLowerCase()}">${esc(qualityLabels[lead.quality] || "待判定")}</span></td><td>${esc(lead.assignee)}</td><td><span class="task-state ${lead.taskStatus === "处理中" ? "processing" : ""}">${esc(lead.task)} · ${esc(lead.taskStatus)}</span></td><td>${esc(lead.createdAt)}</td></tr>`;
+  const enteredFollowup = isEnteredFollowup(lead);
+  const statusText = enteredFollowup && lead.status ? `${lead.status} · ${lead.subStatus}` : "未进入销售跟进";
+  const taskText = enteredFollowup && lead.task && lead.task !== "—" ? `${lead.task} · ${lead.taskStatus}` : "未生成";
+  return `<tr><td><strong>${esc(lead.id)}</strong></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td>${esc(lead.source || lead.channel || "—")}</td><td>${esc(lead.brand)} ${esc(lead.series)} ${esc(lead.model)}</td><td><span class="table-status ${enteredFollowup ? statusClass(lead.status) : "pending-entry"}">${esc(statusText)}</span></td><td><span class="quality-chip ${(lead.quality || "UNKNOWN").toLowerCase()}">${esc(qualityLabels[lead.quality] || "待判定")}</span></td><td>${esc(enteredFollowup ? lead.assignee : "—")}</td><td><span class="task-state ${enteredFollowup && lead.taskStatus === "处理中" ? "processing" : ""}">${esc(taskText)}</span></td><td>${esc(lead.createdAt)}</td></tr>`;
 }
 function renderDashboard() {
   const activeTasks = state.leads.filter((lead) => ["待处理", "处理中"].includes(lead.taskStatus)).length;
@@ -183,9 +194,20 @@ function updateDealerPreview() {
     ? `<strong>${esc(dealer.name)}</strong><span>${esc(dealer.region)} · ${esc(dealer.address)}</span><span>将分配给：${esc(dealer.salesId)} ${esc(dealer.salesName)}</span>`
     : "请选择经销商";
 }
+function syncCleaningAction() {
+  const action = $("cleaningAction").value;
+  $("dealerAssignment").hidden = action !== "distribute";
+  $("supplementFields").hidden = action !== "supplement";
+  $("invalidFields").hidden = action !== "invalid";
+  $("cleaningDealer").required = action === "distribute";
+  $("cleaningNote").required = action === "supplement";
+  $("cleaningInvalidReason").required = action === "invalid";
+  const labels = { pending: "保存为待清洗", supplement: "保存并等待补充", invalid: "确认线索无效", distribute: "保存信息并下发线索" };
+  $("saveCleaningAction").textContent = labels[action];
+}
 function renderCleaningHistory(lead) {
   const history = lead.cleaningHistory || [];
-  $("cleaningHistory").innerHTML = history.length ? history.map((record) => `<li><div><strong>${esc(record.dealer || record.status || "已处理")}</strong><span>${esc(record.sales || record.result || "")}</span></div><p>${esc(record.note || "完成线索分配")}</p><small>${esc(record.time)} · ${esc(record.operator)}</small></li>`).join("") : `<li class="empty-history">尚未产生分配记录</li>`;
+  $("cleaningHistory").innerHTML = history.length ? history.map((record) => `<li><div><strong>${esc(record.dealer || record.status || "已处理")}</strong><span>${esc(record.sales || record.result || "")}</span></div><p>${esc(record.note || "完成线索处理")}</p><small>${esc(record.time)} · ${esc(record.operator)}</small></li>`).join("") : `<li class="empty-history">尚未产生处理记录</li>`;
 }
 function openCleaningModal(leadId) {
   const lead = state.leads.find((item) => item.id === leadId);
@@ -201,10 +223,19 @@ function openCleaningModal(leadId) {
   $("cleaningLeadSummary").innerHTML = detailFields.map(([label, value]) => `<div><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join("");
   $("cleaningDealer").innerHTML = `<option value="">请选择经销商</option>${baicDealers().map((dealer) => `<option value="${esc(dealer.id)}">${esc(dealer.name)}</option>`).join("")}`;
   $("cleaningDealer").value = lead.baicDealerId || "";
+  $("cleaningAction").value = isEnteredFollowup(lead) ? "distribute" : lead.cleaningStatus === "待补充" ? "supplement" : lead.cleaningStatus === "清洗不通过" ? "invalid" : "pending";
+  $("cleaningNote").value = lead.cleaningStatus === "待补充" ? lead.cleaningNote || "" : "";
+  $("cleaningInvalidReason").value = lead.cleaningStatus === "清洗不通过" && ["号码错误", "重复线索", "非目标品牌", "虚假或测试数据", "其他"].includes(lead.cleaningResult) ? lead.cleaningResult : "";
+  $("cleaningInvalidNote").value = lead.cleaningStatus === "清洗不通过" ? lead.cleaningNote || "" : "";
+  $("cleaningAction").disabled = !canCleanLeads();
   $("cleaningDealer").disabled = !canCleanLeads();
+  $("cleaningNote").disabled = !canCleanLeads();
+  $("cleaningInvalidReason").disabled = !canCleanLeads();
+  $("cleaningInvalidNote").disabled = !canCleanLeads();
   $("cleaningForm").querySelector('button[type="submit"]').hidden = !canCleanLeads();
   renderCleaningHistory(lead);
   updateDealerPreview();
+  syncCleaningAction();
   $("cleaningModal").hidden = false;
   document.body.classList.add("modal-open");
 }
@@ -218,36 +249,64 @@ function saveCleaningResult(event) {
   if (!canCleanLeads()) return toast("当前账号没有清洗和分配线索的权限");
   const lead = state.leads.find((item) => item.id === currentCleaningLeadId);
   if (!lead) return closeCleaningModal();
-  const dealer = baicDealers().find((item) => item.id === $("cleaningDealer").value);
-  if (!dealer) return toast("请选择北汽经销商");
+  const action = $("cleaningAction").value;
+  const dealer = action === "distribute" ? baicDealers().find((item) => item.id === $("cleaningDealer").value) : null;
+  if (action === "distribute" && !dealer) return toast("请选择北汽经销商");
+  const supplementNote = $("cleaningNote").value.trim();
+  const invalidReason = $("cleaningInvalidReason").value;
+  const invalidNote = $("cleaningInvalidNote").value.trim();
+  if (action === "supplement" && !supplementNote) return toast("请填写需要补充的资料");
+  if (action === "invalid" && !invalidReason) return toast("请选择线索无效原因");
+  if (action === "invalid" && invalidReason === "其他" && !invalidNote) return toast("选择其他原因时，请填写补充说明");
   const account = state.accounts.find((item) => item.role === currentRole) || state.accounts[0];
   const operator = `${account.id} ${account.username}`;
   const now = new Date().toLocaleString("zh-CN", { hour12: false });
-  lead.dealer = dealer.name;
-  lead.region = dealer.region;
-  lead.city = dealer.region;
-  lead.address = dealer.address;
-  lead.baicDealerId = dealer.id;
-  lead.baicSalesId = dealer.salesId;
-  lead.cleaningStatus = "清洗通过";
-  lead.cleaningResult = "有效";
   lead.cleaningOperator = operator;
   lead.cleaningTime = now;
-  lead.cleaningNote = `已分配至 ${dealer.name}`;
-  lead.cleaningActionApplied = true;
-  lead.cleaningHistory = [{ dealer: dealer.name, sales: `${dealer.salesId} ${dealer.salesName}`, note: "保存信息并分配给北汽销售", operator, time: now }, ...(lead.cleaningHistory || [])];
-  lead.assignee = `${dealer.salesId} ${dealer.salesName}`;
-  lead.status = "未跟进";
-  lead.subStatus = "正常等待跟进";
-  lead.quality = "UNKNOWN";
-  lead.task = "首次联系";
-  lead.taskStatus = "待处理";
+  if (action === "distribute") {
+    lead.dealer = dealer.name;
+    lead.region = dealer.region;
+    lead.city = dealer.region;
+    lead.address = dealer.address;
+    lead.baicDealerId = dealer.id;
+    lead.baicSalesId = dealer.salesId;
+    lead.cleaningStatus = "清洗通过";
+    lead.cleaningResult = "有效";
+    lead.cleaningNote = `已分配至 ${dealer.name}`;
+    lead.cleaningActionApplied = true;
+    lead.cleaningHistory = [{ status: "已下发", dealer: dealer.name, sales: `${dealer.salesId} ${dealer.salesName}`, note: "确认有效并分配给北汽销售", operator, time: now }, ...(lead.cleaningHistory || [])];
+    lead.assignee = `${dealer.salesId} ${dealer.salesName}`;
+    lead.status = "未跟进";
+    lead.subStatus = "正常等待跟进";
+    lead.quality = "UNKNOWN";
+    lead.task = "首次联系";
+    lead.taskStatus = "待处理";
+  } else {
+    const status = action === "supplement" ? "待补充" : action === "invalid" ? "清洗不通过" : "待清洗";
+    const result = action === "supplement" ? "信息不完整" : action === "invalid" ? invalidReason : "";
+    const note = action === "supplement" ? supplementNote : action === "invalid" ? invalidNote : "保留在线索清洗池";
+    lead.cleaningStatus = status;
+    lead.cleaningResult = result;
+    lead.cleaningNote = note;
+    lead.cleaningActionApplied = false;
+    lead.cleaningHistory = [{ status: processingStatus({ ...lead, cleaningStatus: status, cleaningActionApplied: false, assignee: "—" }), result, note, operator, time: now }, ...(lead.cleaningHistory || [])];
+    lead.dealer = "";
+    lead.address = "";
+    lead.baicDealerId = "";
+    lead.baicSalesId = "";
+    lead.assignee = "—";
+    lead.status = "";
+    lead.subStatus = "";
+    lead.quality = action === "invalid" ? "INVALID" : "UNKNOWN";
+    lead.task = "—";
+    lead.taskStatus = "未生成";
+  }
   persist();
   buildLeadFilters();
   renderLeads();
   renderDashboard();
   closeCleaningModal();
-  toast(`线索已分配给 ${dealer.salesId} ${dealer.salesName}`);
+  toast(action === "distribute" ? `线索已分配给 ${dealer.salesId} ${dealer.salesName}` : action === "supplement" ? "线索已转为待补充资料，不生成销售任务" : action === "invalid" ? "线索已标记无效，不下发且不计入战败" : "线索保持待清洗，不生成销售任务");
 }
 function syncImportFields() {
   const manual = $("importEntryType").value === "人工";
@@ -575,6 +634,7 @@ $("menuButton").addEventListener("click", () => document.querySelector(".admin-s
 $("resetLeadFilters").addEventListener("click", () => { ["leadIdFilter", "leadPhoneFilter", "leadBrandFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => { $(id).value = ""; }); leadPage = 1; renderLeads(); });
 $("leadPagination").addEventListener("click", (event) => { const button = event.target.closest("[data-page]"); if (!button || button.disabled) return; leadPage = Number(button.dataset.page); renderLeads(); });
 $("leadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-clean-lead]"); if (button) openCleaningModal(button.dataset.cleanLead); });
+$("cleaningAction").addEventListener("change", syncCleaningAction);
 $("cleaningDealer").addEventListener("change", updateDealerPreview);
 $("cleaningForm").addEventListener("submit", saveCleaningResult);
 [$("closeCleaning"), $("cancelCleaning")].forEach((button) => button.addEventListener("click", closeCleaningModal));
