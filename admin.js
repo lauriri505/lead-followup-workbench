@@ -139,85 +139,8 @@ function compactLeadRow(lead) {
   const taskText = enteredFollowup && lead.task && lead.task !== "—" ? `${lead.task} · ${lead.taskStatus}` : "未生成";
   return `<tr><td><strong>${esc(lead.id)}</strong></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td>${esc(lead.source || lead.channel || "—")}</td><td>${esc(lead.brand)} ${esc(lead.series)} ${esc(lead.model)}</td><td><span class="table-status ${enteredFollowup ? statusClass(lead.status) : "pending-entry"}">${esc(statusText)}</span></td><td><span class="quality-chip ${(lead.quality || "UNKNOWN").toLowerCase()}">${esc(qualityLabels[lead.quality] || "待判定")}</span></td><td>${esc(enteredFollowup ? lead.assignee : "—")}</td><td><span class="task-state ${enteredFollowup && lead.taskStatus === "处理中" ? "processing" : ""}">${esc(taskText)}</span></td><td>${esc(lead.createdAt)}</td></tr>`;
 }
-const overviewDealers = () => state.baicDealers || [];
-function leadHash(lead) { return String(lead.id || "").split("").reduce((sum, char) => sum + char.charCodeAt(0), 0); }
-function overviewChannel(lead) { return ["Meta", "Google"].includes(lead.channel) ? lead.channel : "AutoCava"; }
-function overviewDealer(lead) {
-  if (lead.dealer) return lead.dealer;
-  const dealers = overviewDealers();
-  return dealers.length ? dealers[leadHash(lead) % dealers.length].name : "未分配门店";
-}
-function rate(value, total) { return total ? `${Math.round(value / total * 100)}%` : "—"; }
-function renderOverviewFilters() {
-  const channelSelect = $("overviewChannelFilter");
-  const dealerSelect = $("overviewDealerFilter");
-  const selectedChannel = channelSelect.value;
-  const selectedDealer = dealerSelect.value;
-  channelSelect.innerHTML = `<option value="">全部渠道</option>${["Meta", "Google", "AutoCava"].map((item) => `<option value="${item}">${item}</option>`).join("")}`;
-  dealerSelect.innerHTML = `<option value="">北汽全部门店</option>${overviewDealers().map((item) => `<option value="${esc(item.name)}">${esc(item.name)}</option>`).join("")}`;
-  channelSelect.value = selectedChannel;
-  dealerSelect.value = selectedDealer;
-}
-function renderDashboard() {
-  const channel = $("overviewChannelFilter").value;
-  const dealer = $("overviewDealerFilter").value;
-  const baicLeads = state.leads.filter((lead) => String(lead.brand || "").toUpperCase() === "BAIC");
-  const latestDate = baicLeads.map((lead) => String(lead.createdAt || "").slice(0, 10)).sort().pop() || "—";
-  const scoped = baicLeads.filter((lead) => (!channel || overviewChannel(lead) === channel) && (!dealer || overviewDealer(lead) === dealer));
-  const distributed = scoped.filter(isEnteredFollowup);
-  const todayNew = scoped.filter((lead) => String(lead.createdAt || "").slice(0, 10) === latestDate);
-  const followed = distributed.filter((lead) => !["未跟进", "过期未跟进"].includes(lead.status));
-  const pending = distributed.filter((lead) => ["未跟进", "过期未跟进"].includes(lead.status));
-  const invalid = distributed.filter((lead) => lead.status === "战败" && /号码错误|3次未接通|未接通/.test(`${lead.subStatus || ""} ${lead.cleaningResult || ""}`));
-  const valid = distributed.filter((lead) => !invalid.includes(lead));
-  const prospects = valid.filter((lead) => ["跟进中", "暂存", "确认金融购车"].includes(lead.status));
-  const booked = prospects.filter((lead) => leadHash(lead) % 10 < 7);
-  const testDriven = booked.filter((lead) => leadHash(lead) % 10 < 5);
-  const arrived = booked.filter((lead) => leadHash(lead) % 10 < 6);
-  const converted = arrived.filter((lead) => lead.status === "确认金融购车" || leadHash(lead) % 10 < 3);
-  const invalidRate = rate(invalid.length, distributed.length);
-  const validRate = rate(valid.length, distributed.length);
-  const appointmentRate = rate(booked.length, prospects.length);
-  const arrivalRate = rate(arrived.length, booked.length);
-  $("overviewDataDate").textContent = `数据更新至 ${latestDate} 23:59（UTC-6）`;
-  $("funnelScope").textContent = `${channel || "全部渠道"} · ${dealer || "北汽全部门店"}`;
-  const metrics = [
-    ["今日新增线索", todayNew.length, `北汽共 ${baicLeads.filter((lead) => String(lead.createdAt || "").slice(0, 10) === latestDate).length} 条`, "new"],
-    ["有效线索占比", validRate, `${valid.length} / ${distributed.length} 条已下发`, "valid"],
-    ["预约试驾率", appointmentRate, `${booked.length} / ${prospects.length} 位潜客`, "appointment"],
-    ["到店率", arrivalRate, `${arrived.length} / ${booked.length} 位预约客户`, "arrival"]
-  ];
-  $("metricGrid").innerHTML = metrics.map(([label, value, note, tone]) => `<article class="overview-kpi ${tone}"><span>${label}</span><strong>${value}</strong><small>${note}</small></article>`).join("");
-  const totals = [["累计下发", distributed.length], ["今日新增", todayNew.length], ["已分配", distributed.filter((lead) => lead.assignee && lead.assignee !== "—").length], ["已跟进", followed.length], ["待跟进", pending.length], ["无效占比", invalidRate]];
-  $("volumeTotals").innerHTML = totals.map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`).join("");
-  const stores = (dealer ? overviewDealers().filter((item) => item.name === dealer) : overviewDealers()).map((store) => {
-    const items = scoped.filter((lead) => overviewDealer(lead) === store.name);
-    const assigned = items.filter(isEnteredFollowup);
-    const done = assigned.filter((lead) => !["未跟进", "过期未跟进"].includes(lead.status));
-    const waiting = assigned.filter((lead) => ["未跟进", "过期未跟进"].includes(lead.status));
-    return { name: store.name, total: assigned.length, today: assigned.filter((lead) => String(lead.createdAt || "").slice(0, 10) === latestDate).length, assigned: assigned.length, followed: done.length, pending: waiting.length };
-  });
-  $("storeBreakdown").innerHTML = `<div class="store-row store-head"><span>门店</span><span>累计</span><span>今日</span><span>已分配</span><span>已跟进</span><span>待跟进</span></div>${stores.map((item) => `<div class="store-row"><strong>${esc(item.name)}</strong><span>${item.total}</span><span>${item.today}</span><span>${item.assigned}</span><span>${item.followed}</span><span>${item.pending}</span></div>`).join("")}`;
-  if (currentRole === "super_admin") {
-    const firstContactMinutes = distributed.length ? Math.round(distributed.reduce((sum, lead) => sum + 18 + leadHash(lead) % 73, 0) / distributed.length) : 0;
-    const efficiency = [["首次联系平均时间", `${firstContactMinutes} 分钟`, "从分配成功到首次提交跟进"], ["未跟进超时", distributed.filter((lead) => lead.status === "过期未跟进").length, "超过72小时"], ["跟进中线索", distributed.filter((lead) => lead.status === "跟进中").length, "正在持续联系"], ["暂存线索", distributed.filter((lead) => lead.status === "暂存").length, "低频回访中"]];
-    $("efficiencySummary").innerHTML = efficiency.map(([label, value, note]) => `<div><span>${label}</span><strong>${value}</strong><small>${note}</small></div>`).join("");
-    const sales = [...new Set(distributed.map((lead) => lead.assignee).filter((item) => item && item !== "—"))];
-    const throughput = sales.map((name) => ({ name, count: distributed.filter((lead) => lead.assignee === name && ["已完成", "已结束", "处理中"].includes(lead.taskStatus)).length }));
-    const throughputMax = Math.max(1, ...throughput.map((item) => item.count));
-    $("salesThroughput").innerHTML = throughput.map((item) => `<div class="throughput-row"><span>${esc(item.name)}</span><i><b style="width:${item.count / throughputMax * 100}%"></b></i><strong>${item.count}</strong></div>`).join("") || `<p class="empty-overview">当前范围暂无销售任务</p>`;
-  } else {
-    $("efficiencySummary").innerHTML = `<div class="overview-locked"><strong>仅管理账号可查看</strong><span>销售账号不展示团队效率和个人处理量。</span></div>`;
-    $("salesThroughput").innerHTML = "";
-  }
-  const funnel = [["线索总量", distributed.length], ["有效线索", valid.length], ["潜客", prospects.length], ["预约试驾", booked.length], ["到店", arrived.length], ["成交", converted.length]];
-  const funnelMax = Math.max(distributed.length, 1);
-  $("conversionFunnel").innerHTML = funnel.map(([label, value], index) => `<div class="funnel-step" style="--step:${index};--funnel-width:${Math.max(34, value / funnelMax * 100)}%"><span>${label}</span><strong>${value}</strong><small>${rate(value, distributed.length)} 总线索占比</small></div>`).join("");
-  const rates = [["有意向率", rate(prospects.length, valid.length), "潜客 ÷ 有效线索"], ["预约试驾率", appointmentRate, "预约试驾线索 ÷ 潜客"], ["到店率", arrivalRate, "到店人数 ÷ 预约试驾人数"], ["成交率（到店口径）", rate(converted.length, arrived.length), "成交数 ÷ 到店人数"], ["试驾成交率", rate(converted.length, testDriven.length), "成交数 ÷ 实际试驾人数"], ["整体线索成交率", rate(converted.length, distributed.length), "成交数 ÷ 线索总量"]];
-  $("conversionRates").innerHTML = rates.map(([label, value, formula]) => `<div><span>${label}</span><strong>${value}</strong><small>${formula}</small></div>`).join("");
-  const formulas = [["无效线索占比", "（战败-号码错误 + 战败-3次未接通）÷ 已下发线索总数；不含下发前清洗无效"], ["有效线索占比", "（已下发线索总数 − 无效线索数）÷ 已下发线索总数"], ["首次联系平均时间", "Σ（首次跟进时间 − 分配时间）÷ 已首次跟进线索数"], ["销售每日处理任务量", "当日完成或提交过处理结果的任务数"]];
-  $("formulaGrid").innerHTML = formulas.map(([name, formula]) => `<div><strong>${name}</strong><code>${formula}</code></div>`).join("");
-}
+function renderOverviewFilters() { CohortDashboard.init(state, renderDashboard); }
+function renderDashboard() { CohortDashboard.render(state, currentRole); }
 let leadPage = 1;
 const leadPageSize = 30;
 const leadSource = (lead) => lead.channel || lead.source || "—";
