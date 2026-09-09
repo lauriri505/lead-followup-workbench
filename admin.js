@@ -102,18 +102,16 @@ function renderAccountSession() {
 }
 
 const qualityLabels = { UNKNOWN: "待判定", VALID: "有效", INVALID: "无效" };
-const cleaningClasses = { "待清洗": "pending", "待补充": "supplement", "清洗通过": "passed", "清洗不通过": "rejected" };
 const canCleanLeads = () => (state.permissions[currentRole] || []).includes("清洗和分配线索");
 function statusClass(status) { return status === "战败" ? "lost" : ["暂存", "过期未跟进"].includes(status) ? "dormant" : ["跟进中", "确认金融购车"].includes(status) ? "won" : ""; }
 function leadRow(lead) {
-  const cleaningStatus = lead.cleaningStatus || "待清洗";
-    const taskText = lead.task && lead.task !== "—"
-      ? `${lead.task} · ${lead.taskStatus}`
-      : lead.taskStatus === "已结束"
-        ? "已结束"
-        : "未生成";
-  const actionLabel = canCleanLeads() ? "清洗 / 查看" : "查看";
-  return `<tr><td><strong>${esc(lead.id)}</strong><small class="table-code">${esc(lead.type || lead.leadType)} · ${esc(lead.entryType || "自动")}</small></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td><strong>${esc(lead.brand || "—")}</strong><small class="table-code">${esc(lead.series || "—")} · ${esc(lead.model || "—")}</small></td><td>${esc(lead.channel || "—")}<small class="table-code">${esc(lead.source || "—")}</small></td><td>${esc(lead.createdAt || "—")}</td><td><span class="cleaning-chip ${cleaningClasses[cleaningStatus] || "pending"}">${esc(cleaningStatus)}</span></td><td>${esc(lead.cleaningResult || "—")}</td><td>${esc(lead.cleaningOperator || "—")}<small class="table-code">${esc(lead.cleaningTime || "—")}</small></td><td>${esc(lead.assignee || "—")}</td><td><span class="task-state ${lead.taskStatus === "处理中" ? "processing" : ""}">${esc(taskText)}</span></td><td><button class="cleaning-action" data-clean-lead="${esc(lead.id)}" type="button">${actionLabel}</button></td></tr>`;
+  const taskText = lead.task && lead.task !== "—"
+    ? `${lead.task} · ${lead.taskStatus}`
+    : lead.taskStatus === "已结束"
+      ? "已结束"
+      : "未生成";
+  const actionLabel = canCleanLeads() ? "清洗处理" : "查看详情";
+  return `<tr><td><strong>${esc(lead.id)}</strong><small class="table-code">${esc(lead.type || lead.leadType)} · ${esc(lead.entryType || "自动")}</small></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td><strong>${esc(lead.brand || "—")}</strong><small class="table-code">${esc(lead.series || "—")} · ${esc(lead.model || "—")}</small></td><td>${esc(lead.channel || "—")}<small class="table-code">${esc(lead.source || "—")}</small></td><td>${esc(lead.createdAt || "—")}</td><td>${esc(lead.assignee || "—")}</td><td><span class="task-state ${lead.taskStatus === "处理中" ? "processing" : ""}">${esc(taskText)}</span></td><td><button class="cleaning-action" data-clean-lead="${esc(lead.id)}" type="button">${actionLabel}</button></td></tr>`;
 }
 function compactLeadRow(lead) {
   return `<tr><td><strong>${esc(lead.id)}</strong></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td>${esc(lead.source || lead.channel || "—")}</td><td>${esc(lead.brand)} ${esc(lead.series)} ${esc(lead.model)}</td><td><span class="table-status ${statusClass(lead.status)}">${esc(lead.status)} · ${esc(lead.subStatus)}</span></td><td><span class="quality-chip ${(lead.quality || "UNKNOWN").toLowerCase()}">${esc(qualityLabels[lead.quality] || "待判定")}</span></td><td>${esc(lead.assignee)}</td><td><span class="task-state ${lead.taskStatus === "处理中" ? "processing" : ""}">${esc(lead.task)} · ${esc(lead.taskStatus)}</span></td><td>${esc(lead.createdAt)}</td></tr>`;
@@ -151,16 +149,13 @@ function renderLeadPagination(total) {
 function renderLeads() {
   const id = $("leadIdFilter").value.trim().toLowerCase();
   const brand = $("leadBrandFilter").value;
-  const cleaningStatus = $("leadCleaningFilter").value;
   const type = $("leadTypeFilter").value;
   const phone = $("leadPhoneFilter").value.trim().toLowerCase();
   const source = $("leadSourceFilter").value;
   const entryType = $("leadEntryTypeFilter").value;
   const start = $("leadCreatedStart").value;
   const end = $("leadCreatedEnd").value;
-  const filtered = state.leads.filter((lead) => (!id || String(lead.id).toLowerCase().includes(id)) && (!brand || lead.brand === brand) && (!cleaningStatus || (lead.cleaningStatus || "待清洗") === cleaningStatus) && (!type || lead.type === type) && (!phone || String(lead.phone).toLowerCase().includes(phone)) && (!source || leadSource(lead) === source) && (!entryType || (lead.entryType || "自动") === entryType) && (!start || String(lead.createdAt).slice(0, 10) >= start) && (!end || String(lead.createdAt).slice(0, 10) <= end)).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
-  const cleaningCounts = ["待清洗", "待补充", "清洗通过", "清洗不通过"].map((name) => [name, state.leads.filter((lead) => (lead.cleaningStatus || "待清洗") === name).length]);
-  $("cleaningSummary").innerHTML = cleaningCounts.map(([name, count]) => `<button class="${cleaningStatus === name ? "active" : ""}" type="button" data-cleaning-filter="${name}"><span>${name}</span><strong>${count}</strong></button>`).join("");
+  const filtered = state.leads.filter((lead) => (!id || String(lead.id).toLowerCase().includes(id)) && (!brand || lead.brand === brand) && (!type || lead.type === type) && (!phone || String(lead.phone).toLowerCase().includes(phone)) && (!source || leadSource(lead) === source) && (!entryType || (lead.entryType || "自动") === entryType) && (!start || String(lead.createdAt).slice(0, 10) >= start) && (!end || String(lead.createdAt).slice(0, 10) <= end)).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
   $("leadTotal").textContent = filtered.length;
   const startIndex = (leadPage - 1) * leadPageSize;
   $("leadRows").innerHTML = filtered.slice(startIndex, startIndex + leadPageSize).map(leadRow).join("");
@@ -584,11 +579,10 @@ $("accountSwitcher").addEventListener("change", (event) => { currentRole = event
 qsa("[data-go]").forEach((button) => button.addEventListener("click", () => openView(button.dataset.go)));
 $("menuButton").addEventListener("click", () => document.querySelector(".admin-sidebar").classList.toggle("open"));
 ["leadIdFilter", "leadPhoneFilter"].forEach((id) => $(id).addEventListener("input", () => { leadPage = 1; renderLeads(); }));
-["leadBrandFilter", "leadCleaningFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => $(id).addEventListener("change", () => { leadPage = 1; renderLeads(); }));
-$("resetLeadFilters").addEventListener("click", () => { ["leadIdFilter", "leadPhoneFilter", "leadBrandFilter", "leadCleaningFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => { $(id).value = ""; }); leadPage = 1; renderLeads(); });
+["leadBrandFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => $(id).addEventListener("change", () => { leadPage = 1; renderLeads(); }));
+$("resetLeadFilters").addEventListener("click", () => { ["leadIdFilter", "leadPhoneFilter", "leadBrandFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => { $(id).value = ""; }); leadPage = 1; renderLeads(); });
 $("leadPagination").addEventListener("click", (event) => { const button = event.target.closest("[data-page]"); if (!button || button.disabled) return; leadPage = Number(button.dataset.page); renderLeads(); });
 $("leadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-clean-lead]"); if (button) openCleaningModal(button.dataset.cleanLead); });
-$("cleaningSummary").addEventListener("click", (event) => { const button = event.target.closest("[data-cleaning-filter]"); if (!button) return; $("leadCleaningFilter").value = button.dataset.cleaningFilter; leadPage = 1; renderLeads(); });
 $("cleaningStatus").addEventListener("change", syncCleaningForm);
 $("cleaningForm").addEventListener("submit", saveCleaningResult);
 [$("closeCleaning"), $("cancelCleaning")].forEach((button) => button.addEventListener("click", closeCleaningModal));
