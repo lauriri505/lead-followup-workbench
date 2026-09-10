@@ -175,6 +175,10 @@ function renderLeads() {
 
 let baicLeadPage = 1;
 const baicLeadPageSize = 30;
+const baicLeadStorageKey = "autocava_baic_leads_demo_v1";
+let baicActiveTab = "autocava";
+let baicLeads = (() => { try { return [...window.BAIC_LEADS_DEMO, ...(JSON.parse(localStorage.getItem(baicLeadStorageKey)) || [])]; } catch (error) { return [...window.BAIC_LEADS_DEMO]; } })();
+function persistBaicLeads() { localStorage.setItem(baicLeadStorageKey, JSON.stringify(baicLeads.filter((lead) => lead.imported))); }
 function renderBaicLeadPagination(total) {
   const pages = Math.max(1, Math.ceil(total / baicLeadPageSize));
   baicLeadPage = Math.min(baicLeadPage, pages);
@@ -184,11 +188,30 @@ function renderBaicLeads() {
   const id = $("baicLeadIdFilter").value.trim().toLowerCase(); const name = $("baicLeadNameFilter").value.trim().toLowerCase(); const phone = $("baicLeadPhoneFilter").value.trim().toLowerCase();
   const type = $("baicLeadTypeFilter").value; const source = $("baicLeadSourceFilter").value;
   const start = $("baicLeadCreatedStart").value; const end = $("baicLeadCreatedEnd").value;
-  const filtered = window.BAIC_LEADS_DEMO.filter((lead) => (!id || lead.id.toLowerCase().includes(id)) && (!name || lead.name.toLowerCase().includes(name)) && (!phone || lead.phone.toLowerCase().includes(phone)) && (!type || lead.type === type) && (!source || lead.source === source) && (!start || lead.createdAt.slice(0, 10) >= start) && (!end || lead.createdAt.slice(0, 10) <= end));
+  const filtered = baicLeads.filter((lead) => (baicActiveTab === "autocava" ? lead.source === "AutoCava" : lead.source !== "AutoCava") && (!id || lead.id.toLowerCase().includes(id)) && (!name || lead.name.toLowerCase().includes(name)) && (!phone || lead.phone.toLowerCase().includes(phone)) && (!type || lead.type === type) && (!source || lead.source === source) && (!start || lead.createdAt.slice(0, 10) >= start) && (!end || lead.createdAt.slice(0, 10) <= end));
   $("baicLeadTotal").textContent = filtered.length;
   const startIndex = (baicLeadPage - 1) * baicLeadPageSize;
   $("baicLeadRows").innerHTML = filtered.slice(startIndex, startIndex + baicLeadPageSize).map((lead) => `<tr><td><strong>${esc(lead.id)}</strong></td><td>${esc(lead.name)}</td><td>${esc(lead.phone)}</td><td>${esc(lead.series)}</td><td>${esc(lead.model)}</td><td>${esc(lead.source)}</td><td><span class="table-status ${lead.status === "战败" ? "lost" : lead.status === "成交" ? "won" : lead.status === "暂存" ? "dormant" : ""}">${esc(lead.status)}</span></td><td>${esc(lead.sales)}</td><td>${esc(lead.dealer)}</td><td>${esc(lead.createdAt)}</td><td><button class="text-action" type="button" data-baic-lead="${esc(lead.id)}">查看</button></td></tr>`).join("");
   $("baicLeadEmpty").hidden = filtered.length > 0; renderBaicLeadPagination(filtered.length);
+}
+function downloadBaicImportTemplate() {
+  const headers = ["姓名*", "手机号*", "线索类型*（试驾/买车）", "城市*"];
+  const example = ["Jorge Navarro", "5510001000", "买车", "Ciudad de México"];
+  const table = `<table><tr>${headers.map((item) => `<th>${item}</th>`).join("")}</tr><tr>${example.map((item) => `<td>${item}</td>`).join("")}</tr></table>`;
+  const blob = new Blob([`<html><meta charset="UTF-8"><style>table{border-collapse:collapse}th,td{border:1px solid #999;padding:6px 10px;white-space:nowrap}th{background:#eaf1fb}</style>${table}</html>`], { type: "application/vnd.ms-excel;charset=utf-8" });
+  const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "北汽线索导入模板.xls"; link.click(); URL.revokeObjectURL(link.href); toast("北汽线索导入模板已下载");
+}
+function addBaicImportedLead(name, phone, type, city) {
+  const lead = { id: `BAIC-IMPORT-${Date.now()}-${Math.floor(Math.random() * 1000)}`, name, phone, type, series: "待补充", model: "待补充", source: "官网", status: "待跟进", sales: "待分配", dealer: "待分配", city, createdAt: new Date().toISOString().slice(0, 16).replace("T", " "), imported: true };
+  baicLeads.unshift(lead); persistBaicLeads(); baicLeadPage = 1; renderBaicLeads(); return lead;
+}
+function openBaicImportModal() { $("baicImportModal").hidden = false; $("baicImportName").focus(); }
+function closeBaicImportModal() { $("baicImportModal").hidden = true; $("baicImportForm").reset(); $("baicImportFileName").textContent = "未选择文件"; }
+function submitBaicImport(event) { event.preventDefault(); addBaicImportedLead($("baicImportName").value.trim(), $("baicImportPhone").value.trim(), $("baicImportType").value, $("baicImportCity").value.trim()); closeBaicImportModal(); toast("北汽线索已导入“其他来源”页签"); }
+function importBaicUploadedFile(event) {
+  const file = event.target.files[0]; if (!file) return; $("baicImportFileName").textContent = file.name;
+  if (!/\.(csv|xls)$/i.test(file.name)) return toast("请使用 CSV 或下载的导入模板");
+  const reader = new FileReader(); reader.onload = () => { const rows = parseImportFile(reader.result); if (rows.length < 2) return toast("文件中没有可导入的线索数据"); const headers = rows[0].map((item) => item.replace(/\*/g, "").split("（")[0]); const indexOf = (name) => headers.findIndex((item) => item === name); const nameIndex = indexOf("姓名"); const phoneIndex = indexOf("手机号"); const typeIndex = indexOf("线索类型"); const cityIndex = indexOf("城市"); if ([nameIndex, phoneIndex, typeIndex, cityIndex].some((index) => index < 0)) return toast("模板缺少必填字段：姓名、手机号、线索类型、城市"); let count = 0; rows.slice(1).forEach((row) => { const type = row[typeIndex]; if (row[nameIndex] && row[phoneIndex] && ["买车", "试驾"].includes(type) && row[cityIndex]) { addBaicImportedLead(row[nameIndex], row[phoneIndex], type, row[cityIndex]); count += 1; } }); if (count) { closeBaicImportModal(); toast(`已导入 ${count} 条北汽线索，进入“其他来源”页签`); } else toast("没有符合必填字段要求的数据"); }; reader.readAsText(file);
 }
 
 let currentCleaningLeadId = null;
@@ -645,7 +668,13 @@ $("leadRows").addEventListener("click", (event) => { const button = event.target
 [$("baicLeadTypeFilter"), $("baicLeadSourceFilter"), $("baicLeadCreatedStart"), $("baicLeadCreatedEnd")].forEach((input) => input.addEventListener("change", () => { baicLeadPage = 1; renderBaicLeads(); }));
 $("resetBaicLeadFilters").addEventListener("click", () => { ["baicLeadIdFilter", "baicLeadNameFilter", "baicLeadPhoneFilter", "baicLeadTypeFilter", "baicLeadSourceFilter", "baicLeadCreatedStart", "baicLeadCreatedEnd"].forEach((id) => { $(id).value = ""; }); baicLeadPage = 1; renderBaicLeads(); });
 $("baicLeadPagination").addEventListener("click", (event) => { const button = event.target.closest("[data-baic-page]"); if (!button || button.disabled) return; baicLeadPage = Number(button.dataset.baicPage); renderBaicLeads(); });
-$("baicLeadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-baic-lead]"); if (button) { const lead = window.BAIC_LEADS_DEMO.find((item) => item.id === button.dataset.baicLead); toast(lead ? `${lead.id} · ${lead.name}` : "未找到线索"); } });
+$("baicLeadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-baic-lead]"); if (button) { const lead = baicLeads.find((item) => item.id === button.dataset.baicLead); toast(lead ? `${lead.id} · ${lead.name}` : "未找到线索"); } });
+qsa("[data-baic-tab]").forEach((button) => button.addEventListener("click", () => { baicActiveTab = button.dataset.baicTab; qsa("[data-baic-tab]").forEach((item) => item.classList.toggle("active", item === button)); baicLeadPage = 1; renderBaicLeads(); }));
+$("openBaicImportButton").addEventListener("click", openBaicImportModal);
+$("downloadBaicImportTemplate").addEventListener("click", downloadBaicImportTemplate);
+$("baicImportFile").addEventListener("change", importBaicUploadedFile);
+$("baicImportForm").addEventListener("submit", submitBaicImport);
+[$("closeBaicImport"), $("cancelBaicImport")].forEach((button) => button.addEventListener("click", closeBaicImportModal));
 $("cleaningAction").addEventListener("change", syncCleaningAction);
 $("cleaningDealer").addEventListener("change", updateDealerPreview);
 $("cleaningForm").addEventListener("submit", saveCleaningResult);
