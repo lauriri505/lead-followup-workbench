@@ -3,7 +3,7 @@
     const end = Date.parse(filters.asOf + 'T23:59:59.999-06:00');
     const rows = records.filter(r => (!filters.channel || r.channel === filters.channel) && (!filters.dealer || r.dealer === filters.dealer)).map(r => ({...r, events:r.events.filter(e=>Date.parse(e.at)<=end).sort((a,b)=>Date.parse(a.at)-Date.parse(b.at))})).filter(r=> {
       const issued=r.events.find(e=>e.type==='issued');
-      return issued && (!filters.start || issued.at.slice(0,10)>=filters.start) && (!filters.end || issued.at.slice(0,10)<=filters.end);
+      return issued && (!filters.start || issued.at.slice(0,10)>=filters.start);
     });
     const has=(r,t)=>r.events.some(e=>e.type===t);
     const quality=r=>r.events.filter(e=>['valid','invalid'].includes(e.type)).at(-1)?.type || 'unknown';

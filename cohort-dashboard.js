@@ -12,10 +12,10 @@ window.CohortDashboard = (() => {
     document.querySelector('.overview-filter>div').innerHTML='<span>统计口径</span><strong>按下发批次追踪</strong>';
     const dates=document.createElement('div');dates.className='cohort-dates';
     const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Etc/GMT+6',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-    dates.innerHTML=`<label>下发开始日期<input type="date" id="cohortStart" value="2026-09-01"></label><label>下发结束日期<input type="date" id="cohortEnd" value="2026-09-09"></label><label>统计截至日期<input type="date" id="cohortAsOf" value="${today}"></label>`;
+    dates.innerHTML=`<label>下发开始日期<input type="date" id="cohortStart" value="2026-09-01"></label><label>统计截至日期<input type="date" id="cohortAsOf" value="${today}"></label>`;
     document.querySelector('.overview-filter').prepend(dates);
     dates.addEventListener('change',rerender);
-    $('resetOverviewFilters').addEventListener('click',()=>{$('cohortStart').value='2026-09-01';$('cohortEnd').value='2026-09-09';$('cohortAsOf').value=today;rerender();});
+    $('resetOverviewFilters').addEventListener('click',()=>{$('cohortStart').value='2026-09-01';$('cohortAsOf').value=today;rerender();});
     const note=document.createElement('p');note.id='cohortNotice';note.className='cohort-note';note.setAttribute('role','status');document.querySelector('.overview-filter').after(note);
     const outcomes=document.createElement('div');outcomes.id='cohortOutcomes';outcomes.className='volume-totals';document.querySelector('.funnel-panel').append(outcomes);
     const dialog=document.createElement('dialog');dialog.id='cohortDetail';dialog.innerHTML='<form method="dialog"><button class="secondary-button">关闭明细</button></form><h2 id="cohortDetailTitle"></h2><div class="table-wrap" id="cohortDetailBody"></div>';document.body.append(dialog);
@@ -23,14 +23,14 @@ window.CohortDashboard = (() => {
   }
   function render(state,role) {
     if(!initialized)return;
-    const filters={start:$('cohortStart').value,end:$('cohortEnd').value,asOf:$('cohortAsOf').value,channel:$('overviewChannelFilter').value,dealer:$('overviewDealerFilter').value};
-    if(!filters.asOf||(filters.start&&filters.end&&filters.start>filters.end)||(filters.start&&filters.asOf<filters.start)){$('cohortNotice').textContent='日期无效：下发开始日期不能晚于结束日期或统计截至日期。以下数据暂不展示。';for(const id of ['metricGrid','volumeTotals','storeBreakdown','efficiencySummary','salesThroughput','conversionFunnel','conversionRates','cohortOutcomes'])$(id).innerHTML='';current=null;return;}
+    const filters={start:$('cohortStart').value,asOf:$('cohortAsOf').value,channel:$('overviewChannelFilter').value,dealer:$('overviewDealerFilter').value};
+    if(!filters.asOf||(filters.start&&filters.asOf<filters.start)){$('cohortNotice').textContent='日期无效：下发开始日期不能晚于统计截至日期。以下数据暂不展示。';for(const id of ['metricGrid','volumeTotals','storeBreakdown','efficiencySummary','salesThroughput','conversionFunnel','conversionRates','cohortOutcomes'])$(id).innerHTML='';current=null;return;}
     const records=window.COHORT_DEMO.records.map(r=>({...r,name:state.leads.find(l=>l.id===r.leadId)?.name||r.leadId,dealer:state.baicDealers[r.store].name,sales:`${state.baicDealers[r.store].salesId} ${state.baicDealers[r.store].salesName}`}));
     current=CohortEngine.analyze(records,filters);const {groups:g,rates}=current;
-    $('cohortNotice').textContent=`历史演示数据 · ${records.length}条带事件时间的样例。下发日期 ${filters.start||'不限'} 至 ${filters.end||'不限'}，截至 ${filters.asOf}，本批次 ${g.total.length} 条。未提供历史记录的线索不参与本演示；未经过预约或试驾的客户不会自动补算。`;
+    $('cohortNotice').textContent=`历史演示数据 · ${records.length}条带事件时间的样例。下发日期 ${filters.start||'不限'} 起，截至 ${filters.asOf}，本批次 ${g.total.length} 条。未提供历史记录的线索不参与本演示；未经过预约或试驾的客户不会自动补算。`;
     $('overviewDataDate').textContent=`演示快照更新至 ${COHORT_DEMO.updatedAt.slice(0,16).replace('T',' ')}（UTC-6）；之后暂无新记录`;
     $('funnelScope').textContent=`${filters.channel||'全部渠道'} · ${filters.dealer||'全部门店'} · 截至 ${filters.asOf}`;
-    $('metricGrid').innerHTML=[['批次下发线索',g.total.length,'total',`${filters.start} — ${filters.end}`],['有效率',pct(g.valid.length,g.total.length),'valid','已确认有效 ÷ 本批次下发'],['预约试驾率',pct(rates[1][1],rates[1][2]),'booked',rates[1][3]],['预约到店率',pct(rates[2][1],rates[2][2]),'arrived',rates[2][3]]].map(([n,v,k,f])=>`<article class="overview-kpi"><span>${n}</span><strong>${typeof v==='number'?count(k,v):v}</strong><small>${f}</small></article>`).join('');
+    $('metricGrid').innerHTML=[['批次下发线索',g.total.length,'total',`${filters.start||'不限'} 起 · 截至 ${filters.asOf}`],['有效率',pct(g.valid.length,g.total.length),'valid','已确认有效 ÷ 本批次下发'],['预约试驾率',pct(rates[1][1],rates[1][2]),'booked',rates[1][3]],['预约到店率',pct(rates[2][1],rates[2][2]),'arrived',rates[2][3]]].map(([n,v,k,f])=>`<article class="overview-kpi"><span>${n}</span><strong>${typeof v==='number'?count(k,v):v}</strong><small>${f}</small></article>`).join('');
     $('volumeTotals').innerHTML=['total','assigned','contact','pending','valid','invalid','unknown'].map(k=>`<div><span>${labels[k]}</span><strong>${count(k,g[k].length)}</strong>${['valid','invalid','unknown'].includes(k)?`<small>${pct(g[k].length,g.total.length)} / 本批次下发</small>`:''}</div>`).join('');
     $('storeBreakdown').innerHTML='<div class="table-wrap"><table><thead><tr><th>下发门店</th><th>本批下发</th><th>已分配</th><th>已联系</th><th>待联系</th><th>有效</th><th>无效</th><th>待判定</th></tr></thead><tbody>'+state.baicDealers.filter(d=>!filters.dealer||d.name===filters.dealer).map(d=>`<tr><td>${esc(d.name)}</td>${['total','assigned','contact','pending','valid','invalid','unknown'].map(k=>`<td>${g[k].filter(r=>r.dealer===d.name).length}</td>`).join('')}</tr>`).join('')+'</tbody></table></div>';
     $('efficiencySummary').innerHTML=role==='super_admin'?[["首次联系平均时间",current.average===null?'—':`${current.average.toFixed(1)} 分钟`,`已首次联系且有分配时间：${current.averageSamples}条`],['未联系超时',g.overdue.length,'下发超过72小时仍无联系记录'],['跟进中',g.inProgress.length,'截至所选日期的当前状态'],['暂存',g.dormant.length,'截至所选日期的当前状态']].map(([n,v,f])=>`<div><span>${n}</span><strong>${v}</strong><small>${f}</small></div>`).join(''):'<div class="overview-locked">仅管理账号可查看销售效率</div>';
