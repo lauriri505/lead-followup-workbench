@@ -188,11 +188,31 @@ function renderBaicLeads() {
   const id = $("baicLeadIdFilter").value.trim().toLowerCase(); const name = $("baicLeadNameFilter").value.trim().toLowerCase(); const phone = $("baicLeadPhoneFilter").value.trim().toLowerCase();
   const type = $("baicLeadTypeFilter").value; const source = $("baicLeadSourceFilter").value;
   const start = $("baicLeadCreatedStart").value; const end = $("baicLeadCreatedEnd").value;
-  const filtered = baicLeads.filter((lead) => (baicActiveTab === "autocava" ? lead.source === "AutoCava" : lead.source !== "AutoCava") && (!id || lead.id.toLowerCase().includes(id)) && (!name || lead.name.toLowerCase().includes(name)) && (!phone || lead.phone.toLowerCase().includes(phone)) && (!type || lead.type === type) && (!source || lead.source === source) && (!start || lead.createdAt.slice(0, 10) >= start) && (!end || lead.createdAt.slice(0, 10) <= end));
+  const sort = $("baicLeadSort").value;
+  const statusOrder = { "待跟进": 1, "跟进中": 2, "暂存": 3, "成交": 4, "战败": 5 };
+  const taskStatusOrder = { "已逾期": 1, "待处理": 2, "处理中": 3, "已完成": 4 };
+  const filtered = baicLeads.filter((lead) => (baicActiveTab === "autocava" ? lead.source === "AutoCava" : lead.source !== "AutoCava") && (!id || lead.id.toLowerCase().includes(id)) && (!name || lead.name.toLowerCase().includes(name)) && (!phone || lead.phone.toLowerCase().includes(phone)) && (!type || lead.type === type) && (!source || lead.source === source) && (!start || lead.createdAt.slice(0, 10) >= start) && (!end || lead.createdAt.slice(0, 10) <= end)).sort((a, b) => { if (sort === "createdAsc") return a.createdAt.localeCompare(b.createdAt); if (sort === "status") return (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99); if (sort === "taskDue") return String(a.taskDueAt).localeCompare(String(b.taskDueAt)); if (sort === "taskStatus") return (taskStatusOrder[a.taskStatus] || 99) - (taskStatusOrder[b.taskStatus] || 99); return b.createdAt.localeCompare(a.createdAt); });
   $("baicLeadTotal").textContent = filtered.length;
   const startIndex = (baicLeadPage - 1) * baicLeadPageSize;
   $("baicLeadRows").innerHTML = filtered.slice(startIndex, startIndex + baicLeadPageSize).map((lead) => `<tr><td><strong>${esc(lead.id)}</strong></td><td>${esc(lead.name)}</td><td>${esc(lead.phone)}</td><td>${esc(lead.series)}</td><td>${esc(lead.model)}</td><td>${esc(lead.source)}</td><td><span class="table-status ${lead.status === "战败" ? "lost" : lead.status === "成交" ? "won" : lead.status === "暂存" ? "dormant" : ""}">${esc(lead.status)}</span></td><td>${esc(lead.sales)}</td><td>${esc(lead.dealer)}</td><td>${esc(lead.createdAt)}</td><td><button class="text-action" type="button" data-baic-lead="${esc(lead.id)}">查看</button></td></tr>`).join("");
   $("baicLeadEmpty").hidden = filtered.length > 0; renderBaicLeadPagination(filtered.length);
+}
+let currentBaicOperationId = null;
+function openBaicOperationModal(leadId) {
+  const lead = baicLeads.find((item) => item.id === leadId); if (!lead) return;
+  currentBaicOperationId = leadId;
+  $("baicOperationSummary").innerHTML = `<div><span>线索</span><strong>${esc(lead.id)} · ${esc(lead.name)}</strong></div><div><span>当前状态</span><strong>${esc(lead.status)}</strong></div><div><span>当前任务</span><strong>${esc(lead.task)} · ${esc(lead.taskStatus)}</strong></div><div><span>截止时间</span><strong>${esc(lead.taskDueAt)}</strong></div>`;
+  $("baicOperationResult").value = "已联系"; $("baicOperationNextTime").value = ""; $("baicOperationNote").value = ""; $("baicOperationModal").hidden = false;
+}
+function closeBaicOperationModal() { $("baicOperationModal").hidden = true; currentBaicOperationId = null; $("baicOperationForm").reset(); }
+function submitBaicOperation(event) {
+  event.preventDefault(); const lead = baicLeads.find((item) => item.id === currentBaicOperationId); if (!lead) return closeBaicOperationModal();
+  const result = $("baicOperationResult").value; const nextTime = $("baicOperationNextTime").value.replace("T", " ");
+  lead.status = { 已联系: "跟进中", 未接通: lead.status === "待跟进" ? "待跟进" : "跟进中", 继续跟进: "跟进中", 暂存: "暂存", 成交: "成交", 战败: "战败" }[result];
+  lead.taskStatus = "已完成"; lead.task = "普通回访"; lead.taskDueAt = "—";
+  if (!["成交", "战败"].includes(lead.status)) { lead.taskId = `BAIC-TASK-${Date.now()}`; lead.taskStatus = "待处理"; lead.task = "普通回访"; lead.taskDueAt = nextTime || "次日10:00"; }
+  lead.lastNote = $("baicOperationNote").value.trim(); lead.lastResult = result; lead.updatedAt = new Date().toISOString().slice(0, 16).replace("T", " ");
+  persistBaicLeads(); closeBaicOperationModal(); renderBaicLeads(); toast("已完成当前任务，线索列表已更新");
 }
 function downloadBaicImportTemplate() {
   const headers = ["姓名*", "手机号*", "线索类型*（试驾/买车）", "城市*"];
@@ -666,15 +686,18 @@ $("leadPagination").addEventListener("click", (event) => { const button = event.
 $("leadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-clean-lead]"); if (button) openCleaningModal(button.dataset.cleanLead); });
 ["baicLeadIdFilter", "baicLeadNameFilter", "baicLeadPhoneFilter"].forEach((id) => $(id).addEventListener("input", () => { baicLeadPage = 1; renderBaicLeads(); }));
 [$("baicLeadTypeFilter"), $("baicLeadSourceFilter"), $("baicLeadCreatedStart"), $("baicLeadCreatedEnd")].forEach((input) => input.addEventListener("change", () => { baicLeadPage = 1; renderBaicLeads(); }));
-$("resetBaicLeadFilters").addEventListener("click", () => { ["baicLeadIdFilter", "baicLeadNameFilter", "baicLeadPhoneFilter", "baicLeadTypeFilter", "baicLeadSourceFilter", "baicLeadCreatedStart", "baicLeadCreatedEnd"].forEach((id) => { $(id).value = ""; }); baicLeadPage = 1; renderBaicLeads(); });
+$("baicLeadSort").addEventListener("change", () => { baicLeadPage = 1; renderBaicLeads(); });
+$("resetBaicLeadFilters").addEventListener("click", () => { ["baicLeadIdFilter", "baicLeadNameFilter", "baicLeadPhoneFilter", "baicLeadTypeFilter", "baicLeadSourceFilter", "baicLeadCreatedStart", "baicLeadCreatedEnd"].forEach((id) => { $(id).value = ""; }); $("baicLeadSort").value = "createdDesc"; baicLeadPage = 1; renderBaicLeads(); });
 $("baicLeadPagination").addEventListener("click", (event) => { const button = event.target.closest("[data-baic-page]"); if (!button || button.disabled) return; baicLeadPage = Number(button.dataset.baicPage); renderBaicLeads(); });
-$("baicLeadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-baic-lead]"); if (button) { const lead = baicLeads.find((item) => item.id === button.dataset.baicLead); toast(lead ? `${lead.id} · ${lead.name}` : "未找到线索"); } });
+$("baicLeadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-baic-lead]"); if (button) openBaicOperationModal(button.dataset.baicLead); });
 qsa("[data-baic-tab]").forEach((button) => button.addEventListener("click", () => { baicActiveTab = button.dataset.baicTab; qsa("[data-baic-tab]").forEach((item) => item.classList.toggle("active", item === button)); baicLeadPage = 1; renderBaicLeads(); }));
 $("openBaicImportButton").addEventListener("click", openBaicImportModal);
 $("downloadBaicImportTemplate").addEventListener("click", downloadBaicImportTemplate);
 $("baicImportFile").addEventListener("change", importBaicUploadedFile);
 $("baicImportForm").addEventListener("submit", submitBaicImport);
 [$("closeBaicImport"), $("cancelBaicImport")].forEach((button) => button.addEventListener("click", closeBaicImportModal));
+$("baicOperationForm").addEventListener("submit", submitBaicOperation);
+[$("closeBaicOperation"), $("cancelBaicOperation")].forEach((button) => button.addEventListener("click", closeBaicOperationModal));
 $("cleaningAction").addEventListener("change", syncCleaningAction);
 $("cleaningDealer").addEventListener("change", updateDealerPreview);
 $("cleaningForm").addEventListener("submit", saveCleaningResult);
