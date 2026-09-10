@@ -47,7 +47,7 @@ const qsa = (selector) => Array.from(document.querySelectorAll(selector));
 const esc = (value = "") => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const roleLabels = { super_admin: "超级管理员", sales: "AutoCava销售" };
 const permissionOptions = ["查看平台全部普通线索", "查看本人负责线索", "清洗和分配线索", "配置账号与角色", "配置任务规则", "配置线索流转", "查看操作记录", "允许接收导入线索", "处理销售任务", "提交跟进结果", "编辑用户当前信息", "添加跟踪记事"];
-const viewNames = { dashboard: "后台总览", leads: "线索数据", accounts: "账号与角色", tasks: "任务配置", nodes: "线索流转配置" };
+const viewNames = { dashboard: "后台总览", leads: "线索数据", baicLeads: "线索数据（北汽）", accounts: "账号与角色", tasks: "任务配置", nodes: "线索流转配置" };
 const groupLabels = { entry: "系统入口", not_followed: "未跟进", followed: "跟进中", dormant: "暂存", overdue: "过期未跟进", success: "确认金融购车", lost: "战败" };
 const mainStatusGroups = Object.fromEntries(Object.entries(groupLabels).map(([group, label]) => [label, group]));
 const categoryLabels = { contact: "联系", unreachable: "未接通", callback: "约定回访", dormant: "暂存", lost: "终止" };
@@ -97,7 +97,7 @@ function openView(view) {
   selectedSection?.classList.toggle("permission-locked", locked);
   selectedSection?.querySelector("[data-permission-message]")?.toggleAttribute("hidden", !locked);
   document.querySelector(".admin-sidebar").classList.remove("open");
-  if (!locked) ({ leads: renderLeads, accounts: renderAccounts, tasks: renderTaskRules, nodes: renderTransitions })[view]?.();
+  if (!locked) ({ leads: renderLeads, baicLeads: renderBaicLeads, accounts: renderAccounts, tasks: renderTaskRules, nodes: renderTransitions })[view]?.();
 }
 
 function renderAccountSession() {
@@ -171,6 +171,23 @@ function renderLeads() {
   $("leadRows").innerHTML = filtered.slice(startIndex, startIndex + leadPageSize).map(leadRow).join("");
   $("leadEmpty").hidden = filtered.length > 0;
   renderLeadPagination(filtered.length);
+}
+
+let baicLeadPage = 1;
+const baicLeadPageSize = 30;
+function renderBaicLeadPagination(total) {
+  const pages = Math.max(1, Math.ceil(total / baicLeadPageSize));
+  baicLeadPage = Math.min(baicLeadPage, pages);
+  $("baicLeadPagination").innerHTML = total ? `<span>第 ${baicLeadPage} / ${pages} 页，共 ${total} 条</span><div><button class="page-button" data-baic-page="${Math.max(1, baicLeadPage - 1)}" ${baicLeadPage === 1 ? "disabled" : ""}>上一页</button><button class="page-button" data-baic-page="${Math.min(pages, baicLeadPage + 1)}" ${baicLeadPage === pages ? "disabled" : ""}>下一页</button></div>` : "";
+}
+function renderBaicLeads() {
+  const type = $("baicLeadTypeFilter").value; const source = $("baicLeadSourceFilter").value;
+  const start = $("baicLeadCreatedStart").value; const end = $("baicLeadCreatedEnd").value;
+  const filtered = window.BAIC_LEADS_DEMO.filter((lead) => (!type || lead.type === type) && (!source || lead.source === source) && (!start || lead.createdAt.slice(0, 10) >= start) && (!end || lead.createdAt.slice(0, 10) <= end));
+  $("baicLeadTotal").textContent = filtered.length;
+  const startIndex = (baicLeadPage - 1) * baicLeadPageSize;
+  $("baicLeadRows").innerHTML = filtered.slice(startIndex, startIndex + baicLeadPageSize).map((lead) => `<tr><td><strong>${esc(lead.id)}</strong></td><td>${esc(lead.name)}</td><td>${esc(lead.phone)}</td><td>${esc(lead.series)}</td><td>${esc(lead.model)}</td><td>${esc(lead.source)}</td><td><span class="table-status ${lead.status === "战败" ? "lost" : lead.status === "成交" ? "won" : lead.status === "暂存" ? "dormant" : ""}">${esc(lead.status)}</span></td><td>${esc(lead.sales)}</td><td>${esc(lead.dealer)}</td><td>${esc(lead.createdAt)}</td><td><button class="text-action" type="button" data-baic-lead="${esc(lead.id)}">查看</button></td></tr>`).join("");
+  $("baicLeadEmpty").hidden = filtered.length > 0; renderBaicLeadPagination(filtered.length);
 }
 
 let currentCleaningLeadId = null;
@@ -623,6 +640,10 @@ $("resetOverviewFilters").addEventListener("click", () => { $("overviewChannelFi
 $("resetLeadFilters").addEventListener("click", () => { ["leadIdFilter", "leadPhoneFilter", "leadBrandFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => { $(id).value = ""; }); leadPage = 1; renderLeads(); });
 $("leadPagination").addEventListener("click", (event) => { const button = event.target.closest("[data-page]"); if (!button || button.disabled) return; leadPage = Number(button.dataset.page); renderLeads(); });
 $("leadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-clean-lead]"); if (button) openCleaningModal(button.dataset.cleanLead); });
+[$("baicLeadTypeFilter"), $("baicLeadSourceFilter"), $("baicLeadCreatedStart"), $("baicLeadCreatedEnd")].forEach((input) => input.addEventListener("change", () => { baicLeadPage = 1; renderBaicLeads(); }));
+$("resetBaicLeadFilters").addEventListener("click", () => { ["baicLeadTypeFilter", "baicLeadSourceFilter", "baicLeadCreatedStart", "baicLeadCreatedEnd"].forEach((id) => { $(id).value = ""; }); baicLeadPage = 1; renderBaicLeads(); });
+$("baicLeadPagination").addEventListener("click", (event) => { const button = event.target.closest("[data-baic-page]"); if (!button || button.disabled) return; baicLeadPage = Number(button.dataset.baicPage); renderBaicLeads(); });
+$("baicLeadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-baic-lead]"); if (button) { const lead = window.BAIC_LEADS_DEMO.find((item) => item.id === button.dataset.baicLead); toast(lead ? `${lead.id} · ${lead.name}` : "未找到线索"); } });
 $("cleaningAction").addEventListener("change", syncCleaningAction);
 $("cleaningDealer").addEventListener("change", updateDealerPreview);
 $("cleaningForm").addEventListener("submit", saveCleaningResult);

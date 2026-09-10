@@ -22,9 +22,10 @@
       <nav class="admin-nav" aria-label="管理员功能">
         <button class="nav-item active" data-view="dashboard" type="button"><span>01</span>后台总览</button>
         <button class="nav-item" data-view="leads" type="button"><span>02</span>线索数据</button>
-        <button class="nav-item" data-view="accounts" type="button"><span>03</span>账号与角色</button>
-        <button class="nav-item" data-view="tasks" type="button" hidden><span>04</span>任务配置</button>
-        <button class="nav-item" data-view="nodes" type="button" hidden><span>05</span>线索流转配置</button>
+        <button class="nav-item" data-view="baicLeads" type="button"><span>03</span>线索数据（北汽）</button>
+        <button class="nav-item" data-view="accounts" type="button"><span>04</span>账号与角色</button>
+        <button class="nav-item" data-view="tasks" type="button" hidden><span>05</span>任务配置</button>
+        <button class="nav-item" data-view="nodes" type="button" hidden><span>06</span>线索流转配置</button>
       </nav>
       <a class="workbench-link" href="index.html">返回销售工作台 →</a>
     </aside>
@@ -52,6 +53,11 @@
         <section class="admin-view" id="leadsView" hidden>
           <div class="view-heading"><div><p class="eyebrow">LEAD DATA</p><h1>普通线索数据</h1><p>管理员可查看 AutoCava 平台普通线索一期的全部品牌数据。</p></div><div class="heading-actions"><button class="primary-button" id="openImportButton" type="button">+ 导入线索</button><span class="scope-chip">共 <strong id="leadTotal">0</strong> 条</span></div></div>
           <section class="admin-panel"><div class="filter-row lead-filters"><input id="leadIdFilter" type="search" placeholder="线索ID"><select id="leadBrandFilter" aria-label="按品牌筛选"><option value="">全部品牌</option></select><select id="leadTypeFilter"><option value="">全部线索类型</option><option>金融</option><option>试驾</option></select><input id="leadPhoneFilter" type="search" placeholder="手机号"><select id="leadSourceFilter"><option value="">全部线索来源</option><option>Meta</option><option>Google</option><option>Ins</option><option>官网</option></select><select id="leadEntryTypeFilter"><option value="">全部录入类型</option><option>自动</option><option>人工</option></select><label class="date-filter"><span>创建时间</span><input id="leadCreatedStart" type="date"><i>至</i><input id="leadCreatedEnd" type="date"></label><button class="secondary-button" id="resetLeadFilters" type="button">重置</button></div><div class="table-wrap"><table><thead><tr><th>线索ID</th><th>姓名 / 手机号</th><th>品牌 / 车型</th><th>线索来源</th><th>创建时间（UTC-6）</th><th>处理状态</th><th>线索状态</th><th>销售负责人</th><th>销售任务</th><th>操作</th></tr></thead><tbody id="leadRows"></tbody></table></div><div class="lead-pagination" id="leadPagination"></div><div class="empty-state" id="leadEmpty" hidden>没有符合条件的普通线索</div></section>
+        </section>
+
+        <section class="admin-view" id="baicLeadsView" hidden>
+          <div class="view-heading"><div><p class="eyebrow">BAIC LEAD DATA</p><h1>线索数据（北汽）</h1><p>北汽普通线索演示数据，独立于现有线索数据。</p></div><span class="scope-chip">共 <strong id="baicLeadTotal">100</strong> 条</span></div>
+          <section class="admin-panel"><div class="filter-row baic-lead-filters"><select id="baicLeadTypeFilter"><option value="">全部线索类型</option><option>买车</option><option>试驾</option></select><select id="baicLeadSourceFilter"><option value="">全部线索来源</option><option>官网</option><option>Meta</option><option>Google</option><option>AutoCava</option></select><label class="date-filter"><span>创建时间</span><input id="baicLeadCreatedStart" type="date"><i>至</i><input id="baicLeadCreatedEnd" type="date"></label><button class="secondary-button" id="resetBaicLeadFilters" type="button">重置</button></div><div class="table-wrap"><table><thead><tr><th>线索ID</th><th>姓名</th><th>手机号</th><th>车系</th><th>车型</th><th>线索来源</th><th>线索状态</th><th>销售负责人</th><th>门店</th><th>创建时间</th><th>操作</th></tr></thead><tbody id="baicLeadRows"></tbody></table></div><div class="lead-pagination" id="baicLeadPagination"></div><div class="empty-state" id="baicLeadEmpty" hidden>没有符合条件的北汽线索</div></section>
         </section>
 
         <section class="admin-view" id="accountsView" hidden>
@@ -136,8 +142,9 @@
   <script src="config-table.js?v=20260904-1"></script>
   <script src="admin-data.js?v=20260909-3"></script>
   <script src="cohort-data.js?v=20260909-1"></script>
+  <script src="baic-leads-data.js?v=20260910-1"></script>
   <script src="cohort-engine.js?v=20260910-4"></script>
   <script src="cohort-dashboard.js?v=20260910-4"></script>
-  <script src="admin.js?v=20260909-5"></script>
+  <script src="admin.js?v=20260910-6"></script>
 </body>
 </html>
