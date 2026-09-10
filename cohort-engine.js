@@ -28,7 +28,7 @@
     groups.overdue=groups.pending.filter(r=>end-Date.parse(r.events.find(e=>e.type==='issued').at)>72*3600000);
     groups.inProgress=groups.contact;
     const intersection=(a,b)=>a.filter(r=>b.includes(r)).length;
-    const rates=[['已跟进：有意向潜客率',groups.prospect.length,groups.valid.length,'有意向潜客 ÷ 有效线索'],['预约试驾率',groups.booked.length,groups.prospect.length,'已预约试驾 ÷ 有意向潜客'],['预约到店率',groups.arrived.length,groups.booked.length,'已到店 ÷ 已预约试驾'],['到店成交率',intersection(groups.arrived,groups.won),groups.arrived.length,'已到店且成交 ÷ 已到店'],['试驾成交率',intersection(groups.testDriven,groups.won),groups.testDriven.length,'实际试驾且成交 ÷ 实际试驾'],['整体成交率',groups.won.length,rows.length,'已成交 ÷ 下发线索']];
+    const rates=[['已跟进：有意向潜客率',groups.prospect.length,groups.valid.length,'有意向潜客 ÷ 有效线索'],['预约试驾率',groups.booked.length,groups.prospect.length,'已预约试驾 ÷ 有意向潜客'],['预约到店率',groups.arrived.length,groups.booked.length,'已到店 ÷ 已预约试驾'],['到店成交率',intersection(groups.arrived,groups.won),groups.arrived.length,'已到店且成交 ÷ 已到店'],['整体成交率',groups.won.length,rows.length,'已成交 ÷ 下发线索']];
     const minutes=rows.flatMap(r=>{const assigned=r.events.find(e=>e.type==='assigned'); const first=r.events.find(e=>e.type==='contact'); return assigned&&first&&Date.parse(first.at)>=Date.parse(assigned.at)?[(Date.parse(first.at)-Date.parse(assigned.at))/60000]:[];});
     return {rows,groups,rates,average:minutes.length?minutes.reduce((a,b)=>a+b,0)/minutes.length:null,averageSamples:minutes.length};
   }

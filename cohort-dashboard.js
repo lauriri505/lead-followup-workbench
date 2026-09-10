@@ -9,7 +9,6 @@ window.CohortDashboard = (() => {
     initialized=true;
     $('overviewChannelFilter').innerHTML='<option value="">全部渠道</option><option>Meta</option><option>Google</option><option>AutoCava</option>';
     $('overviewDealerFilter').innerHTML='<option value="">北汽全部门店</option>'+state.baicDealers.map(d=>`<option>${esc(d.name)}</option>`).join('');
-    document.querySelector('.overview-filter>div').innerHTML='<span>统计口径</span><strong>按下发批次追踪</strong>';
     const dates=document.createElement('div');dates.className='cohort-dates';
     const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Etc/GMT+6',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
     dates.innerHTML=`<label>下发开始日期<input type="date" id="cohortStart" value="2026-09-01"></label><label>统计截至日期<input type="date" id="cohortAsOf" value="${today}"></label>`;
@@ -40,7 +39,6 @@ window.CohortDashboard = (() => {
     $('conversionFunnel').innerHTML=keys.map((k,i)=>`<div class="funnel-step" style="--step:${i};--funnel-width:${Math.max(34,g.total.length?g[k].length/g.total.length*100:0)}%"><span>${labels[k]}</span><strong>${count(k,g[k].length)}</strong><small>${pct(g[k].length,g.total.length)} / 本批次下发</small></div>`).join('');
     $('conversionRates').innerHTML=rates.map(([n,a,b,f])=>`<div><span>${n}</span><strong>${pct(a,b)}</strong><small>${a} ÷ ${b} · ${f}</small></div>`).join('');
     $('cohortOutcomes').innerHTML=['booked','arrived','won','lost'].map(k=>`<div><span>${labels[k]}</span><strong>${count(k,g[k].length)}</strong></div>`).join('');
-    $('formulaGrid').innerHTML=[['下发线索数','所选下发日期起，在统计截至日期前进入北汽线索池的去重线索数；进入北汽线索池时间点即为下发时间'],['有效率','（已跟进：有意向潜客 + 战败明确拒绝 + 战败购买其他品牌）÷ 下发线索总数'],['无效率','（战败：3次未接通 + 号码错误）÷ 下发线索总数'],['有意向潜客率','有意向潜客 ÷ 有效线索'],['预约试驾率','已预约试驾 ÷ 有意向潜客'],['到店率','已到店 ÷ 已预约试驾'],['到店成交率','已到店且成交 ÷ 已到店'],['时间窗口','事件按 UTC-6 统计；统计截至日期之后的事件不参与计算；有效和无效互斥']].map(([n,f])=>`<div><strong>${n}</strong><code>${f}</code></div>`).join('');
   }
   return {init,render};
 })();
