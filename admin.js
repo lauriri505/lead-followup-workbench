@@ -181,9 +181,10 @@ function renderBaicLeadPagination(total) {
   $("baicLeadPagination").innerHTML = total ? `<span>第 ${baicLeadPage} / ${pages} 页，共 ${total} 条</span><div><button class="page-button" data-baic-page="${Math.max(1, baicLeadPage - 1)}" ${baicLeadPage === 1 ? "disabled" : ""}>上一页</button><button class="page-button" data-baic-page="${Math.min(pages, baicLeadPage + 1)}" ${baicLeadPage === pages ? "disabled" : ""}>下一页</button></div>` : "";
 }
 function renderBaicLeads() {
+  const id = $("baicLeadIdFilter").value.trim().toLowerCase(); const name = $("baicLeadNameFilter").value.trim().toLowerCase(); const phone = $("baicLeadPhoneFilter").value.trim().toLowerCase();
   const type = $("baicLeadTypeFilter").value; const source = $("baicLeadSourceFilter").value;
   const start = $("baicLeadCreatedStart").value; const end = $("baicLeadCreatedEnd").value;
-  const filtered = window.BAIC_LEADS_DEMO.filter((lead) => (!type || lead.type === type) && (!source || lead.source === source) && (!start || lead.createdAt.slice(0, 10) >= start) && (!end || lead.createdAt.slice(0, 10) <= end));
+  const filtered = window.BAIC_LEADS_DEMO.filter((lead) => (!id || lead.id.toLowerCase().includes(id)) && (!name || lead.name.toLowerCase().includes(name)) && (!phone || lead.phone.toLowerCase().includes(phone)) && (!type || lead.type === type) && (!source || lead.source === source) && (!start || lead.createdAt.slice(0, 10) >= start) && (!end || lead.createdAt.slice(0, 10) <= end));
   $("baicLeadTotal").textContent = filtered.length;
   const startIndex = (baicLeadPage - 1) * baicLeadPageSize;
   $("baicLeadRows").innerHTML = filtered.slice(startIndex, startIndex + baicLeadPageSize).map((lead) => `<tr><td><strong>${esc(lead.id)}</strong></td><td>${esc(lead.name)}</td><td>${esc(lead.phone)}</td><td>${esc(lead.series)}</td><td>${esc(lead.model)}</td><td>${esc(lead.source)}</td><td><span class="table-status ${lead.status === "战败" ? "lost" : lead.status === "成交" ? "won" : lead.status === "暂存" ? "dormant" : ""}">${esc(lead.status)}</span></td><td>${esc(lead.sales)}</td><td>${esc(lead.dealer)}</td><td>${esc(lead.createdAt)}</td><td><button class="text-action" type="button" data-baic-lead="${esc(lead.id)}">查看</button></td></tr>`).join("");
@@ -640,8 +641,9 @@ $("resetOverviewFilters").addEventListener("click", () => { $("overviewChannelFi
 $("resetLeadFilters").addEventListener("click", () => { ["leadIdFilter", "leadPhoneFilter", "leadBrandFilter", "leadTypeFilter", "leadSourceFilter", "leadEntryTypeFilter", "leadCreatedStart", "leadCreatedEnd"].forEach((id) => { $(id).value = ""; }); leadPage = 1; renderLeads(); });
 $("leadPagination").addEventListener("click", (event) => { const button = event.target.closest("[data-page]"); if (!button || button.disabled) return; leadPage = Number(button.dataset.page); renderLeads(); });
 $("leadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-clean-lead]"); if (button) openCleaningModal(button.dataset.cleanLead); });
+["baicLeadIdFilter", "baicLeadNameFilter", "baicLeadPhoneFilter"].forEach((id) => $(id).addEventListener("input", () => { baicLeadPage = 1; renderBaicLeads(); }));
 [$("baicLeadTypeFilter"), $("baicLeadSourceFilter"), $("baicLeadCreatedStart"), $("baicLeadCreatedEnd")].forEach((input) => input.addEventListener("change", () => { baicLeadPage = 1; renderBaicLeads(); }));
-$("resetBaicLeadFilters").addEventListener("click", () => { ["baicLeadTypeFilter", "baicLeadSourceFilter", "baicLeadCreatedStart", "baicLeadCreatedEnd"].forEach((id) => { $(id).value = ""; }); baicLeadPage = 1; renderBaicLeads(); });
+$("resetBaicLeadFilters").addEventListener("click", () => { ["baicLeadIdFilter", "baicLeadNameFilter", "baicLeadPhoneFilter", "baicLeadTypeFilter", "baicLeadSourceFilter", "baicLeadCreatedStart", "baicLeadCreatedEnd"].forEach((id) => { $(id).value = ""; }); baicLeadPage = 1; renderBaicLeads(); });
 $("baicLeadPagination").addEventListener("click", (event) => { const button = event.target.closest("[data-baic-page]"); if (!button || button.disabled) return; baicLeadPage = Number(button.dataset.baicPage); renderBaicLeads(); });
 $("baicLeadRows").addEventListener("click", (event) => { const button = event.target.closest("[data-baic-lead]"); if (button) { const lead = window.BAIC_LEADS_DEMO.find((item) => item.id === button.dataset.baicLead); toast(lead ? `${lead.id} · ${lead.name}` : "未找到线索"); } });
 $("cleaningAction").addEventListener("change", syncCleaningAction);
