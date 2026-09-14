@@ -39,6 +39,7 @@
           <fieldset class="result-fieldset"><legend><span data-i18n="follow.result">跟进结果</span> <span>*</span></legend><div class="result-list" id="resultList"></div></fieldset>
           <div class="dynamic-fields" id="dynamicFields">
             <div class="field-row" id="reasonRow" hidden><label for="reasonInput"><span data-i18n="follow.reason">原因</span> <span>*</span></label><input id="reasonInput" type="text" placeholder="请输入具体原因" data-i18n-placeholder="follow.reasonPlaceholder"></div>
+            <div class="field-row" id="followupDealerRow" hidden><label for="followupDealer">下发经销商 <span>*</span></label><select id="followupDealer"><option value="">请选择经销商</option></select></div>
             <div class="two-field-row" id="callbackRow" hidden><div><label for="callbackNote"><span data-i18n="follow.callbackNote">用户约定说明</span> <span>*</span></label><input id="callbackNote" type="text" placeholder="例如：下班后方便接听" data-i18n-placeholder="follow.callbackPlaceholder"></div><div><label for="nextTime"><span data-i18n="follow.nextTime">下一次联系时间</span> <span>*</span></label><input id="nextTime" type="datetime-local"></div></div>
             <div class="field-row" id="nextTimeRow"><label for="nextTimeDefault"><span data-i18n="follow.nextTime">下一次联系时间</span> <span>*</span></label><input id="nextTimeDefault" type="datetime-local"><small id="timeHint" data-i18n="follow.timeHint">系统已按规则给出默认值，销售可以调整。</small></div>
           </div>
@@ -74,6 +75,6 @@
     </form>
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="flow-config.js?v=20260903-1"></script><script src="data.js?v=20260907-2"></script><script src="config-table.js?v=20260903-1"></script><script src="app.js?v=20260908-1"></script>
+  <script src="flow-config.js?v=20260914-1"></script><script src="data.js?v=20260907-2"></script><script src="config-table.js?v=20260903-1"></script><script src="app.js?v=20260914-1"></script>
 </body>
 </html>

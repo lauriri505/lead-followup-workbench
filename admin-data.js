@@ -7,10 +7,11 @@
     { code: "unfollowed", name: "正常等待跟进", group: "not_followed", businessStage: "未跟进", parent: "issued", level: 2, terminal: false, color: "#4d8df7" },
     { code: "overdue", name: "超过72小时", group: "overdue", businessStage: "过期未跟进", parent: "unfollowed", level: 3, terminal: false, color: "#f0a33a" },
     { code: "followup", name: "待确认购车方式", group: "followed", businessStage: "跟进中", parent: "unfollowed", level: 3, terminal: false, color: "#2fcf9f" },
-    { code: "financeIntent", name: "有金融购车意向", group: "followed", businessStage: "跟进中", parent: "followup", level: 4, terminal: false, color: "#2fcf9f" },
-    { code: "dormantCash", name: "明确表示全款", group: "dormant", businessStage: "暂存", parent: "followup", level: 4, terminal: false, color: "#8b95a6" },
-    { code: "dormantTestDrive", name: "表示要先试驾", group: "dormant", businessStage: "暂存", parent: "followup", level: 4, terminal: false, color: "#8b95a6" },
-    { code: "confirmedFinance", name: "成功终态", group: "success", businessStage: "确认金融购车", parent: "financeIntent", level: 5, terminal: true, color: "#19a974" },
+    { code: "financeIntent", name: "有意向", group: "followed", businessStage: "跟进中", parent: "followup", level: 4, terminal: false, color: "#2fcf9f" },
+    { code: "dormantCash", name: "全款", group: "dormant", businessStage: "暂存", parent: "followup", level: 4, terminal: false, color: "#8b95a6" },
+    { code: "dormantTestDrive", name: "试驾", group: "dormant", businessStage: "暂存", parent: "followup", level: 4, terminal: false, color: "#8b95a6" },
+    { code: "pendingSalesConfirmation", name: "待确认", group: "sales_confirmation", businessStage: "待销售确认", parent: "issued", level: 3, terminal: false, color: "#e3a936" },
+    { code: "baicIssued", name: "北汽线索池", group: "issued", businessStage: "已下发", parent: "issued", level: 3, terminal: false, color: "#4d8df7" },
     { code: "lost", name: "战败终态", group: "lost", businessStage: "战败", parent: "followup", level: 5, terminal: true, color: "#dc6262" }
   ];
 
@@ -23,39 +24,38 @@
       actor: "sales",
       enabled: item.enabled !== false,
       sortOrder: (index + 1) * 10,
-      category: code === "unreachable" ? "unreachable" : ["wrongNumber", "abandon"].includes(code) ? "lost" : code === "callback" ? "callback" : "contact",
+      category: code === "unreachable" ? "unreachable" : ["wrongNumber", "abandon", "abandonedMidway"].includes(code) ? "lost" : code === "callback" ? "callback" : "contact",
       requiresCallbackTime: item.deadline?.type === "manual",
-      requiresReason: Boolean(item.requireReason || item.lostReason)
+      requiresReason: Boolean(item.requireReason || item.lostReason),
+      requireDealer: Boolean(item.requireDealer)
     }))
   ];
 
   const taskRules = [
     { id: "RULE-FIRST", group: "FIRST_CONTACT", type: "首次联系", trigger: "新线索分配", deadline: "30分钟", assignee: "线索负责人", enabled: true },
-    { id: "RULE-OVERDUE", group: "FIRST_CONTACT", type: "首次联系", trigger: "超过72小时仍未完成首次有效跟进", deadline: "立即处理", assignee: "线索负责人", enabled: true },
-    { id: "RULE-RETRY", group: "FOLLOW_UP", type: "普通回访", trigger: "第1或第2次未接通", deadline: "+2小时", assignee: "原销售", enabled: true },
-    { id: "RULE-CALLBACK", group: "FOLLOW_UP", type: "普通回访", trigger: "客户要求稍后联系", deadline: "销售手动时间", assignee: "原销售", enabled: true },
-    { id: "RULE-FINANCE", group: "FOLLOW_UP", type: "普通回访", trigger: "客户有金融购车意向", deadline: "+2小时", assignee: "原销售", enabled: true },
-    { id: "RULE-DORMANT", group: "FOLLOW_UP", type: "普通回访", trigger: "全款或试驾线索低频回访", deadline: "+30天", assignee: "原销售", enabled: true }
+    { id: "RULE-SALES-CONFIRM", group: "FIRST_CONTACT", type: "销售确认", trigger: "线索进入待销售确认", deadline: "立即处理", assignee: "线索负责人", enabled: true },
+    { id: "RULE-RETRY", group: "FOLLOW_UP", type: "普通回访", trigger: "未接通且未达到3次上限", deadline: "+2小时", assignee: "原销售", enabled: true },
+    { id: "RULE-FINANCE", group: "FOLLOW_UP", type: "普通回访", trigger: "明确贷款购车", deadline: "+1天", assignee: "原销售", enabled: true },
+    { id: "RULE-DORMANT", group: "FOLLOW_UP", type: "普通回访", trigger: "全款、试驾或想法没有改变", deadline: "+30天", assignee: "原销售", enabled: true }
   ];
 
   const ruleForResult = {
     financeInterest: "RULE-FINANCE",
     cash: "RULE-DORMANT",
     testDrive: "RULE-DORMANT",
-    callback: "RULE-CALLBACK",
+    unchangedCash: "RULE-DORMANT",
+    unchangedTestDrive: "RULE-DORMANT",
     unreachable: "RULE-RETRY"
   };
   const deadlineForResult = {
-    financeInterest: "+2小时",
+    financeInterest: "+1天",
     cash: "+30天",
     testDrive: "+30天",
-    callback: "销售手动时间",
     unreachable: "+2小时"
   };
 
   const flows = [
-    { id: 1, current: "issued", result: "assigned", next: "unfollowed", qualityUpdate: "UNKNOWN", task: "FIRST_CONTACT", taskRuleId: "RULE-FIRST", deadline: "30分钟" },
-    { id: 2, current: "unfollowed", result: "timeout", next: "overdue", qualityUpdate: "UNKNOWN", task: "FIRST_CONTACT", taskRuleId: "RULE-OVERDUE", deadline: "立即处理" }
+    { id: 1, current: "issued", result: "assigned", next: "unfollowed", qualityUpdate: "UNKNOWN", task: "FIRST_CONTACT", taskRuleId: "RULE-FIRST", deadline: "30分钟" }
   ];
   const routeConfig = workbenchConfig.routes || {};
   const resultConfig = workbenchConfig.results || {};
@@ -76,6 +76,7 @@
         terminalNext: resultCode === "unreachable" ? "lost" : undefined,
         terminalQuality: resultCode === "unreachable" ? "INVALID" : undefined,
         reason: Boolean(result.requireReason || result.lostReason),
+        requireDealer: Boolean(result.requireDealer),
         task: result.task || null,
         taskRuleId: ruleForResult[resultCode] || null,
         deadline: deadlineForResult[resultCode] || "—"
@@ -121,6 +122,9 @@
       cleaningOperator: "autocava_admin_001 超级管理员",
       cleaningTime: lead.createdAt,
       cleaningNote: "已核对手机号、意向品牌与车型信息，可以进入销售跟进。",
+      salesConfirmationStatus: lead.salesConfirmationStatus || (lead.state === "pendingSalesConfirmation" ? "待销售确认" : "—"),
+      salesConfirmationBy: lead.salesConfirmationBy || "—",
+      salesConfirmationAt: lead.salesConfirmationAt || "—",
       cleaningHistory: [{ status: "清洗通过", result: "有效", operator: "autocava_admin_001 超级管理员", time: lead.createdAt, note: "已核对基础信息并完成分配。" }]
     };
   });
@@ -139,7 +143,7 @@
   const generatedLeads = Array.from({ length: Math.max(0, 100 - initialLeads.length) }, (_, index) => {
     const number = index + initialLeads.length + 1; const vehicle = demoVehicles[index % demoVehicles.length]; const date = `2026-09-${String(1 + (index % 30)).padStart(2, "0")} ${String(8 + (index % 10)).padStart(2, "0")}:${String((index * 7) % 60).padStart(2, "0")}`;
     const lostReasons = ["号码错误", "3次未接通", "放弃购买"];
-    const statusCases = [["unfollowed", "正常等待跟进"], ["followup", "待确认购车方式"], ["overdue", "超过72小时"], ["dormantCash", "明确表示全款"], ["dormantTestDrive", "表示要先试驾"], ["lost", lostReasons[Math.floor(index / 6) % lostReasons.length]]]; const current = statusCases[index % statusCases.length];
+    const statusCases = [["unfollowed", "正常等待跟进"], ["followup", "待确认购车方式"], ["overdue", "超过72小时"], ["pendingSalesConfirmation", "待确认"], ["dormantCash", "全款"], ["dormantTestDrive", "试驾"], ["lost", lostReasons[Math.floor(index / 6) % lostReasons.length]]]; const current = statusCases[index % statusCases.length];
     const manual = index % 7 === 0; const channel = ["Meta", "Google", "Ins", "官网"][index % 4]; const source = ["车型详情页", "AICTA选车推荐", "金融机构", "首页banner"][index % 4];
     const cleaningCases = ["待清洗", "待补充", "清洗不通过", "清洗通过"];
     const cleaningStatus = current[0] === "unfollowed" ? cleaningCases[Math.floor(index / 6) % cleaningCases.length] : "清洗通过";
@@ -166,6 +170,9 @@
       cleaningOperator: cleaningStatus === "待清洗" ? "—" : "autocava_admin_001 超级管理员",
       cleaningTime: cleaningStatus === "待清洗" ? "—" : date,
       cleaningNote: cleaningStatus === "待补充" ? "缺少可确认的车型信息，等待补充。" : cleaningStatus === "清洗不通过" ? "清洗校验未通过，不进入销售任务。" : cleaned ? "基础信息已核对，可以进入销售跟进。" : "",
+      salesConfirmationStatus: current[0] === "pendingSalesConfirmation" ? (index % 2 ? "待销售确认" : "销售已确认") : "—",
+      salesConfirmationBy: current[0] === "pendingSalesConfirmation" && !(index % 2) ? assignee : "—",
+      salesConfirmationAt: current[0] === "pendingSalesConfirmation" && !(index % 2) ? date : "—",
       cleaningHistory: cleaningStatus === "待清洗" ? [] : [{ status: cleaningStatus, result: cleaningResult, operator: "autocava_admin_001 超级管理员", time: date, note: cleaningStatus === "待补充" ? "等待补充线索信息。" : "完成线索清洗。" }]
     };
   });
@@ -182,21 +189,23 @@
       { id: "contact", label: "提交跟进结果", subtitle: "销售操作", kind: "decision", x: 760, y: 330 },
       { id: "retry", label: "生成普通回访任务", subtitle: "+2小时 / 手动时间", kind: "task", x: 760, y: 650 },
       { id: "followup", label: "跟进中", subtitle: "确认购车方式", kind: "state", stateCode: "followup", x: 1040, y: 280 },
-      { id: "finance", label: "金融购车意向", subtitle: "继续确认方案", kind: "state", stateCode: "financeIntent", x: 1300, y: 130 },
-      { id: "cash", label: "全款", subtitle: "暂存 · 低频回访", kind: "state", stateCode: "dormantCash", x: 1300, y: 330 },
-      { id: "trial", label: "先试驾", subtitle: "暂存 · 低频回访", kind: "state", stateCode: "dormantTestDrive", x: 1300, y: 500 },
-      { id: "confirmed", label: "确认金融购车", subtitle: "成功终态", kind: "success", stateCode: "confirmedFinance", x: 1600, y: 90 },
-      { id: "lost", label: "战败", subtitle: "终态 · 原因必填", kind: "failure", stateCode: "lost", x: 1600, y: 560 }
+      { id: "finance", label: "有意向", subtitle: "跟进中 · +1天回访", kind: "state", stateCode: "financeIntent", x: 1300, y: 100 },
+      { id: "cash", label: "全款", subtitle: "暂存 · +30天回访", kind: "state", stateCode: "dormantCash", x: 1300, y: 280 },
+      { id: "trial", label: "试驾", subtitle: "暂存 · +30天回访", kind: "state", stateCode: "dormantTestDrive", x: 1300, y: 460 },
+      { id: "confirm", label: "待销售确认", subtitle: "确认后可下发", kind: "state", stateCode: "pendingSalesConfirmation", x: 1030, y: 650 },
+      { id: "issuedBaic", label: "下发北汽", subtitle: "进入北汽线索池", kind: "state", stateCode: "baicIssued", x: 1600, y: 650 },
+      { id: "lost", label: "战败", subtitle: "终态 · 原因必填", kind: "failure", stateCode: "lost", x: 1600, y: 420 }
     ],
     edges: [
       { from: "issued", to: "firstTask" }, { from: "firstTask", to: "unfollowed" },
       { from: "unfollowed", to: "overdue", label: "超过72小时" }, { from: "unfollowed", to: "contact" }, { from: "overdue", to: "contact" },
       { from: "contact", to: "retry", label: "未接通 / 稍后联系" }, { from: "retry", to: "contact", label: "到期回访" },
-      { from: "contact", to: "followup", label: "已联系" }, { from: "followup", to: "finance", label: "金融意向" },
+      { from: "contact", to: "followup", label: "贷款购车" }, { from: "followup", to: "finance", label: "有意向" },
       { from: "followup", to: "cash", label: "全款" }, { from: "followup", to: "trial", label: "先试驾" },
-      { from: "finance", to: "confirmed", label: "确认金融购车" },
-      { from: "contact", to: "lost", label: "号码错误 / 放弃购买 / 3次未接通" },
-      { from: "finance", to: "lost", label: "放弃购买" }, { from: "cash", to: "finance", label: "转金融" }, { from: "trial", to: "finance", label: "转金融" }
+      { from: "contact", to: "confirm", label: "进入待销售确认" }, { from: "confirm", to: "issuedBaic", label: "可下发 / 选择经销商" },
+      { from: "contact", to: "lost", label: "号码错误 / 放弃 / 3次未接通" },
+      { from: "finance", to: "lost", label: "放弃买车 / 中途失联" }, { from: "cash", to: "finance", label: "明确贷款购车" }, { from: "trial", to: "finance", label: "明确贷款购车" },
+      { from: "cash", to: "cash", label: "想法没有改变" }, { from: "trial", to: "trial", label: "想法没有改变" }
     ]
   };
 
@@ -221,7 +230,7 @@
     },
     taskRules,
     transitionConfig: {
-      brand: { name: "AutoCava", code: "autocava", version: "V1.0", status: "草稿", source: "普通线索一期规则" },
+      brand: { name: "AutoCava", code: "autocava", version: "V2.0", status: "草稿", source: "普通线索一期规则·销售确认与主机厂下发" },
       states: stateDefinitions,
       qualityOptions: [
         { code: "UNKNOWN", name: "待判定", color: "#8b95a6" },

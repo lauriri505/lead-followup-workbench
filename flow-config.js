@@ -1,23 +1,24 @@
 (function () {
-  const storageKey = "leadFollowupWorkbench.flowConfig.v1";
+  const storageKey = "leadFollowupWorkbench.flowConfig.v2";
 
   const defaults = {
-    version: "1.0",
+    version: "2.0",
     scope: "普通线索一期",
     updatedAt: "2026-09-02 12:00",
     states: {
       unfollowed: { main: "未跟进", sub: "正常等待跟进", mainEs: "Sin seguimiento", subEs: "En espera de contacto" },
       overdue: { main: "过期未跟进", sub: "超过72小时", mainEs: "Seguimiento vencido", subEs: "Más de 72 horas" },
       followup: { main: "跟进中", sub: "待确认购车方式", mainEs: "En seguimiento", subEs: "Por confirmar forma de compra" },
-      financeIntent: { main: "跟进中", sub: "有金融购车意向", mainEs: "En seguimiento", subEs: "Interés en financiamiento" },
-      dormantCash: { main: "暂存", sub: "明确表示全款", mainEs: "En pausa", subEs: "Compra de contado" },
-      dormantTestDrive: { main: "暂存", sub: "表示要先试驾", mainEs: "En pausa", subEs: "Quiere prueba de manejo" },
-      confirmedFinance: { main: "确认金融购车", sub: "成功终态", mainEs: "Compra financiada confirmada", subEs: "Estado final exitoso", terminal: true, outcome: "success" },
+      financeIntent: { main: "跟进中", sub: "有意向", mainEs: "En seguimiento", subEs: "Con interés" },
+      dormantCash: { main: "暂存", sub: "全款", mainEs: "En pausa", subEs: "Compra de contado" },
+      dormantTestDrive: { main: "暂存", sub: "试驾", mainEs: "En pausa", subEs: "Prueba de manejo" },
+      pendingSalesConfirmation: { main: "待销售确认", sub: "待确认", mainEs: "Pendiente de confirmación", subEs: "Pendiente" },
+      baicIssued: { main: "已下发", sub: "北汽线索池", mainEs: "Enviado", subEs: "池 BAIC" },
       lost: { main: "战败", sub: "终态", mainEs: "Perdido", subEs: "Estado final", terminal: true, outcome: "lost" }
     },
     taskTypes: {
-      FIRST_CONTACT: { name: "首次联系", nameEs: "Primer contacto", defaultMinutes: 30, description: "线索下发后生成，默认30分钟内完成首次联系" },
-      FOLLOW_UP: { name: "普通回访", nameEs: "Seguimiento", defaultMinutes: 120, description: "未接通、约定回访和意向确认等普通线索回访" }
+      FIRST_CONTACT: { name: "首次联系", nameEs: "Primer contacto", defaultMinutes: 30, description: "线索下发或进入待销售确认后，完成首次处理" },
+      FOLLOW_UP: { name: "普通回访", nameEs: "Seguimiento", defaultMinutes: 120, description: "未接通、购车意向和暂存线索的后续回访" }
     },
     policies: {
       overdueHours: 72,
@@ -25,22 +26,27 @@
       dormantDays: 30
     },
     results: {
-      financeInterest: { label: "有金融购车意向", labelEs: "Interés en compra financiada", description: "客户有贷款购车想法，继续确认方案", descriptionEs: "El cliente considera financiar; continuar confirmando la propuesta", target: "financeIntent", task: "FOLLOW_UP", deadline: { type: "minutes", value: 120 }, enabled: true },
-      confirmFinance: { label: "确认金融购车", labelEs: "Confirma compra financiada", description: "客户确认使用金融方案购车", descriptionEs: "El cliente confirma la compra mediante financiamiento", target: "confirmedFinance", terminal: true, enabled: true },
-      cash: { label: "明确表示全款", labelEs: "Confirma compra de contado", description: "暂存并进入低频普通回访", descriptionEs: "Pausar y continuar con seguimiento de baja frecuencia", target: "dormantCash", task: "FOLLOW_UP", deadline: { type: "days", value: 30 }, enabled: true },
-      testDrive: { label: "表示要先试驾", labelEs: "Quiere prueba de manejo", description: "暂存并在后续普通回访中确认购车方式", descriptionEs: "Pausar y confirmar la forma de compra en el siguiente contacto", target: "dormantTestDrive", task: "FOLLOW_UP", deadline: { type: "days", value: 30 }, enabled: true },
-      callback: { label: "要求稍后联系", labelEs: "Solicita contacto posterior", description: "按客户约定时间回访", descriptionEs: "Contactar en la fecha acordada con el cliente", target: "same", task: "FOLLOW_UP", deadline: { type: "manual" }, requireNote: true, enabled: true },
-      unreachable: { label: "未接通", labelEs: "Sin respuesta", description: "前两次继续回访，累计3次自动战败", descriptionEs: "Reintentar dos veces; al tercer intento pasa a perdido", target: "same", task: "FOLLOW_UP", deadline: { type: "minutes", value: 120 }, dynamic: "unreachable", enabled: true },
-      wrongNumber: { label: "号码错误", labelEs: "Número incorrecto", description: "无法触达，直接转为战败", descriptionEs: "No es posible contactar; pasa directamente a perdido", target: "lost", terminal: true, lostReason: "号码错误", enabled: true },
-      abandon: { label: "放弃买车", labelEs: "Desiste de la compra", description: "客户明确放弃，转为战败", descriptionEs: "El cliente desiste; pasa a perdido", target: "lost", terminal: true, lostReason: "放弃买车", requireReason: true, enabled: true }
+      unreachable: { label: "未接通", labelEs: "Sin respuesta", description: "记录未接通次数，第3次自动转战败", descriptionEs: "Registrar intentos; el tercero pasa a perdido", target: "followup", task: "FOLLOW_UP", deadline: { type: "minutes", value: 120 }, dynamic: "unreachable", enabled: true },
+      wrongNumber: { label: "战败-号码错误", labelEs: "Perdido - número incorrecto", description: "战败原因必填，任务结束", descriptionEs: "Motivo obligatorio; finaliza la tarea", target: "lost", terminal: true, lostReason: "号码错误", requireReason: true, enabled: true },
+      abandon: { label: "战败-放弃买车", labelEs: "Perdido - abandona compra", description: "战败原因必填，任务结束", descriptionEs: "Motivo obligatorio; finaliza la tarea", target: "lost", terminal: true, lostReason: "放弃买车", requireReason: true, enabled: true },
+      financeInterest: { label: "跟进中-有意向", labelEs: "En seguimiento - con interés", description: "明确贷款购车，+1天生成回访任务", descriptionEs: "Interés en financiamiento; seguimiento en un día", target: "financeIntent", task: "FOLLOW_UP", deadline: { type: "days", value: 1 }, enabled: true },
+      cash: { label: "暂存-全款", labelEs: "En pausa - contado", description: "30天后生成回访任务", descriptionEs: "Seguimiento en 30 días", target: "dormantCash", task: "FOLLOW_UP", deadline: { type: "days", value: 30 }, enabled: true },
+      testDrive: { label: "暂存-试驾", labelEs: "En pausa - prueba de manejo", description: "30天后生成回访任务", descriptionEs: "Seguimiento en 30 días", target: "dormantTestDrive", task: "FOLLOW_UP", deadline: { type: "days", value: 30 }, enabled: true },
+      readyToDistribute: { label: "可下发", labelEs: "Listo para enviar", description: "选择下发主机厂和经销商，进入对应线索池", descriptionEs: "Seleccionar marca y distribuidor para enviar", target: "baicIssued", requireDealer: true, enabled: true },
+      baicIssued: { label: "下发北汽", labelEs: "Enviar a BAIC", description: "进入北汽线索池", descriptionEs: "Entra al pool de BAIC", target: "baicIssued", requireDealer: true, enabled: true },
+      abandonedMidway: { label: "战败-中途失联", labelEs: "Perdido - contacto interrumpido", description: "战败原因必填，任务结束", descriptionEs: "Motivo obligatorio; finaliza la tarea", target: "lost", terminal: true, lostReason: "中途失联", requireReason: true, enabled: true },
+      unchangedCash: { label: "想法没有改变", labelEs: "La intención no cambió", description: "继续暂存全款，30天后回访", descriptionEs: "Mantener en pausa y volver en 30 días", target: "dormantCash", task: "FOLLOW_UP", deadline: { type: "days", value: 30 }, enabled: true },
+      unchangedTestDrive: { label: "想法没有改变", labelEs: "La intención no cambió", description: "继续暂存试驾，30天后回访", descriptionEs: "Mantener en pausa y volver en 30 días", target: "dormantTestDrive", task: "FOLLOW_UP", deadline: { type: "days", value: 30 }, enabled: true }
     },
     routes: {
-      unfollowed: ["financeInterest", "cash", "testDrive", "callback", "unreachable", "wrongNumber", "abandon"],
-      overdue: ["financeInterest", "cash", "testDrive", "callback", "unreachable", "wrongNumber", "abandon"],
-      followup: ["confirmFinance", "financeInterest", "cash", "testDrive", "callback", "unreachable", "wrongNumber", "abandon"],
-      financeIntent: ["confirmFinance", "cash", "testDrive", "callback", "unreachable", "wrongNumber", "abandon"],
-      dormantCash: ["confirmFinance", "financeInterest", "testDrive", "callback", "unreachable", "wrongNumber", "abandon"],
-      dormantTestDrive: ["confirmFinance", "financeInterest", "cash", "callback", "unreachable", "wrongNumber", "abandon"]
+      unfollowed: ["unreachable", "wrongNumber", "abandon", "financeInterest", "cash", "testDrive"],
+      overdue: ["unreachable", "wrongNumber", "abandon", "financeInterest", "cash", "testDrive"],
+      followup: ["abandonedMidway", "financeInterest", "cash", "testDrive", "readyToDistribute"],
+      financeIntent: ["abandonedMidway", "financeInterest", "cash", "testDrive", "readyToDistribute"],
+      pendingSalesConfirmation: ["readyToDistribute", "cash", "testDrive", "abandon", "financeInterest", "abandonedMidway"],
+      dormantCash: ["financeInterest", "unchangedCash", "abandon"],
+      dormantTestDrive: ["financeInterest", "unchangedTestDrive", "abandon"],
+      baicIssued: ["baicIssued"]
     }
   };
 
@@ -58,7 +64,7 @@
 
   function applyAdminConfiguration(config) {
     try {
-      const saved = JSON.parse(localStorage.getItem("autocava_admin_demo_config_v1") || "null");
+      const saved = JSON.parse(localStorage.getItem("autocava_admin_demo_config_v2") || "null");
       if (!saved?.transitionConfig) return config;
       const transition = saved.transitionConfig;
       const output = clone(config);
@@ -83,7 +89,8 @@
           label: item.name,
           enabled: item.enabled !== false,
           requireReason: Boolean(item.requiresReason),
-          requireNote: Boolean(item.requiresCallbackTime)
+          requireNote: Boolean(item.requiresCallbackTime),
+          requireDealer: Boolean(item.requireDealer)
         };
       });
       output.routes = {};

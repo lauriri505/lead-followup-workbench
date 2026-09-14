@@ -1,4 +1,4 @@
-const storageKey = "autocava_admin_demo_config_v1";
+const storageKey = "autocava_admin_demo_config_v2";
 const sourceData = window.AUTOCAVA_ADMIN_DATA;
 const copy = (value) => JSON.parse(JSON.stringify(value));
 let state = (() => {
@@ -48,7 +48,7 @@ const esc = (value = "") => String(value).replace(/[&<>"']/g, (char) => ({ "&": 
 const roleLabels = { super_admin: "超级管理员", sales: "AutoCava销售" };
 const permissionOptions = ["查看平台全部普通线索", "查看本人负责线索", "清洗和分配线索", "配置账号与角色", "配置任务规则", "配置线索流转", "查看操作记录", "允许接收导入线索", "处理销售任务", "提交跟进结果", "编辑用户当前信息", "添加跟踪记事"];
 const viewNames = { dashboard: "后台总览", leads: "线索数据", baicLeads: "线索数据（北汽）", accounts: "账号与角色", tasks: "任务配置", nodes: "线索流转配置" };
-const groupLabels = { entry: "系统入口", not_followed: "未跟进", followed: "跟进中", dormant: "暂存", overdue: "过期未跟进", success: "确认金融购车", lost: "战败" };
+const groupLabels = { entry: "系统入口", not_followed: "未跟进", followed: "跟进中", dormant: "暂存", overdue: "过期未跟进", sales_confirmation: "待销售确认", issued: "已下发", lost: "战败" };
 const mainStatusGroups = Object.fromEntries(Object.entries(groupLabels).map(([group, label]) => [label, group]));
 const categoryLabels = { contact: "联系", unreachable: "未接通", callback: "约定回访", dormant: "暂存", lost: "终止" };
 const taskLabels = { FIRST_CONTACT: "首次联系", FOLLOW_UP: "普通回访" };
@@ -113,7 +113,7 @@ function renderAccountSession() {
 
 const qualityLabels = { UNKNOWN: "待判定", VALID: "有效", INVALID: "无效" };
 const canCleanLeads = () => (state.permissions[currentRole] || []).includes("清洗和分配线索");
-function statusClass(status) { return status === "战败" ? "lost" : ["暂存", "过期未跟进"].includes(status) ? "dormant" : ["跟进中", "确认金融购车"].includes(status) ? "won" : ""; }
+function statusClass(status) { return status === "战败" ? "lost" : ["暂存", "过期未跟进"].includes(status) ? "dormant" : ["跟进中", "已下发"].includes(status) ? "won" : ""; }
 function isEnteredFollowup(lead) { return Boolean(lead.cleaningActionApplied) || (lead.cleaningStatus === "清洗通过" && lead.assignee && lead.assignee !== "—"); }
 function processingStatus(lead) {
   if (isEnteredFollowup(lead)) return "已下发";
@@ -131,7 +131,7 @@ function leadRow(lead) {
       ? "已结束"
       : "未生成";
   const action = String(lead.brand || "").toUpperCase() === "BAIC" ? `<button class="cleaning-action" data-clean-lead="${esc(lead.id)}" type="button">详情</button>` : `<span class="muted-cell">—</span>`;
-  return `<tr><td><strong>${esc(lead.id)}</strong><small class="table-code">${esc(lead.type || lead.leadType)} · ${esc(lead.entryType || "自动")}</small></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td><strong>${esc(lead.brand || "—")}</strong><small class="table-code">${esc(lead.series || "—")} · ${esc(lead.model || "—")}</small></td><td>${esc(lead.channel || "—")}<small class="table-code">${esc(lead.source || "—")}</small></td><td>${esc(lead.createdAt || "—")}</td><td><span class="processing-chip ${processStatus === "已下发" ? "distributed" : processStatus === "线索无效" ? "invalid" : processStatus === "待补充资料" ? "supplement" : "pending"}">${esc(processStatus)}</span></td><td><span class="table-status ${enteredFollowup ? statusClass(lead.status) : "pending-entry"}">${esc(leadStatusText)}</span></td><td>${esc(enteredFollowup ? lead.assignee || "—" : "—")}</td><td><span class="task-state ${enteredFollowup && lead.taskStatus === "处理中" ? "processing" : ""}">${esc(taskText)}</span></td><td>${action}</td></tr>`;
+  return `<tr><td><strong>${esc(lead.id)}</strong><small class="table-code">${esc(lead.type || lead.leadType)} · ${esc(lead.entryType || "自动")}</small></td><td class="lead-person"><strong>${esc(lead.name)}</strong><small>${esc(lead.phone)}</small></td><td><strong>${esc(lead.brand || "—")}</strong><small class="table-code">${esc(lead.series || "—")} · ${esc(lead.model || "—")}</small></td><td>${esc(lead.channel || "—")}<small class="table-code">${esc(lead.source || "—")}</small></td><td>${esc(lead.createdAt || "—")}</td><td><span class="processing-chip ${processStatus === "已下发" ? "distributed" : processStatus === "线索无效" ? "invalid" : processStatus === "待补充资料" ? "supplement" : "pending"}">${esc(processStatus)}</span></td><td><span class="table-status ${lead.salesConfirmationStatus === "销售已确认" ? "won" : lead.salesConfirmationStatus === "待销售确认" ? "pending-entry" : "muted-cell"}">${esc(lead.salesConfirmationStatus || "—")}</span></td><td><span class="table-status ${enteredFollowup ? statusClass(lead.status) : "pending-entry"}">${esc(leadStatusText)}</span></td><td>${esc(enteredFollowup ? lead.assignee || "—" : "—")}</td><td><span class="task-state ${enteredFollowup && lead.taskStatus === "处理中" ? "processing" : ""}">${esc(taskText)}</span></td><td>${action}</td></tr>`;
 }
 function compactLeadRow(lead) {
   const enteredFollowup = isEnteredFollowup(lead);
@@ -592,7 +592,7 @@ function openTransitionModal(mode, key = null) {
   } else if (mode === "result") {
     const item = key ? resultByCode(key) : null;
     const nextOrder = Math.max(0, ...config.results.filter((result) => result.actor !== "system").map((result) => result.sortOrder || 0)) + 10;
-    $("transitionModalBody").innerHTML = `<div class="modal-form-grid"><label><span>结果编码 *</span><input id="modalResultCode" required value="${esc(item?.code || "")}" ${item ? "readonly" : ""} placeholder="例如：interested"></label><label><span>结果名称 *</span><input id="modalResultName" required value="${esc(item?.name || "")}" placeholder="例如：有意向"></label><label><span>结果分类 *</span><select id="modalResultCategory">${Object.entries(categoryLabels).map(([value, label]) => `<option value="${value}" ${item?.category === value ? "selected" : ""}>${label}</option>`).join("")}</select></label><label><span>工作台展示顺序 *</span><input id="modalResultOrder" type="number" min="1" step="1" required value="${item?.sortOrder || nextOrder}"></label></div><div class="modal-checks"><label><input id="modalResultEnabled" type="checkbox" ${item?.enabled !== false ? "checked" : ""}>在销售工作台启用</label><label><input id="modalResultReason" type="checkbox" ${item?.requiresReason ? "checked" : ""}>选择后原因必填</label><label><input id="modalResultCallback" type="checkbox" ${item?.requiresCallbackTime ? "checked" : ""}>选择后下次联系时间必填</label></div><div class="result-source-note"><strong>销售结果</strong><span>保存后还需在“跟进策略”中绑定适用节点，工作台才会展示。</span></div>`;
+    $("transitionModalBody").innerHTML = `<div class="modal-form-grid"><label><span>结果编码 *</span><input id="modalResultCode" required value="${esc(item?.code || "")}" ${item ? "readonly" : ""} placeholder="例如：interested"></label><label><span>结果名称 *</span><input id="modalResultName" required value="${esc(item?.name || "")}" placeholder="例如：有意向"></label><label><span>结果分类 *</span><select id="modalResultCategory">${Object.entries(categoryLabels).map(([value, label]) => `<option value="${value}" ${item?.category === value ? "selected" : ""}>${label}</option>`).join("")}</select></label><label><span>工作台展示顺序 *</span><input id="modalResultOrder" type="number" min="1" step="1" required value="${item?.sortOrder || nextOrder}"></label></div><div class="modal-checks"><label><input id="modalResultEnabled" type="checkbox" ${item?.enabled !== false ? "checked" : ""}>在销售工作台启用</label><label><input id="modalResultReason" type="checkbox" ${item?.requiresReason ? "checked" : ""}>选择后原因必填</label><label><input id="modalResultCallback" type="checkbox" ${item?.requiresCallbackTime ? "checked" : ""}>选择后下次联系时间必填</label><label><input id="modalResultDealer" type="checkbox" ${item?.requireDealer ? "checked" : ""}>选择后必须选择经销商</label></div><div class="result-source-note"><strong>销售结果</strong><span>保存后还需在“跟进策略”中绑定适用节点，工作台才会展示。</span></div>`;
   } else {
     const flow = key !== null ? config.flows.find((item) => item.id === Number(key)) : null;
     const stateOptions = (selected) => config.states.map((item) => `<option value="${esc(item.code)}" ${selected === item.code ? "selected" : ""}>${esc(item.name)}（${esc(item.code)}）</option>`).join("");
@@ -630,7 +630,8 @@ function saveResultFromModal() {
     enabled: $("modalResultEnabled").checked,
     sortOrder: Number($("modalResultOrder").value),
     requiresReason: $("modalResultReason").checked,
-    requiresCallbackTime: $("modalResultCallback").checked
+    requiresCallbackTime: $("modalResultCallback").checked,
+    requireDealer: $("modalResultDealer").checked
   };
   if (editingKey === null) state.transitionConfig.results.push(item);
   else Object.assign(resultByCode(editingKey), item);
@@ -644,7 +645,8 @@ function saveFlowFromModal() {
   const taskRuleId = $("modalFlowTaskRule").value || null;
   const taskRule = state.taskRules.find((item) => item.id === taskRuleId);
   const taskGroup = taskRule ? (taskRule.group || (taskRule.type.includes("首次联系") ? "FIRST_CONTACT" : "FOLLOW_UP")) : null;
-  const flow = { id: editingKey === null ? Math.max(0, ...config.flows.map((item) => item.id)) + 1 : Number(editingKey), current, result, next: $("modalFlowNext").value, qualityUpdate: $("modalFlowQuality").value, setTags: [], fieldUpdates: {}, unreachable: $("modalFlowUnreachable").checked, reason: $("modalFlowReason").checked, task: taskGroup, taskRuleId, deadline: taskRule?.deadline || "—", retry: $("modalFlowRetry").checked, reactivation: $("modalFlowReactivation").checked };
+  const resultDefinition = resultByCode(result);
+  const flow = { id: editingKey === null ? Math.max(0, ...config.flows.map((item) => item.id)) + 1 : Number(editingKey), current, result, next: $("modalFlowNext").value, qualityUpdate: $("modalFlowQuality").value, setTags: [], fieldUpdates: {}, unreachable: $("modalFlowUnreachable").checked, reason: $("modalFlowReason").checked || Boolean(resultDefinition?.requiresReason), requireDealer: Boolean(resultDefinition?.requireDealer), task: taskGroup, taskRuleId, deadline: taskRule?.deadline || "—", retry: $("modalFlowRetry").checked, reactivation: $("modalFlowReactivation").checked };
   if (editingKey === null) config.flows.push(flow); else Object.assign(config.flows.find((item) => item.id === Number(editingKey)), flow);
   markDirty(); closeTransitionModal(); renderTransitions(); switchConfigTab("strategies"); toast("跟进策略已更新，保存后生效");
 }

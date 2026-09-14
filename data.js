@@ -82,7 +82,7 @@ window.CRM_DEMO_DATA = {
       id: "LEAD-1630", name: "Fernanda Ruiz", phone: "5599021876", source: "内容文章页", leadType: "待确认", brand: "NISSAN", series: "Kicks", model: "Exclusive CVT",
       dealer: "Nissan Polanco", address: "Lago Alberto 320", region: "Ciudad de México", price: "$548,900 MXN", rate: "16.20%", term: "60期", createdAt: "2026-09-01 18:22",
       state: "followup", unreachableCount: 0,
-      task: { id: "TASK-260902-029", code: "FOLLOW_UP", group: "普通回访", trigger: "客户要求稍后联系", due: "2026-09-02 17:30" },
+      task: { id: "TASK-260902-029", code: "FOLLOW_UP", group: "普通回访", trigger: "普通回访", due: "2026-09-02 17:30" },
       operations: [["昨天 18:55", "跟进提交", "跟进结果：要求稍后联系；用户约定今天17:30联系", "sales 001 Deng Yao"]],
       notes: [["昨天 18:56", "客户正在开会，约定今天17:30通过WhatsApp联系。", "sales 001 Deng Yao"], ["昨天 18:40", "用户主要关注日常通勤油耗和后备箱空间。", "sales 001 Deng Yao"]]
     },
@@ -93,6 +93,15 @@ window.CRM_DEMO_DATA = {
       task: { id: "TASK-260902-034", code: "FOLLOW_UP", group: "普通回访", trigger: "累计第2次未接通", due: "2026-09-02 10:00" },
       operations: [["昨天 17:42", "跟进提交", "跟进结果：未接通（第2次），累计未接通次数更新为2", "sales 001 Deng Yao"], ["昨天 11:18", "跟进提交", "跟进结果：未接通（第1次）", "sales 001 Deng Yao"]],
       notes: [["昨天 17:43", "第二次拨打仍无人接听，WhatsApp消息未读。", "sales 001 Deng Yao"], ["昨天 11:20", "首次电话响铃后转入语音信箱。", "sales 001 Deng Yao"]]
+    },
+    {
+      id: "LEAD-1652", name: "Jorge Navarro", phone: "5510012193", source: "AICTA选车推荐", leadType: "金融", brand: "BAIC", series: "BJ40", model: "Plus",
+      dealer: "BAIC Santa Fe", address: "Vasco de Quiroga 3800", region: "Ciudad de México", price: "$799,900 MXN", rate: "13.90%", term: "60期", createdAt: "2026-09-02 09:50",
+      state: "pendingSalesConfirmation", unreachableCount: 0,
+      task: { id: "TASK-260902-041", code: "FIRST_CONTACT", group: "首次联系", trigger: "线索进入待销售确认", due: "2026-09-02 10:20" },
+      salesConfirmationStatus: "待销售确认",
+      operations: [["今天 09:50", "销售确认任务生成", "线索已进入待销售确认，等待确认是否可下发北汽", "系统"]],
+      notes: [["今天 09:51", "用户选择BJ40 Plus并留下金融购车意向，等待销售确认下发门店。", "sales 001 Deng Yao"]]
     }
   ]
 };

@@ -199,6 +199,7 @@ function getTransition(lead, code) {
     manualTime: deadline?.type === "manual",
     requireReason: Boolean(adminFlow?.reason || config.requireReason),
     requireNote: Boolean(config.requireNote || resultConfig(code)?.requireNote),
+    requireDealer: Boolean(adminFlow?.requireDealer || config.requireDealer),
     nextCount
   };
 }
@@ -326,6 +327,7 @@ function renderResults() {
 
 function resetDynamicFields() {
   $("reasonRow").hidden = true;
+  $("followupDealerRow").hidden = true;
   $("callbackRow").hidden = true;
   $("nextTimeRow").hidden = false;
   $("reasonInput").value = "";
@@ -341,12 +343,17 @@ function selectResult(code, selectedLabel) {
   selectedResult = code;
   document.querySelectorAll(".result-option").forEach((item) => item.classList.toggle("selected", item === selectedLabel));
   const transition = getTransition(activeLead(), code);
+  $("followupDealerRow").hidden = !transition.requireDealer;
+  if (transition.requireDealer) {
+    $("followupDealer").innerHTML = `<option value="">请选择经销商</option>` + dealerDirectory.map((dealer) => `<option value="${dealer.name}">${dealer.name} · ${dealer.region}</option>`).join("");
+    $("followupDealer").value = activeLead().dealer || "";
+  }
   $("reasonRow").hidden = !transition.requireReason && !transition.systemLost;
   $("reasonInput").readOnly = Boolean(transition.systemLost);
   if (transition.systemLost) $("reasonInput").value = transition.reason;
   else $("reasonInput").value = "";
   $("callbackRow").hidden = !transition.requireNote;
-  $("nextTimeRow").hidden = transition.manualTime || transition.terminal;
+  $("nextTimeRow").hidden = transition.manualTime || transition.terminal || !transition.taskCode;
   if (transition.manualTime) $("nextTime").value = addHours(2);
   else $("nextTimeDefault").value = transition.time || "";
 }
@@ -378,7 +385,8 @@ function validateSubmission(transition) {
     if (!$("callbackNote").value.trim()) return t("validation.callbackNote");
     if (!$("nextTime").value) return t("validation.callbackTime");
   }
-  if (!transition.terminal && !transition.manualTime && !$("nextTimeDefault").value) return t("validation.nextTime");
+  if (transition.requireDealer && !$("followupDealer").value) return currentLocale === "es-MX" ? "Selecciona un distribuidor" : "请选择下发经销商";
+  if (!transition.terminal && transition.taskCode && !transition.manualTime && !$("nextTimeDefault").value) return t("validation.nextTime");
   const nextValue = transition.manualTime ? $("nextTime").value : $("nextTimeDefault").value;
   if (!transition.terminal && new Date(nextValue).getTime() <= Date.now()) return currentLocale === "es-MX" ? "El próximo contacto debe ser posterior a la hora actual" : "下一次联系时间必须晚于当前时间";
   return "";
@@ -412,18 +420,24 @@ function submitFollowUp() {
     ["刚刚", "任务完成", lead.task.group + "任务 " + lead.task.id + " 已由处理中更新为已完成", operator]
   ];
   if (oldState !== newState) newOperations.push(["刚刚", "状态流转", oldState + " → " + newState, "系统"]);
-  if (transition.terminal) newOperations.push(["刚刚", "任务结束", transition.state === "confirmedFinance" ? "线索已确认金融购车，普通线索流程结束" : "线索进入战败终态，不再生成后续任务", "系统"]);
+  if (transition.terminal) newOperations.push(["刚刚", "任务结束", "线索进入战败终态，不再生成后续任务", "系统"]);
   lead.operations = newOperations.concat(lead.operations);
   lead.state = transition.state;
   lead.unreachableCount = transition.nextCount;
-  if (selectedResult === "financeInterest" || selectedResult === "confirmFinance") lead.leadType = "金融";
+  if (selectedResult === "financeInterest") lead.leadType = "金融";
   if (selectedResult === "cash") lead.leadType = "全款";
   if (selectedResult === "testDrive") lead.leadType = "试驾";
   if (transition.requireNote) {
     lead.lastContact = $("callbackNote").value.trim();
     lead.notes.unshift(["刚刚", lead.lastContact, operator]);
   }
-  if (transition.terminal) {
+  if (transition.requireDealer) {
+    const dealer = dealerDirectory.find((item) => item.name === $("followupDealer").value);
+    lead.dealer = dealer?.name || lead.dealer;
+    lead.region = dealer?.region || lead.region;
+    lead.address = dealer?.address || lead.address;
+  }
+  if (transition.terminal || !transition.taskCode) {
     lead.lostReason = transition.state === "lost" ? nextLostReason : "";
     lead.task = null;
   } else {
@@ -655,7 +669,7 @@ function reloadFlowConfiguration() {
 }
 
 window.addEventListener("storage", (event) => {
-  if ([window.LEAD_FLOW_CONFIG.storageKey, "autocava_admin_demo_config_v1"].includes(event.key)) reloadFlowConfiguration();
+  if ([window.LEAD_FLOW_CONFIG.storageKey, "autocava_admin_demo_config_v2"].includes(event.key)) reloadFlowConfiguration();
 });
 window.addEventListener("focus", reloadFlowConfiguration);
 
