@@ -1,80 +1,17 @@
 <!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AutoCava 普通线索跟进工作台演示原型">
-  <title>线索跟进工作台</title>
-  <link rel="stylesheet" href="styles.css?v=20260907-2">
-</head>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="AutoCava 用户与购车意向跟进工作台"><title>线索跟进工作台</title><link rel="stylesheet" href="workbench.css?v=20261011-1"></head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="#" aria-label="返回工作台首页" data-i18n-aria-label="brand.home"><span class="brand-mark">AC</span><span>AUTOCAVA CRM</span></a>
-    <div class="topbar-meta"><a class="admin-link" href="admin.html" data-i18n="config.link">AutoCava管理员后台</a><label class="language-picker"><span data-i18n="language.label">界面语言</span><select id="languageSelect" aria-label="界面语言" data-i18n-aria-label="language.label"><option value="zh-CN">中文</option><option value="es-MX">Español (México)</option></select></label><span class="account-label" data-i18n="account.role">当前角色：销售</span><span class="salesperson" id="salespersonTop">sales 001 Deng Yao</span><span class="account-avatar">DY</span></div>
-  </header>
-  <main class="page-shell">
-    <section class="page-heading">
-      <div><p class="eyebrow">LEAD FOLLOW-UP</p><div class="title-line"><h1 data-i18n="page.title">线索跟进工作台</h1><strong class="lead-id-chip" id="leadId">LEAD-1533</strong><span class="today-task-count" id="todayTaskCount">今日待处理任务 8</span></div><p class="heading-copy" data-i18n="page.subtitle">集中管理普通线索信息、跟进动作与客户沟通上下文</p></div>
-      <div class="heading-actions"><button class="button secondary" id="watchButton" type="button" aria-pressed="false" hidden>☆ 关注</button><button class="button primary" id="submitTopButton" type="button"><span data-i18n="action.submit">提交</span> <span>→</span></button></div>
-    </section>
-    <section class="task-banner" aria-labelledby="taskTitle">
-      <div class="task-icon">→</div>
-      <div class="task-main"><div class="task-kicker"><span data-i18n="task.current">我的当前任务</span> <span class="status-badge" data-i18n="task.processing">处理中</span></div><h2 id="taskTitle">首次联系</h2><p><span data-i18n="task.trigger">触发原因：</span><span id="taskTrigger">新线索已分配</span></p></div>
-      <dl class="task-facts"><div><dt data-i18n="task.id">任务 ID</dt><dd id="taskId">TASK-260825-001</dd></div></dl>
-    </section>
-    <div class="workspace-grid">
-      <div class="left-column">
-        <section class="panel user-panel" aria-labelledby="userInfoTitle">
-          <div class="panel-heading"><div><h2 id="userInfoTitle"><span data-i18n="user.title">用户信息</span> <span class="changed-badge" id="changedBadge" hidden data-i18n="user.changed">信息已修改</span></h2></div><button class="text-button" id="editUserButton" type="button" data-i18n="user.edit">编辑信息</button></div>
-          <div class="person-summary"><div class="avatar" id="avatar">SR</div><div><h3 id="userName">Sofía Ramírez</h3><p id="userPhone">5612345454</p></div></div>
-          <div class="info-sections">
-            <div class="info-section"><h3 data-i18n="lead.info">线索信息</h3><dl class="info-grid"><div><dt data-i18n="lead.source">线索来源</dt><dd id="source">车型详情页</dd></div><div><dt data-i18n="lead.type">线索类型</dt><dd id="leadType">金融</dd></div><div><dt data-i18n="lead.state">当前线索状态</dt><dd id="leadStateInUser">未跟进 · 正常等待跟进</dd></div><div><dt data-i18n="field.brand">品牌</dt><dd id="brand">NISSAN</dd></div><div><dt data-i18n="field.series">车系</dt><dd id="series">X-TRAIL</dd></div><div><dt data-i18n="field.model">车型</dt><dd id="model">Advance 2 Row</dd></div><div><dt data-i18n="lead.created">创建时间</dt><dd id="createdAt">2026-09-02 09:30</dd></div></dl></div>
-            <div class="info-section"><h3 data-i18n="dealer.finance">经销商与金融信息</h3><dl class="info-grid"><div><dt data-i18n="dealer.name">经销商</dt><dd id="dealer">Changan Polanco</dd></div><div><dt data-i18n="field.region">地区</dt><dd id="region">Ciudad de México</dd></div><div class="wide"><dt data-i18n="field.address">地址</dt><dd id="address">Av. Ejército Nacional 843</dd></div><div><dt data-i18n="finance.price">车价格</dt><dd id="price">$589,900 MXN</dd></div><div><dt data-i18n="finance.rate">年利率</dt><dd id="rate">14.99%</dd></div><div><dt data-i18n="finance.term">贷款期数</dt><dd id="term">72期</dd></div></dl></div>
-          </div>
-        </section>
-        <section class="panel follow-panel" aria-labelledby="followTitle">
-          <div class="panel-heading follow-heading"><div><h2 id="followTitle" data-i18n="follow.title">本次跟进</h2><p data-i18n="follow.description">当前任务决定跟进内容，业务状态随跟进结果流转</p></div><span class="task-group-label" id="taskGroupLabel">首次联系</span></div>
-          <label class="field-label" for="scenarioSelect" data-i18n="follow.scenario">切换普通线索演示场景</label><select id="scenarioSelect" class="select-control"></select>
-          <div class="current-state"><span data-i18n="follow.currentState">当前状态</span><strong id="currentState">待跟进 · —</strong><span class="attempt-count" id="attemptCount">未接通 0 次</span></div>
-          <fieldset class="result-fieldset"><legend><span data-i18n="follow.result">跟进结果</span> <span>*</span></legend><div class="result-list" id="resultList"></div></fieldset>
-          <div class="dynamic-fields" id="dynamicFields">
-            <div class="field-row" id="reasonRow" hidden><label for="reasonInput"><span data-i18n="follow.reason">原因</span> <span>*</span></label><input id="reasonInput" type="text" placeholder="请输入具体原因" data-i18n-placeholder="follow.reasonPlaceholder"></div>
-            <div class="field-row" id="followupDealerRow" hidden><label for="followupDealer">下发经销商 <span>*</span></label><select id="followupDealer"><option value="">请选择经销商</option></select></div>
-            <div class="two-field-row" id="callbackRow" hidden><div><label for="callbackNote"><span data-i18n="follow.callbackNote">用户约定说明</span> <span>*</span></label><input id="callbackNote" type="text" placeholder="例如：下班后方便接听" data-i18n-placeholder="follow.callbackPlaceholder"></div><div><label for="nextTime"><span data-i18n="follow.nextTime">下一次联系时间</span> <span>*</span></label><input id="nextTime" type="datetime-local"></div></div>
-            <div class="field-row" id="nextTimeRow"><label for="nextTimeDefault"><span data-i18n="follow.nextTime">下一次联系时间</span> <span>*</span></label><input id="nextTimeDefault" type="datetime-local"><small id="timeHint" data-i18n="follow.timeHint">系统已按规则给出默认值，销售可以调整。</small></div>
-          </div>
-          <button class="button primary full" id="submitButton" type="button"><span data-i18n="action.submitNext">提交并进入下一条</span> →</button>
-        </section>
-      </div>
-      <aside class="panel activity-panel" aria-labelledby="recordsTitle">
-        <div class="activity-heading"><div class="tabs" role="tablist"><button class="tab active" id="operationsTab" type="button" role="tab" aria-selected="true" aria-controls="operationsPanel" data-i18n="records.operations">操作记录</button><button class="tab" id="editRecordsTab" type="button" role="tab" aria-selected="false" aria-controls="editRecordsPanel"><span data-i18n="records.edits">编辑记录</span> <span id="editRecordCount">0</span></button><button class="tab" id="notesTab" type="button" role="tab" aria-selected="false" aria-controls="notesPanel"><span data-i18n="records.notes">跟踪记事</span> <span id="noteCount">2</span></button></div></div>
-        <section id="operationsPanel" role="tabpanel" aria-labelledby="operationsTab"><div class="activity-intro"><h2 id="recordsTitle" data-i18n="records.operations">操作记录</h2><p data-i18n="records.description">系统自动记录，按时间倒序展示。</p></div><ol class="timeline" id="operationTimeline"></ol></section>
-        <section id="editRecordsPanel" role="tabpanel" aria-labelledby="editRecordsTab" hidden><div class="activity-intro"><h2 data-i18n="edit.historyTitle">信息编辑记录</h2><p data-i18n="edit.historyOrder">按修改时间倒序展示；原始信息为第一条记录。</p></div><ol class="timeline edit-records-list" id="editRecordsTimeline"></ol></section>
-        <section id="notesPanel" role="tabpanel" aria-labelledby="notesTab" hidden><div class="activity-intro"><h2 data-i18n="notes.addTitle">销售手动添加跟踪记录</h2><p data-i18n="notes.description">记录沟通中的关键信息。</p></div><form class="note-form" id="noteForm"><label for="noteInput" data-i18n="notes.content">跟踪内容</label><textarea id="noteInput" rows="3" placeholder="只记录用户输入或销售确认的关键信息" data-i18n-placeholder="notes.placeholder"></textarea><button class="button secondary" type="submit" data-i18n="notes.add">添加记录</button></form><ol class="timeline notes" id="noteTimeline"></ol></section>
-      </aside>
-    </div>
-  </main>
-  <dialog class="edit-dialog" id="editDialog">
-    <form method="dialog" id="editForm">
-      <div class="dialog-heading"><div><p class="eyebrow">EDIT USER</p><h2 data-i18n="edit.title">编辑用户信息</h2></div><button class="icon-button" id="closeEditButton" type="button" aria-label="关闭" data-i18n-aria-label="action.close">×</button></div>
-      <p class="dialog-tip" data-i18n="edit.tip">修改后保留原始信息，并生成信息变更记录，不覆盖原始线索。</p>
-      <section class="edit-tab-panel" id="editCurrentPanel" role="region" aria-label="当前信息" data-i18n-aria-label="edit.current">
-        <div class="current-notice"><strong data-i18n="edit.currentNoticeTitle">工作台当前展示信息</strong><span data-i18n="edit.currentNoticeText">保存修改后，用户信息卡片立即更新。</span></div>
-        <div class="edit-grid">
-          <div><label for="editName" data-i18n="field.name">姓名</label><input id="editName" type="text" required></div>
-          <div><label for="editPhone" data-i18n="field.phone">手机号</label><input id="editPhone" type="text" required></div>
-          <div><label for="editBrand" data-i18n="field.brand">品牌</label><select id="editBrand" required></select></div>
-          <div><label for="editSeries" data-i18n="field.series">车系</label><select id="editSeries" required></select></div>
-          <div><label for="editModel" data-i18n="field.model">车型</label><select id="editModel" required></select></div>
-          <div><label for="editDealer" data-i18n="dealer.name">经销商</label><input id="editDealer" type="text" list="dealerOptions" required autocomplete="off" placeholder="输入或选择经销商" data-i18n-placeholder="dealer.placeholder"><datalist id="dealerOptions"></datalist><small data-i18n="dealer.hint">可输入名称联想选择</small></div>
-          <div><label for="editRegion" data-i18n="field.region">地区</label><input id="editRegion" type="text" readonly></div>
-          <div><label for="editAddress" data-i18n="field.address">地址</label><input id="editAddress" type="text" readonly></div>
-        </div>
-      </section>
-      <div class="dialog-actions"><button class="button secondary" id="cancelEditButton" type="button" data-i18n="action.cancel">取消</button><button class="button primary" id="saveUserButton" type="submit" data-i18n="action.save">保存修改</button></div>
-    </form>
-  </dialog>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="flow-config.js?v=20260914-1"></script><script src="data.js?v=20260907-2"></script><script src="config-table.js?v=20260903-1"></script><script src="app.js?v=20260914-1"></script>
-</body>
-</html>
+<nav class="utility-bar" aria-label="应用导航"><a href="admin.html" data-ui="管理员后台">管理员后台</a><label><span data-ui="界面语言">界面语言</span><select id="languageSelect"><option value="zh-CN">中文</option><option value="es-MX">Español (México)</option></select></label><span id="salesperson"></span></nav>
+<main class="page-shell" id="workbench">
+<header class="page-heading"><div><p class="eyebrow">LEAD FOLLOW-UP</p><div class="title-line"><h1 data-ui="线索跟进工作台">线索跟进工作台</h1><span class="muted caption" id="todayTaskCount"></span></div><p class="subtitle" data-ui="集中管理普通线索信息、跟进动作与客户沟通上下文">集中管理普通线索信息、跟进动作与客户沟通上下文</p></div><div class="actions"><button id="reportButton" data-ui="购车报告">购车报告</button><button class="primary" id="submitTopButton" data-ui="提交并进入下一条">提交并进入下一条</button></div></header>
+<section class="task-banner" aria-labelledby="taskTitle"><span class="task-icon"><img src="assets/figma-workbench/arrow-right.svg" alt="" width="24" height="24"></span><div><div class="task-kicker"><span data-ui="我的当前任务">我的当前任务</span><span class="pill" id="taskStatus"></span></div><h2 id="taskTitle"></h2></div><div class="task-id"><span data-ui="任务 ID">任务 ID</span><strong id="taskId"></strong></div></section>
+<section class="card user-panel" aria-labelledby="userTitle"><div class="user-header"><h2 id="userTitle" data-ui="用户信息">用户信息</h2><strong id="userName"></strong><span class="pill green" id="userState"></span><span id="userPhone"></span><button id="editUserButton" data-ui="编辑用户信息">编辑用户信息</button></div><div class="user-meta"><span><span data-ui="城市">城市</span>：<span id="userCity"></span></span><label><span data-ui="预计购车时间">预计购车时间</span>：<input id="purchaseDate" type="date" aria-label="预计购车时间"></label></div><div class="intent-heading"><h2 data-ui="购车意向">购车意向</h2><span class="caption muted" id="leadId"></span></div><div class="intent-table-scroll"><table class="intent-table"><thead><tr><th data-ui="序号">序号</th><th data-ui="品牌 / 车系">品牌 / 车系</th><th data-ui="线索类型">线索类型</th><th data-ui="来源">来源</th><th data-ui="创建时间（UTC-6）">创建时间（UTC-6）</th><th data-ui="操作">操作</th></tr></thead><tbody id="intentRows"></tbody></table></div></section>
+<div class="workspace-grid"><section class="card follow-panel" aria-labelledby="followTitle"><div class="section-heading"><h2 id="followTitle" data-ui="本次跟进">本次跟进</h2><span class="pill" id="taskGroup"></span></div><fieldset><legend><span class="required" data-ui="跟进结果">跟进结果</span><span class="required"> *</span><span class="muted caption" data-ui="单选">单选</span></legend><div id="resultList" class="result-list"></div></fieldset><div id="conditionalFields"></div><label class="note-label" for="followNote" data-ui="跟进记事">跟进记事</label><textarea id="followNote" rows="3" data-placeholder="补充本次沟通情况（选填）"></textarea><p id="followError" class="error" role="alert" hidden></p></section>
+<aside class="card activity-panel"><div class="tabs" role="tablist"><button id="operationsTab" role="tab" data-tab="operations" aria-controls="recordPanel" aria-selected="true" data-ui="操作记录">操作记录</button><button id="editsTab" role="tab" data-tab="edits" aria-controls="recordPanel" aria-selected="false"><span data-ui="编辑记录">编辑记录</span><span id="editCount"></span></button><button id="notesTab" role="tab" data-tab="notes" aria-controls="recordPanel" aria-selected="false"><span data-ui="跟进记事">跟进记事</span><span id="noteCount"></span></button></div><section id="recordPanel" role="tabpanel" aria-labelledby="operationsTab"></section></aside></div>
+<details class="demo-tools"><summary data-ui="演示场景">演示场景</summary><label><span data-ui="切换用户">切换用户</span><select id="scenarioSelect"></select></label><p data-ui="演示修改保存在当前浏览器，不代表服务器数据。">演示修改保存在当前浏览器，不代表服务器数据。</p></details>
+</main>
+<dialog id="editor" class="editor" aria-labelledby="editorTitle"><form id="editorForm"><header class="dialog-heading"><h2 id="editorTitle"></h2><button type="button" class="icon-button" id="closeEditor" aria-label="关闭"><img src="assets/figma-workbench/close.svg" width="20" height="20" alt=""></button></header><div id="editorBody"></div><p class="error" id="editorError" role="alert" hidden></p><footer class="dialog-actions"><button type="button" id="cancelEditor" data-ui="取消">取消</button><button class="primary" type="submit" id="saveEditor" data-ui="保存">保存</button></footer></form></dialog>
+<dialog id="discardDialog" class="confirm-dialog" aria-labelledby="discardTitle"><h2 id="discardTitle" data-ui="放弃本次修改？">放弃本次修改？</h2><p data-ui="当前内容尚未保存，关闭后将丢失本次修改。">当前内容尚未保存，关闭后将丢失本次修改。</p><div class="dialog-actions"><button id="keepEditing" data-ui="继续编辑">继续编辑</button><button id="discardChanges" class="primary" data-ui="放弃修改">放弃修改</button></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="flow-config.js?v=20261011-1"></script><script src="data.js?v=20261011-1"></script><script src="config-table.js?v=20261011-1"></script><script src="workbench-config.js?v=20261011-1"></script><script src="workbench-core.js?v=20261011-1"></script><script src="workbench.js?v=20261011-1"></script>
+</body></html>

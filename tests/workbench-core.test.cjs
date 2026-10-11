@@ -1,0 +1,11 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const C=require('../workbench-core.js');
+const ctx={window:{},localStorage:{getItem:()=>null}};vm.createContext(ctx);vm.runInContext(fs.readFileSync(require.resolve('../flow-config.js'),'utf8'),ctx);
+const config=ctx.window.LEAD_FLOW_CONFIG.load(),now=new Date('2026-10-11T16:00:00Z');
+test('UTC-6 does not depend on browser timezone',()=>{assert.equal(C.utc6(now),'2026-10-11T10:00');assert.equal(C.parseTime('2026-10-11T10:00'),now.getTime());});
+test('first no-answer schedules two-hour callback',()=>{const r=C.transition({state:'unfollowed',unreachableCount:0},'unreachable',config,now);assert.equal(r.state,'followup');assert.equal(r.count,1);assert.equal(r.due,'2026-10-11T12:00');});
+test('third no-answer is terminal and has no next task',()=>{const r=C.transition({state:'unfollowed',unreachableCount:2},'unreachable',config,now);assert.equal(r.state,'lost');assert.equal(r.terminal,true);assert.equal(r.taskCode,null);});
+test('unavailable result cannot be submitted',()=>assert.throws(()=>C.transition({state:'dormantCash'},'unreachable',config,now)));
+test('finance and dormant scheduling use configured rules',()=>{assert.equal(C.transition({state:'unfollowed'},'financeInterest',config,now).due,'2026-10-12T10:00');assert.equal(C.transition({state:'unfollowed'},'cash',config,now).due,'2026-11-10T10:00');});
+test('administrator deadline overrides default',()=>{const cfg=C.clone(config);cfg.adminFlows=[{current:'unfollowed',result:'financeInterest',next:'financeIntent',task:'FOLLOW_UP',deadline:'+3天'}];assert.equal(C.transition({state:'unfollowed'},'financeInterest',cfg,now).due,'2026-10-14T10:00');});
+test('normalizing legacy data preserves original data and independent intentions',()=>{const a=C.normalize({id:'L1',name:'A',phone:'123',brand:'BAIC',series:'BJ40'});a.name='B';a.intentions[0].brand='MG';assert.equal(a.originalSnapshot.name,'A');assert.equal(a.originalSnapshot.intentions[0].brand,'BAIC');assert.equal(a.brand,'BAIC');});
