@@ -16,6 +16,7 @@
     '演示场景':'Escenarios de demostración','切换用户':'Cambiar cliente','演示修改保存在当前浏览器，不代表服务器数据。':'Los cambios se guardan en este navegador, no en el servidor.','关闭':'Cerrar','取消':'Cancelar','保存':'Guardar','放弃本次修改？':'¿Descartar los cambios?','当前内容尚未保存，关闭后将丢失本次修改。':'Los cambios no están guardados y se perderán al cerrar.','继续编辑':'Seguir editando','放弃修改':'Descartar','姓名':'Nombre','手机号':'Teléfono','所在城市':'Ciudad de residencia','修改手机号后需校验用户关联关系。':'Al cambiar el teléfono se valida la relación con el cliente.','当前购车意向':'Intenciones actuales','暂无已生成的购车报告':'Todavía no hay un reporte de compra','今天的任务已处理完毕':'Has terminado las tareas disponibles','当前状态不允许此结果':'Este resultado no está permitido en el estado actual','尚未配置接收邮箱，请联系管理员':'No hay correos receptores configurados; contacta al administrador','邮箱下发和等待下发尚无后台流转规则，请先配置。':'Faltan reglas de transición para correo o envío pendiente. Configúralas primero.',
     '请选择跟进结果':'Selecciona un resultado','请补全必填内容':'Completa los campos obligatorios','请选择原因':'Selecciona un motivo','请选择跟进事件':'Selecciona un evento','请选择主机厂和经销商':'Selecciona la marca y el distribuidor','下一次联系时间必须晚于当前时间':'El próximo contacto debe ser posterior a la hora actual','请输入有效手机号':'Ingresa un teléfono válido','手机号已关联其他用户，不能直接覆盖':'El teléfono pertenece a otro cliente; no se puede sobrescribir','没有修改':'Sin cambios','已保存':'Guardado','请选择有效经销商':'Selecciona un distribuidor válido','跟进已提交，已完成当前任务':'Seguimiento guardado; tarea completada','保存失败，内容已保留，请检查浏览器存储权限。':'No se pudo guardar. Se conservaron los datos; revisa los permisos del navegador.','后台配置已更新，请重新选择跟进结果':'Se actualizó la configuración; vuelve a seleccionar un resultado','线索 ID':'ID de prospecto','今日待处理任务':'Tareas pendientes hoy','用户约定说明':'Acuerdo con el cliente','配置要求补充原因':'La configuración requiere un motivo','当前状态不允许这个跟进结果，请重新选择':'Este resultado ya no está permitido; vuelve a seleccionarlo'
   };
+  strings['下次回访时间']='Fecha del próximo seguimiento';
   const t=s=>locale==='es-MX'?(strings[s]||s):s;
   function translate(){document.documentElement.lang=locale;document.title=t('线索跟进工作台');document.querySelectorAll('[data-ui]').forEach(n=>n.textContent=t(n.dataset.ui));document.querySelectorAll('[data-placeholder]').forEach(n=>n.placeholder=t(n.dataset.placeholder));$('languageSelect').value=locale;$('closeEditor').ariaLabel=t('关闭');$('purchaseDate').ariaLabel=t('预计购车时间');}
   function toast(s){clearTimeout(toastTimer);$('toast').textContent=t(s);$('toast').classList.add('show');toastTimer=setTimeout(()=>$('toast').classList.remove('show'),4000);}
@@ -58,7 +59,9 @@
     }
     if(!groups.some(([k])=>k===selectedGroup)){selectedCode=list[0];title='跟进结果';}
     const tr=selectedCode?C.transition(active(),selectedCode,config):null;
-    if(tr&&!tr.terminal&&tr.taskCode&&(selectedGroup==='pause'||tr.manual))html+=input('nextTime','下一次跟进时间',draft.nextTime||tr.due,'datetime-local','required')+`<small class="muted">UTC-6 · ${esc(t('可重新选择下一次跟进时间'))}</small>`;
+    const callbackGroup=['finance','pause'].includes(selectedGroup);
+    const initialTime=tr?.due||'';
+    if(callbackGroup||tr?.manual)html+=input('nextTime','下次回访时间',Object.hasOwn(draft,'nextTime')?draft.nextTime:initialTime,'datetime-local','required')+`<small class="muted">UTC-6 · ${esc(t('可重新选择下一次跟进时间'))}</small>`;
     if(tr?.requireReason&&!['lost','pause'].includes(selectedGroup))html+=input('extraReason','配置要求补充原因',draft.extraReason,'text','required');
     if(tr?.requireNote)html+=input('agreement','用户约定说明',draft.agreement,'text','required');
     $('conditionalFields').innerHTML=html?`<div class="conditional-panel"><h3>${esc(t(title))}</h3><div class="single-column">${html}</div></div>`:'';
@@ -126,7 +129,8 @@
   $('editUserButton').onclick=()=>openEditor('user');$('reportButton').onclick=()=>openEditor('report');
   $('purchaseDate').onchange=()=>{const before=active().purchaseDate,after=$('purchaseDate').value;if(before===after)return;if(!transaction(u=>{u.purchaseDate=after;logEdit(u,'用户信息变更',[{field:'预计购车时间',before,after}]);}))$('purchaseDate').value=before;else{renderRecords();toast('已保存');}};
   $('resultList').onchange=e=>{selectedGroup=e.target.value;selectedCode='';draft={};error('followError','');renderConditional();};
-  $('conditionalFields').addEventListener('change',e=>{readDraft();if(e.target.name==='resultCode'){selectedCode=e.target.value;delete draft.nextTime;}if(e.target.name==='oem')delete draft.dispatchDealer;if(['resultCode','dispatchMethod','oem'].includes(e.target.name))renderConditional();});
+  $('conditionalFields').addEventListener('input',e=>{if(e.target.name==='nextTime')draft.timeEdited=true;});
+  $('conditionalFields').addEventListener('change',e=>{readDraft();if(e.target.name==='resultCode'){selectedCode=e.target.value;if(!draft.timeEdited)delete draft.nextTime;}if(e.target.name==='oem')delete draft.dispatchDealer;if(['resultCode','dispatchMethod','oem'].includes(e.target.name))renderConditional();});
   $('submitTopButton').onclick=submit;
   document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){tab=b.dataset.tab;renderRecords();}});
   document.querySelector('.tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const keys=['operations','edits','notes'],i=keys.indexOf(tab);tab=e.key==='Home'?keys[0]:e.key==='End'?keys[2]:keys[(i+(e.key==='ArrowRight'?1:2))%3];renderRecords();$(tab+'Tab').focus();});

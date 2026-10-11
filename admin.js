@@ -32,6 +32,7 @@ let state = (() => {
   } catch (error) { return copy(sourceData); }
 })();
 if (!state.transitionConfig) state.transitionConfig = copy(sourceData.transitionConfig);
+window.LEAD_FLOW_CONFIG.migrateContactRoutes(state);
 state.transitionConfig.results.forEach((result, index) => {
   if (typeof result.enabled !== "boolean") result.enabled = true;
   if (!Number.isFinite(result.sortOrder)) result.sortOrder = (index + 1) * 10;

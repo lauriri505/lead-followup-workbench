@@ -10,6 +10,7 @@
     const count=Number(lead.unreachableCount||0)+(code==='unreachable'?1:0),limit=Number(f?.terminalAt||cfg.policies.unreachableLimit||3);
     if(code==='unreachable'&&count>=limit)return{state:f?.terminalNext||'lost',terminal:true,reason:limit+'次未接通',count,taskCode:null,systemLost:true};
     let state=f?.next||r.target||lead.state;if(state==='same')state=lead.state;
+    if(code==='unreachable'&&!f&&!['unfollowed','overdue'].includes(lead.state))state=lead.state;
     let timing=r.deadline;const text=rule?.deadline||f?.deadline||'';
     if(text.includes('手动'))timing={type:'manual'};
     else if(/(\d+)\s*天/.test(text))timing={type:'days',value:Number(text.match(/(\d+)\s*天/)[1])};

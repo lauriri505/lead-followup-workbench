@@ -64,6 +64,7 @@
     resultCodes.forEach((resultCode) => {
       const result = resultConfig[resultCode] || {};
       let next = result.target === "same" ? current : (result.target || current);
+      if (resultCode === "unreachable" && !["unfollowed", "overdue"].includes(current)) next = current;
       if (resultCode === "callback" && ["unfollowed", "overdue"].includes(current)) next = "followup";
       flows.push({
         id: flowId++,

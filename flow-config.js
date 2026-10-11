@@ -41,9 +41,9 @@
     routes: {
       unfollowed: ["unreachable", "wrongNumber", "abandon", "financeInterest", "cash", "testDrive"],
       overdue: ["unreachable", "wrongNumber", "abandon", "financeInterest", "cash", "testDrive"],
-      followup: ["abandonedMidway", "financeInterest", "cash", "testDrive", "readyToDistribute"],
-      financeIntent: ["abandonedMidway", "financeInterest", "cash", "testDrive", "readyToDistribute"],
-      pendingSalesConfirmation: ["readyToDistribute", "cash", "testDrive", "abandon", "financeInterest", "abandonedMidway"],
+      followup: ["unreachable", "abandonedMidway", "financeInterest", "cash", "testDrive", "readyToDistribute"],
+      financeIntent: ["unreachable", "abandonedMidway", "financeInterest", "cash", "testDrive", "readyToDistribute"],
+      pendingSalesConfirmation: ["unreachable", "readyToDistribute", "cash", "testDrive", "abandon", "financeInterest", "abandonedMidway"],
       dormantCash: ["financeInterest", "unchangedCash", "abandon"],
       dormantTestDrive: ["financeInterest", "unchangedTestDrive", "abandon"],
       baicIssued: ["baicIssued"]
@@ -62,9 +62,25 @@
     return output;
   };
 
+  // Upgrade old saved demo configurations without replacing custom flows or deadlines.
+  function migrateContactRoutes(saved) {
+    if (!saved?.transitionConfig || saved.transitionConfig.contactRetryUpgrade === 1) return saved;
+    const transition = saved.transitionConfig;
+    if (!transition.results?.some(item => item.code === "unreachable")) return saved;
+    transition.flows ||= [];
+    const template = transition.flows.find(item => item.result === "unreachable");
+    let id = Math.max(0, ...transition.flows.map(item => Number(item.id) || 0));
+    ["followup", "financeIntent", "pendingSalesConfirmation"].forEach(current => {
+      if (!transition.states?.some(item => item.code === current) || transition.flows.some(item => item.current === current && item.result === "unreachable")) return;
+      transition.flows.push({ ...(template || {}), id: ++id, current, result: "unreachable", next: current === "pendingSalesConfirmation" ? "pendingSalesConfirmation" : current, task: "FOLLOW_UP", taskRuleId: template?.taskRuleId || "RULE-RETRY", deadline: template?.deadline || "+2小时", unreachable: true, terminalAt: template?.terminalAt || 3, terminalNext: "lost", terminalQuality: "INVALID", qualityUpdate: "UNKNOWN" });
+    });
+    transition.contactRetryUpgrade = 1;
+    return saved;
+  }
+
   function applyAdminConfiguration(config) {
     try {
-      const saved = JSON.parse(localStorage.getItem("autocava_admin_demo_config_v2") || "null");
+      const saved = migrateContactRoutes(JSON.parse(localStorage.getItem("autocava_admin_demo_config_v2") || "null"));
       if (!saved?.transitionConfig) return config;
       const transition = saved.transitionConfig;
       const output = clone(config);
@@ -109,7 +125,13 @@
   function load() {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
-      return applyAdminConfiguration(merge(defaults, saved));
+      const merged = merge(defaults, saved);
+      if (!saved?.contactRetryUpgrade) {
+        ["followup", "financeIntent", "pendingSalesConfirmation"].forEach(key => {
+          if (!merged.routes[key].includes("unreachable")) merged.routes[key].unshift("unreachable");
+        });
+      }
+      return applyAdminConfiguration(merged);
     } catch (error) {
       return applyAdminConfiguration(clone(defaults));
     }
@@ -117,6 +139,7 @@
 
   function save(config) {
     const next = merge(defaults, config);
+    next.contactRetryUpgrade = 1;
     next.updatedAt = new Date().toLocaleString("zh-CN", { hour12: false });
     localStorage.setItem(storageKey, JSON.stringify(next));
     return next;
@@ -132,5 +155,5 @@
     return locale === "es-MX" ? (item[key + "Es"] || item[key]) : item[key];
   }
 
-  window.LEAD_FLOW_CONFIG = { storageKey, defaults: clone(defaults), load, save, reset, text };
+  window.LEAD_FLOW_CONFIG = { storageKey, defaults: clone(defaults), load, save, reset, text, migrateContactRoutes };
 })();
