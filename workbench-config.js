@@ -1,6 +1,6 @@
 /* UI-only dictionaries; transitions still come from flow-config.js. */
 window.WORKBENCH_CONFIG = {
-  version:'2026.10.12.2',storageKey:'autocava.workbench.figma.v1',
+  version:'2026.10.12.3',storageKey:'autocava.workbench.figma.v1',
   partners:{BAIC:{status:'active'}}, // Demo fixture; other brands require explicit configuration.
   financeEvents:['补充金融资料','确认金融方案','跟进审批进度'],recipients:[],
   cities:['La Paz','Ciudad de México','Monterrey','Guadalajara','Mérida','Querétaro'],

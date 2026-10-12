@@ -25,5 +25,11 @@
   function normalize(lead){const x=clone(lead);x.operations=x.operations||[];x.notes=x.notes||[];x.city=x.city||x.region||'';x.purchaseDate=x.purchaseDate||'';
     if(!x.intentions)x.intentions=[{...clone(x),id:x.id+'-INTENT',operations:undefined,notes:undefined,task:undefined,editRecords:undefined,original:undefined}];
     x.originalSnapshot=x.originalSnapshot||{name:x.original?.name||x.name,phone:x.original?.phone||x.phone,city:x.original?.region||x.city,purchaseDate:x.purchaseDate,intentions:clone(x.intentions)};x.editRecords=x.editRecords||[];x.taskHistory=x.taskHistory||[];return x;}
-  const api={clone,utc6,parseTime,codes,transition,group,normalize};root.WorkbenchCore=api;if(typeof module!=='undefined')module.exports=api;
+  function nextContact(transition,entered,now=Date.now()){
+    if(transition.terminal||!transition.taskCode)return null;
+    const value=(entered||'').trim()||transition.due||'';
+    if(value&&(!Number.isFinite(parseTime(value))||parseTime(value)<=now))throw Error('下一次联系时间必须晚于当前时间');
+    return value||null;
+  }
+  const api={clone,utc6,parseTime,codes,transition,group,normalize,nextContact};root.WorkbenchCore=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);

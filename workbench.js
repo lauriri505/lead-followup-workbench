@@ -1,4 +1,4 @@
-/* AutoCava v2026.10.12.2. Local prototype; never sends data externally. */
+/* AutoCava v2026.10.12.3. Local prototype; never sends data externally. */
 (() => {
   'use strict';
   const C=window.WorkbenchCore,UI=window.WORKBENCH_CONFIG,source=window.CRM_DEMO_DATA;
@@ -18,6 +18,7 @@
     '请选择跟进结果':'Selecciona un resultado','请补全必填内容':'Completa los campos obligatorios','请选择原因':'Selecciona un motivo','请选择跟进事件':'Selecciona un evento','请选择主机厂和经销商':'Selecciona la marca y el distribuidor','下一次联系时间必须晚于当前时间':'El próximo contacto debe ser posterior a la hora actual','请输入有效手机号':'Ingresa un teléfono válido','手机号已关联其他用户，不能直接覆盖':'El teléfono pertenece a otro cliente; no se puede sobrescribir','没有修改':'Sin cambios','已保存':'Guardado','请选择有效经销商':'Selecciona un distribuidor válido','跟进已提交，已完成当前任务':'Seguimiento guardado; tarea completada','保存失败，内容已保留，请检查浏览器存储权限。':'No se pudo guardar. Se conservaron los datos; revisa los permisos del navegador.','后台配置已更新，请重新选择跟进结果':'Se actualizó la configuración; vuelve a seleccionar un resultado','线索 ID':'ID de prospecto','今日待处理任务':'Tareas pendientes hoy','用户约定说明':'Acuerdo con el cliente','配置要求补充原因':'La configuración requiere un motivo','当前状态不允许这个跟进结果，请重新选择':'Este resultado ya no está permitido; vuelve a seleccionarlo'
   };
   strings['下次回访时间']='Fecha del próximo seguimiento';
+  Object.assign(strings,{'选填；留空按默认规则安排，无默认时间则待安排。':'Opcional; si se deja vacío, se aplica la fecha predeterminada. Sin fecha predeterminada, queda por programar.','待安排时间':'Por programar'});
   Object.assign(strings,{
     '提交跟进':'Guardar seguimiento','确认提交':'Confirmar','提交下发':'Registrar envío','待补充信息说明':'Información por completar','战败原因说明':'Detalle del motivo de pérdida','暂存原因说明':'Detalle del motivo de pausa',
     '下发主机厂':'Marca receptora','下发经销商':'Distribuidor receptor','合作状态':'Estado de colaboración','已合作':'Colaborador activo','试用期':'En prueba','未合作':'Sin colaboración','系统读取':'Según configuración',
@@ -38,7 +39,7 @@
   function stateName(u){const s=config.states[u.state];return s?window.LEAD_FLOW_CONFIG.text(s,'main',locale)+' · '+window.LEAD_FLOW_CONFIG.text(s,'sub',locale):u.state;}
   function taskName(u){return u.task?(config.taskTypes[u.task.code]?window.LEAD_FLOW_CONFIG.text(config.taskTypes[u.task.code],'name',locale):u.task.group):t('已完成');}
   const resultName=code=>window.LEAD_FLOW_CONFIG.text(config.results[code],'label',locale);
-  const dueNow=u=>u.task&&(!u.task.availableAt||C.parseTime(u.task.availableAt)<=Date.now());
+  const dueNow=u=>u.task&&!u.task.schedulePending&&(!u.task.availableAt||C.parseTime(u.task.availableAt)<=Date.now());
   const eligible=()=>users.filter(u=>dueNow(u)&&!visited.has(u.id));
   function options(values,current='',placeholder=true){return(placeholder?`<option value="">${esc(t('请选择'))}</option>`:'')+values.map(v=>{const value=typeof v==='object'?v.value:v,label=typeof v==='object'?v.label:t(v);return`<option value="${esc(value)}" ${String(current)===String(value)?'selected':''}>${esc(label)}</option>`;}).join('');}
   function input(name,label,value='',type='text',extra=''){const unit={downPayment:' (%)',rate:' (%)',price:' (MXN)',monthlyPayment:' (MXN)',trialTime:' (UTC-6)'}[name]||'';return`<label class="field"><span>${esc(t(label)+unit)}${extra.includes('required')?' <span class="required">*</span>':''}</span><input name="${name}" type="${type}" value="${esc(value)}" ${extra}></label>`;}
@@ -77,7 +78,7 @@
     if(selectedCode==='unreachable')html+=`<p class="caption">${esc(t('累计未接通'))} ${Number(active().unreachableCount||0)} · ${esc(t('本次提交次数'))} ${tr.count}</p>`;
     if(tr?.systemLost)html+=hint('本次提交后自动转为战败，原因记录为3次未接通。不再安排回访。',true);
     else if(tr?.terminal)html+=hint('提交后转为战败，结束销售跟进，不再生成回访任务。',true);
-    else if(tr?.taskCode)html+=input('nextTime','下次回访时间',Object.hasOwn(draft,'nextTime')?draft.nextTime:tr.due,'datetime-local','required')+`<small class="muted caption">UTC-6 · ${esc(t(tr.manual?'请手动选择下次回访时间':'已按默认规则带入，销售可手动调整。'))}</small>`;
+    else if(tr?.taskCode)html+=input('nextTime','下次回访时间',Object.hasOwn(draft,'nextTime')?draft.nextTime:tr.due,'datetime-local')+`<small class="muted caption">UTC-6 · ${esc(t('选填；留空按默认规则安排，无默认时间则待安排。'))}</small>`;
     $('conditionalFields').innerHTML=html?`<div class="conditional-panel">${html}</div>`:'';
     $('submitFollowButton').textContent=t(tr?.systemLost?'确认提交':selectedGroup==='dispatch'?'提交下发':'提交跟进');
   }
@@ -88,9 +89,9 @@
     if(tab==='operations')rows=u.operations.map(([time,title,detail,by])=>({time,title,detail,by}));
     if(tab==='notes')rows=u.notes.map(([time,detail,by],index)=>({time,detail,by,index}));
     if(tab==='edits'){const orig=u.originalSnapshot;rows=[{time:u.createdAt,title:t('原始信息'),detail:[orig.name,orig.phone,orig.city,...orig.intentions.map(i=>i.brand+' · '+i.series+' · '+blank(i.model))].join('\n'),by:'系统'},...u.editRecords.filter(r=>r.type!=='original').map(r=>({time:r.time,title:r.title||t('编辑记录'),by:r.operator,detail:(r.changes||[]).map(c=>t(c.field)+': '+t('修改前')+' '+blank(c.before)+' → '+t('修改后')+' '+blank(c.after)).join('\n')}))];}
-    $('recordPanel').innerHTML=`<h3>${esc(t(title))}</h3><p class="activity-copy">${esc(t(copy))}</p>${tab==='notes'?`<button class="text-button" id="addNote">+ ${esc(t('添加记事'))}</button>`:''}<ol class="timeline">${rows.length?rows.map(r=>`<li><time>${esc(r.time)}</time>${r.title?`<strong>${esc(r.title)}</strong>`:''}<p>${esc(r.detail)}</p><small>${esc(t('操作人'))}：${esc(r.by||operator())}</small>${r.index!==undefined?`<button class="text-button" data-edit-note="${r.index}">${esc(t('编辑'))}</button>`:''}</li>`).join(''):`<li>${esc(t('暂无记录'))}</li>`}</ol>`;
+    $('recordPanel').innerHTML=`<h3>${esc(t(title))}</h3><p class="activity-copy">${esc(t(copy))}</p><ol class="timeline">${rows.length?rows.map(r=>`<li><time>${esc(r.time)}</time>${r.title?`<strong>${esc(r.title)}</strong>`:''}<p>${esc(r.detail)}</p><small>${esc(t('操作人'))}：${esc(r.by||operator())}</small>${r.index!==undefined?`<button class="text-button" data-edit-note="${r.index}">${esc(t('编辑'))}</button>`:''}</li>`).join(''):`<li>${esc(t('暂无记录'))}</li>`}</ol>`;
   }
-  function render(){const u=active();if(!u)return;translate();const available=eligible();$('todayTaskCount').textContent=t('今日待处理任务')+' '+available.length;$('taskStatus').textContent=t(dueNow(u)&&!visited.has(u.id)?'处理中':u.task?'待处理':'已完成');$('taskTitle').textContent=available.length||dueNow(u)&&!visited.has(u.id)?taskName(u):t('今天的任务已处理完毕');$('taskId').textContent=u.task?.id||'--';$('taskGroup').textContent=taskName(u);$('userName').textContent=u.name;$('userPhone').textContent=u.phone;$('userAvatar').textContent=(u.name||'?').trim().split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();$('userCity').textContent=blank(u.city);$('purchaseDate').textContent=blank(u.purchaseDate);$('leadId').textContent=u.id;$('submitTopButton').disabled=!dueNow(u)||visited.has(u.id);$('scenarioSelect').innerHTML=users.map(x=>`<option value="${esc(x.id)}" ${x.id===activeId?'selected':''}>${esc(x.id+' · '+x.name+' · '+stateName(x))}</option>`).join('');renderIntents();renderResults();renderConditional();renderRecords();}
+  function render(){const u=active();if(!u)return;translate();const available=eligible();$('todayTaskCount').textContent=t('今日待处理任务')+' '+available.length;$('taskStatus').textContent=t(u.task?.schedulePending?'待安排时间':dueNow(u)&&!visited.has(u.id)?'处理中':u.task?'待处理':'已完成');$('taskTitle').textContent=available.length||dueNow(u)&&!visited.has(u.id)?taskName(u):t('今天的任务已处理完毕');$('taskId').textContent=u.task?.id||'--';$('taskGroup').textContent=taskName(u);$('userName').textContent=u.name;$('userPhone').textContent=u.phone;$('userAvatar').textContent=(u.name||'?').trim().split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();$('userCity').textContent=blank(u.city);$('purchaseDate').textContent=blank(u.purchaseDate);$('leadId').textContent=u.id;$('submitTopButton').disabled=!dueNow(u)||visited.has(u.id);$('scenarioSelect').innerHTML=users.map(x=>`<option value="${esc(x.id)}" ${x.id===activeId?'selected':''}>${esc(x.id+' · '+x.name+' · '+stateName(x))}</option>`).join('');renderIntents();renderResults();renderConditional();renderRecords();}
   function resetFollow(){selectedGroup='';selectedCode='';draft={};$('followNote').value='';error('followError','');}
   function changes(before,after,labels){return Object.keys(after).filter(k=>String(before[k]??'')!==String(after[k]??'')).map(k=>({field:labels[k]||k,before:before[k]??'',after:after[k]??''}));}
   function logEdit(u,title,diff){u.editRecords.unshift({title,time:stamp(),operator:operator(),changes:diff});u.operations.unshift([stamp(),title,diff.map(c=>c.field+'：'+blank(c.before)+' → '+blank(c.after)).join('；'),operator()]);}
@@ -103,7 +104,7 @@
     const reason=tr.systemLost?tr.reason:tr.requireNote?draft.agreement.trim():config.results[selectedCode].lostReason||config.results[selectedCode].label;
     if(tr.requireReason&&!reason)return error('followError','请选择原因');
     const invalid=$('conditionalFields').querySelector(':invalid');if(invalid){invalid.reportValidity();return error('followError','请补全必填内容');}
-    const nextTime=Object.hasOwn(draft,'nextTime')?draft.nextTime:tr.due;if(!tr.terminal&&tr.taskCode&&(!nextTime||!Number.isFinite(C.parseTime(nextTime))||C.parseTime(nextTime)<=Date.now()))return error('followError','下一次联系时间必须晚于当前时间');
+    let nextTime;try{nextTime=C.nextContact(tr,draft.nextTime);}catch(e){return error('followError',e.message);}
     const note=$('followNote').value.trim(),doneId=activeId,code=selectedCode;
     if(!transaction(u=>{const previous=u.state,task=u.task;u.taskHistory.push({...task,status:'completed',completedAt:new Date().toISOString(),result:code});u.state=tr.state;u.unreachableCount=tr.count;u.lostReason=tr.terminal?reason:'';
       u.operations.unshift([stamp(),'跟进提交',config.results[code].label+(reason?'；'+reason:'')+(draft.financeEvent?'；'+draft.financeEvent:''),operator()],[stamp(),'任务完成',task.id+' · 已完成',operator()]);
@@ -111,7 +112,7 @@
       if(code==='missingInfo')u.informationCount=Number(u.informationCount||0)+1;
       u.followups=u.followups||[];u.followups.push({result:code,reason,explanation:tr.requireNote?draft.agreement.trim():'',nextTime:tr.taskCode?nextTime:null,at:new Date().toISOString(),operator:operator()});
       if(tr.requireDealer){const cooperation=UI.partners[draft.oem].status;u.dispatch={method:cooperation==='active'?'api-and-email':cooperation==='trial'?'email':'wait',oem:draft.oem,dealer:draft.dispatchDealer,cooperation,status:'pending',demo:true,recordedAt:new Date().toISOString()};}
-      u.task=tr.terminal||!tr.taskCode?null:{id:'TASK-'+Date.now(),code:tr.taskCode,group:tr.taskName,due:nextTime.replace('T',' '),availableAt:nextTime,status:'pending',event:draft.financeEvent||''};
+      u.task=tr.terminal||!tr.taskCode?null:{id:'TASK-'+Date.now(),code:tr.taskCode,group:tr.taskName,due:nextTime?.replace('T',' ')||null,availableAt:nextTime,schedulePending:!nextTime,status:'pending',event:draft.financeEvent||''};
     }))return;
     visited.add(doneId);const next=eligible()[0];if(next)activeId=next.id;resetFollow();if(next)expanded.add(next.intentions[0].id);render();toast('跟进已提交，已完成当前任务');window.scrollTo({top:0,behavior:'smooth'});
   }
@@ -150,14 +151,14 @@
   $('submitFollowButton').onclick=submit;
   document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){tab=b.dataset.tab;renderRecords();}});
   document.querySelector('.tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const keys=['operations','edits','notes'],i=keys.indexOf(tab);tab=e.key==='Home'?keys[0]:e.key==='End'?keys[2]:keys[(i+(e.key==='ArrowRight'?1:2))%3];renderRecords();$(tab+'Tab').focus();});
-  $('recordPanel').addEventListener('click',e=>{if(e.target.closest('#addNote'))openEditor('note');const b=e.target.closest('[data-edit-note]');if(b)openEditor('note',Number(b.dataset.editNote));});
+  $('recordPanel').addEventListener('click',e=>{const b=e.target.closest('[data-edit-note]');if(b)openEditor('note',Number(b.dataset.editNote));});
   $('scenarioSelect').onchange=e=>{if(($('followNote').value||selectedGroup)&&!window.confirm(t('当前内容尚未保存，关闭后将丢失本次修改。'))){e.target.value=activeId;return;}activeId=e.target.value;expanded.add(active().intentions[0].id);resetFollow();render();};
   $('languageSelect').onchange=e=>{readDraft();locale=e.target.value;try{localStorage.setItem('crmLocale',locale);}catch{}error('followError','');render();};
   function refreshConfig(){const next=loadConfig();if(JSON.stringify(next)!==JSON.stringify(config)){config=next;selectedCode='';selectedGroup='';draft={};render();toast('后台配置已更新，请重新选择跟进结果');}}
   window.addEventListener('focus',refreshConfig);window.addEventListener('storage',e=>{if([window.LEAD_FLOW_CONFIG.storageKey,'autocava_admin_demo_config_v2'].includes(e.key))refreshConfig();});
   window.addEventListener('beforeunload',e=>{if($('followNote').value||selectedGroup||editorState&&editorState.type!=='report'&&JSON.stringify(editorValues())!==editorSnapshot){e.preventDefault();e.returnValue='';}});
   let storageWarning=false;
-  try{locale=localStorage.getItem('crmLocale')==='es-MX'?'es-MX':'zh-CN';const saved=JSON.parse(localStorage.getItem(UI.storageKey)||'null');if(['2026.10.11.1','2026.10.12.1',UI.version].includes(saved?.version)&&Array.isArray(saved.users)&&saved.users.length)users=saved.users.map(C.normalize);}catch{storageWarning=true;}
+  try{locale=localStorage.getItem('crmLocale')==='es-MX'?'es-MX':'zh-CN';const saved=JSON.parse(localStorage.getItem(UI.storageKey)||'null');if(['2026.10.11.1','2026.10.12.1','2026.10.12.2',UI.version].includes(saved?.version)&&Array.isArray(saved.users)&&saved.users.length)users=saved.users.map(C.normalize);}catch{storageWarning=true;}
   if(!users)users=[UI.demoUser,...source.leads.map(l=>({...l,...window.CRM_CONFIG_TABLE?.leadProfiles?.[l.id]}))].map(C.normalize);
   const requested=new URLSearchParams(location.search).get('lead');activeId=users.some(u=>u.id===requested)?requested:(eligible()[0]||users[0]).id;expanded.add(active().intentions[0].id);$('salesperson').textContent=operator();render();if(storageWarning)toast('保存失败，内容已保留，请检查浏览器存储权限。');
 })();
