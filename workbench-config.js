@@ -1,6 +1,6 @@
 /* UI-only dictionaries; transitions still come from flow-config.js. */
 window.WORKBENCH_CONFIG = {
-  version:'2026.10.12.4',storageKey:'autocava.workbench.figma.v1',
+  version:'2026.10.12.5',storageKey:'autocava.workbench.figma.v1',
   dispatchRecipients:{
     active:{label:'已合作',emails:['baic.leads@example.com','partner.sales@example.com']},
     trial:{label:'试用期',emails:['trial.sales@example.com','trial.store@example.com']},
