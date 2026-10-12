@@ -1,4 +1,4 @@
-/* AutoCava v2026.10.11.1. Local prototype; never sends data externally. */
+/* AutoCava v2026.10.12.1. Local prototype; never sends data externally. */
 (() => {
   'use strict';
   const C=window.WorkbenchCore,UI=window.WORKBENCH_CONFIG,source=window.CRM_DEMO_DATA;
@@ -6,7 +6,8 @@
   const blank=v=>v===undefined||v===null||v===''||v==='—'?'--':v;
   let locale='zh-CN',users,activeId,tab='operations',selectedGroup='',selectedCode='',draft={},editorState=null,editorSnapshot='',toastTimer;
   const expanded=new Set(),visited=new Set();
-  let config=window.LEAD_FLOW_CONFIG.load();
+  const loadConfig=()=>window.WorkbenchFlow.configure(window.LEAD_FLOW_CONFIG.load());
+  let config=loadConfig();
   const catalog={...source.vehicleCatalog,...UI.catalog},dealers=[...source.dealers,...UI.dealers];
   const strings={
     '管理员后台':'Administración','界面语言':'Idioma','线索跟进工作台':'Seguimiento de Leads','集中管理普通线索信息、跟进动作与客户沟通上下文':'Administra prospectos, acciones y el contexto de comunicación con clientes','购车报告':'Reporte de compra','提交并进入下一条':'Enviar y abrir el siguiente','我的当前任务':'Mi tarea actual','任务 ID':'ID de tarea','处理中':'En proceso','待处理':'Pendiente','已完成':'Completada','首次联系':'Primer contacto','普通回访':'Seguimiento',
@@ -17,6 +18,16 @@
     '请选择跟进结果':'Selecciona un resultado','请补全必填内容':'Completa los campos obligatorios','请选择原因':'Selecciona un motivo','请选择跟进事件':'Selecciona un evento','请选择主机厂和经销商':'Selecciona la marca y el distribuidor','下一次联系时间必须晚于当前时间':'El próximo contacto debe ser posterior a la hora actual','请输入有效手机号':'Ingresa un teléfono válido','手机号已关联其他用户，不能直接覆盖':'El teléfono pertenece a otro cliente; no se puede sobrescribir','没有修改':'Sin cambios','已保存':'Guardado','请选择有效经销商':'Selecciona un distribuidor válido','跟进已提交，已完成当前任务':'Seguimiento guardado; tarea completada','保存失败，内容已保留，请检查浏览器存储权限。':'No se pudo guardar. Se conservaron los datos; revisa los permisos del navegador.','后台配置已更新，请重新选择跟进结果':'Se actualizó la configuración; vuelve a seleccionar un resultado','线索 ID':'ID de prospecto','今日待处理任务':'Tareas pendientes hoy','用户约定说明':'Acuerdo con el cliente','配置要求补充原因':'La configuración requiere un motivo','当前状态不允许这个跟进结果，请重新选择':'Este resultado ya no está permitido; vuelve a seleccionarlo'
   };
   strings['下次回访时间']='Fecha del próximo seguimiento';
+  Object.assign(strings,{
+    '提交跟进':'Guardar seguimiento','确认提交':'Confirmar','提交下发':'Registrar envío','待补充信息说明':'Información por completar','战败原因说明':'Detalle del motivo de pérdida','暂存原因说明':'Detalle del motivo de pausa',
+    '下发主机厂':'Marca receptora','下发经销商':'Distribuidor receptor','合作状态':'Estado de colaboración','已合作':'Colaborador activo','试用期':'En prueba','未合作':'Sin colaboración','系统读取':'Según configuración',
+    '累计未接通':'Intentos sin respuesta acumulados','本次提交次数':'Intento actual','请手动选择下次回访时间':'Selecciona la fecha del próximo contacto','已按默认规则带入，销售可手动调整。':'Fecha sugerida; puedes ajustarla.',
+    '本次提交后自动转为战败，原因记录为3次未接通。不再安排回访。':'Se marcará como perdido por 3 intentos sin respuesta. No se crearán más tareas.',
+    '提交后转为战败，结束销售跟进，不再生成回访任务。':'Se marcará como perdido y finalizará el seguimiento, sin nuevas tareas.',
+    '已合作：按规则需接口下发并邮件通知王龙。演示仅保存待处理记录，未发送。':'Colaborador activo: requiere API y correo a Wang Long. Esta demo solo registra el envío pendiente; no envía datos.',
+    '试用期：按规则需邮件通知王龙。演示仅保存待通知记录，未发送。':'En prueba: requiere correo a Wang Long. Esta demo solo registra la notificación pendiente; no envía correos.',
+    '未合作：提交后标记为待下发，不生成回访任务。':'Sin colaboración: quedará pendiente de envío, sin tarea de seguimiento.'
+  });
   const t=s=>locale==='es-MX'?(strings[s]||s):s;
   function translate(){document.documentElement.lang=locale;document.title=t('线索跟进工作台');document.querySelectorAll('[data-ui]').forEach(n=>n.textContent=t(n.dataset.ui));document.querySelectorAll('[data-placeholder]').forEach(n=>n.placeholder=t(n.dataset.placeholder));$('languageSelect').value=locale;$('closeEditor').ariaLabel=t('关闭');$('purchaseDate').ariaLabel=t('预计购车时间');}
   function toast(s){clearTimeout(toastTimer);$('toast').textContent=t(s);$('toast').classList.add('show');toastTimer=setTimeout(()=>$('toast').classList.remove('show'),4000);}
@@ -41,30 +52,29 @@
       return`<tr><td>${index+1}</td><td class="brand-cell">${esc(i.brand)} · ${esc(i.series)}${i.changed?` <span class="pill orange">${esc(t('信息已修改'))}</span>`:''}</td><td><span class="pill ${trial?'purple':'blue'}">${esc(t(kind(i)))}</span></td><td>${esc(blank(i.source))}</td><td>${esc(blank(i.createdAt))}</td><td><div class="row-actions"><button class="text-button" data-edit-intent="${index}">${esc(t('编辑线索'))}</button><button class="icon-button chevron" data-expand="${esc(i.id)}" aria-expanded="${open}" aria-controls="detail-${index}" aria-label="${esc(t(open?'收起详情':'展开详情'))}"><img src="assets/figma-workbench/chevron-down.svg" width="24" height="24" alt=""></button></div></td></tr><tr id="detail-${index}" ${open?'':'hidden'}><td colspan="6" class="detail-cell"><div class="intent-detail">${detail}</div></td></tr>`;
     }).join('');
   }
-  const groups=[['unreachable','未接通'],['lost','战败'],['finance','金融买车'],['pause','暂存'],['dispatch','可下发']];
+  const groups=[['pause','暂存'],['lost','战败'],['dispatch','可下发']];
   const codesForGroup=group=>C.codes(active(),config).filter(c=>C.group(c,config)===group);
-  function renderResults(){const allowed=C.codes(active(),config),known=groups.map(x=>x[0]),all=groups.concat(allowed.filter(c=>!known.includes(C.group(c,config))).map(c=>[c,resultName(c)]));$('resultList').innerHTML=all.map(([key,title])=>`<label class="result-option" title="${esc(codesForGroup(key).length?'':t('当前状态不允许此结果'))}"><input type="radio" name="resultGroup" value="${key}" ${key===selectedGroup?'checked':''} ${codesForGroup(key).length&&dueNow(active())&&!visited.has(activeId)?'':'disabled'}><span>${esc(t(title))}</span></label>`).join('');}
+  function renderResults(){const allowed=C.codes(active(),config);$('followState').textContent=(locale==='es-MX'?'Estado actual: ':'当前状态：')+stateName(active());$('submitFollowButton').disabled=!allowed.length||!dueNow(active())||visited.has(activeId);$('submitFollowButton').textContent=t('提交跟进');$('resultList').innerHTML=groups.map(([key,title])=>`<label class="result-option" title="${esc(codesForGroup(key).length?'':t('当前状态不允许此结果'))}"><input type="radio" name="resultGroup" value="${key}" ${key===selectedGroup?'checked':''} ${codesForGroup(key).length&&dueNow(active())&&!visited.has(activeId)?'':'disabled'}><span>${esc(t(title))}</span></label>`).join('');}
   function readDraft(){document.querySelectorAll('#conditionalFields [name]').forEach(n=>{if(n.type!=='radio'||n.checked)draft[n.name]=n.value;});}
   function renderConditional(){
     const list=codesForGroup(selectedGroup);if(!selectedGroup){$('conditionalFields').innerHTML='';return;}if(!list.includes(selectedCode))selectedCode=list.length===1?list[0]:'';
-    let html='',title='';
-    if(selectedGroup==='lost'||selectedGroup==='pause'){title=selectedGroup==='lost'?'战败信息':'暂存安排';html+=select('resultCode',selectedGroup==='lost'?'战败原因':'暂存原因',list.map(c=>({value:c,label:resultName(c)})),selectedCode,'required');}
-    if(selectedGroup==='finance'){selectedCode=list[0];title='金融买车跟进安排';html+=select('financeEvent','跟进事件',UI.financeEvents,draft.financeEvent,'required')+`<small class="muted">${esc(t('选择下一次需要跟进的事项'))}</small>`;}
+    let html='';
+    const hint=(message,danger=false)=>`<p class="follow-hint ${danger?'danger':''}">${esc(t(message))}</p>`;
+    if(selectedGroup==='lost'||selectedGroup==='pause')html+=select('resultCode',selectedGroup==='lost'?'战败原因':'暂存原因',list.map(c=>({value:c,label:resultName(c)})),selectedCode,'required');
     if(selectedGroup==='dispatch'){
-      selectedCode=list[0];title='下发方式';const method=draft.dispatchMethod||'oem';html+=`<div class="dispatch-options">${[['oem','OEM / Dealer'],['email','联系邮箱'],['wait','等待下发']].map(([v,l])=>`<label><input type="radio" name="dispatchMethod" value="${v}" ${method===v?'checked':''}>${esc(t(l))}</label>`).join('')}</div>`;
-      const tr=selectedCode?C.transition(active(),selectedCode,config):null,brands=tr?.state==='baicIssued'?['BAIC']:[...new Set(dealers.map(d=>d.brand))];
-      if(method==='oem')html+=`<div class="form-grid">${select('oem','OEM',brands,draft.oem,'required')}${select('dispatchDealer','经销商',dealers.filter(d=>d.brand===draft.oem).map(d=>d.name),draft.dispatchDealer,'required')}</div>`;
-      else if(method==='email')html+=select('email','接收邮箱',UI.recipients,draft.email)+`<p class="muted caption">${esc(t('尚未配置接收邮箱，请联系管理员'))}</p>`;
-      else html+=`<p>${esc(t('需要尽快消化线索'))}</p>`;
+      selectedCode=list[0];
+      html+=select('oem','下发主机厂',Object.keys(UI.partners),draft.oem,'required')+select('dispatchDealer','下发经销商',dealers.filter(d=>d.brand===draft.oem).map(d=>d.name),draft.dispatchDealer,'required');
+      const status=UI.partners[draft.oem]?.status;
+      if(status)html+=`<p class="cooperation-status">${esc(t('合作状态'))}：${esc(t({active:'已合作',trial:'试用期',inactive:'未合作'}[status]))}（${esc(t('系统读取'))}）</p>`+hint({active:'已合作：按规则需接口下发并邮件通知王龙。演示仅保存待处理记录，未发送。',trial:'试用期：按规则需邮件通知王龙。演示仅保存待通知记录，未发送。',inactive:'未合作：提交后标记为待下发，不生成回访任务。'}[status]);
     }
-    if(!groups.some(([k])=>k===selectedGroup)){selectedCode=list[0];title='跟进结果';}
     const tr=selectedCode?C.transition(active(),selectedCode,config):null;
-    const callbackGroup=['finance','pause'].includes(selectedGroup);
-    const initialTime=tr?.due||'';
-    if(callbackGroup||tr?.manual)html+=input('nextTime','下次回访时间',Object.hasOwn(draft,'nextTime')?draft.nextTime:initialTime,'datetime-local','required')+`<small class="muted">UTC-6 · ${esc(t('可重新选择下一次跟进时间'))}</small>`;
-    if(tr?.requireReason&&!['lost','pause'].includes(selectedGroup))html+=input('extraReason','配置要求补充原因',draft.extraReason,'text','required');
-    if(tr?.requireNote)html+=input('agreement','用户约定说明',draft.agreement,'text','required');
-    $('conditionalFields').innerHTML=html?`<div class="conditional-panel"><h3>${esc(t(title))}</h3><div class="single-column">${html}</div></div>`:'';
+    if(tr?.requireNote){const label=selectedCode==='missingInfo'?'待补充信息说明':selectedGroup==='lost'?'战败原因说明':'暂存原因说明';html+=`<label class="field"><span>${esc(t(label))} <span class="required">*</span></span><textarea name="agreement" required maxlength="1000" rows="2">${esc(draft.agreement||'')}</textarea></label>`;}
+    if(selectedCode==='unreachable')html+=`<p class="caption">${esc(t('累计未接通'))} ${Number(active().unreachableCount||0)} · ${esc(t('本次提交次数'))} ${tr.count}</p>`;
+    if(tr?.systemLost)html+=hint('本次提交后自动转为战败，原因记录为3次未接通。不再安排回访。',true);
+    else if(tr?.terminal)html+=hint('提交后转为战败，结束销售跟进，不再生成回访任务。',true);
+    else if(tr?.taskCode)html+=input('nextTime','下次回访时间',Object.hasOwn(draft,'nextTime')?draft.nextTime:tr.due,'datetime-local','required')+`<small class="muted caption">UTC-6 · ${esc(t(tr.manual?'请手动选择下次回访时间':'已按默认规则带入，销售可手动调整。'))}</small>`;
+    $('conditionalFields').innerHTML=html?`<div class="conditional-panel">${html}</div>`:'';
+    $('submitFollowButton').textContent=t(tr?.systemLost?'确认提交':selectedGroup==='dispatch'?'提交下发':'提交跟进');
   }
   function renderRecords(){
     const u=active();$('editCount').textContent=u.editRecords.filter(r=>r.type!=='original').length+1;$('noteCount').textContent=u.notes.length;
@@ -80,13 +90,12 @@
   function changes(before,after,labels){return Object.keys(after).filter(k=>String(before[k]??'')!==String(after[k]??'')).map(k=>({field:labels[k]||k,before:before[k]??'',after:after[k]??''}));}
   function logEdit(u,title,diff){u.editRecords.unshift({title,time:stamp(),operator:operator(),changes:diff});u.operations.unshift([stamp(),title,diff.map(c=>c.field+'：'+blank(c.before)+' → '+blank(c.after)).join('；'),operator()]);}
   function submit(){
-    config=window.LEAD_FLOW_CONFIG.load();readDraft();if(!selectedGroup||!selectedCode)return error('followError',['lost','pause'].includes(selectedGroup)?'请选择原因':'请选择跟进结果');
+    config=loadConfig();readDraft();if(!selectedGroup||!selectedCode)return error('followError',['lost','pause'].includes(selectedGroup)?'请选择原因':'请选择跟进结果');
     let tr;try{tr=C.transition(active(),selectedCode,config);}catch(e){return error('followError',e.message);}if(!dueNow(active())||visited.has(activeId))return;
-    if(selectedGroup==='finance'&&!draft.financeEvent)return error('followError','请选择跟进事件');
-    if(selectedGroup==='dispatch'&&(draft.dispatchMethod||'oem')!=='oem')return error('followError','邮箱下发和等待下发尚无后台流转规则，请先配置。');
+    if(selectedGroup==='dispatch'&&!['active','trial','inactive'].includes(UI.partners[draft.oem]?.status))return error('followError','请选择主机厂和经销商');
     if(tr.requireDealer&&!dealers.some(d=>d.name===draft.dispatchDealer&&d.brand===draft.oem))return error('followError','请选择主机厂和经销商');
     if(tr.requireNote&&!draft.agreement?.trim())return error('followError','请补全必填内容');
-    const reason=['lost','pause'].includes(selectedGroup)?config.results[selectedCode].lostReason||config.results[selectedCode].label:draft.extraReason||tr.reason;
+    const reason=tr.systemLost?tr.reason:tr.requireNote?draft.agreement.trim():config.results[selectedCode].lostReason||config.results[selectedCode].label;
     if(tr.requireReason&&!reason)return error('followError','请选择原因');
     const invalid=$('conditionalFields').querySelector(':invalid');if(invalid){invalid.reportValidity();return error('followError','请补全必填内容');}
     const nextTime=Object.hasOwn(draft,'nextTime')?draft.nextTime:tr.due;if(!tr.terminal&&tr.taskCode&&(!nextTime||!Number.isFinite(C.parseTime(nextTime))||C.parseTime(nextTime)<=Date.now()))return error('followError','下一次联系时间必须晚于当前时间');
@@ -94,7 +103,9 @@
     if(!transaction(u=>{const previous=u.state,task=u.task;u.taskHistory.push({...task,status:'completed',completedAt:new Date().toISOString(),result:code});u.state=tr.state;u.unreachableCount=tr.count;u.lostReason=tr.terminal?reason:'';
       u.operations.unshift([stamp(),'跟进提交',config.results[code].label+(reason?'；'+reason:'')+(draft.financeEvent?'；'+draft.financeEvent:''),operator()],[stamp(),'任务完成',task.id+' · 已完成',operator()]);
       if(previous!==u.state)u.operations.unshift([stamp(),'状态流转',previous+' → '+u.state,'系统']);if(note)u.notes.unshift([stamp(),note,operator()]);if(draft.agreement)u.notes.unshift([stamp(),draft.agreement,operator()]);
-      if(tr.requireDealer)u.dispatch={method:'oem',oem:draft.oem,dealer:draft.dispatchDealer,status:'demo-recorded',recordedAt:new Date().toISOString()};
+      if(code==='missingInfo')u.informationCount=Number(u.informationCount||0)+1;
+      u.followups=u.followups||[];u.followups.push({result:code,reason,explanation:tr.requireNote?draft.agreement.trim():'',nextTime:tr.taskCode?nextTime:null,at:new Date().toISOString(),operator:operator()});
+      if(tr.requireDealer){const cooperation=UI.partners[draft.oem].status;u.dispatch={method:cooperation==='active'?'api-and-email':cooperation==='trial'?'email':'wait',oem:draft.oem,dealer:draft.dispatchDealer,cooperation,status:'pending',demo:true,recordedAt:new Date().toISOString()};}
       u.task=tr.terminal||!tr.taskCode?null:{id:'TASK-'+Date.now(),code:tr.taskCode,group:tr.taskName,due:nextTime.replace('T',' '),availableAt:nextTime,status:'pending',event:draft.financeEvent||''};
     }))return;
     visited.add(doneId);const next=eligible()[0];if(next)activeId=next.id;resetFollow();if(next)expanded.add(next.intentions[0].id);render();toast('跟进已提交，已完成当前任务');window.scrollTo({top:0,behavior:'smooth'});
@@ -130,18 +141,19 @@
   $('purchaseDate').onchange=()=>{const before=active().purchaseDate,after=$('purchaseDate').value;if(before===after)return;if(!transaction(u=>{u.purchaseDate=after;logEdit(u,'用户信息变更',[{field:'预计购车时间',before,after}]);}))$('purchaseDate').value=before;else{renderRecords();toast('已保存');}};
   $('resultList').onchange=e=>{selectedGroup=e.target.value;selectedCode='';draft={};error('followError','');renderConditional();};
   $('conditionalFields').addEventListener('input',e=>{if(e.target.name==='nextTime')draft.timeEdited=true;});
-  $('conditionalFields').addEventListener('change',e=>{readDraft();if(e.target.name==='resultCode'){selectedCode=e.target.value;if(!draft.timeEdited)delete draft.nextTime;}if(e.target.name==='oem')delete draft.dispatchDealer;if(['resultCode','dispatchMethod','oem'].includes(e.target.name))renderConditional();});
+  $('conditionalFields').addEventListener('change',e=>{readDraft();if(e.target.name==='resultCode'){selectedCode=e.target.value;draft={resultCode:selectedCode};}if(e.target.name==='oem')delete draft.dispatchDealer;if(['resultCode','oem'].includes(e.target.name))renderConditional();});
   $('submitTopButton').onclick=submit;
+  $('submitFollowButton').onclick=submit;
   document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){tab=b.dataset.tab;renderRecords();}});
   document.querySelector('.tabs').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const keys=['operations','edits','notes'],i=keys.indexOf(tab);tab=e.key==='Home'?keys[0]:e.key==='End'?keys[2]:keys[(i+(e.key==='ArrowRight'?1:2))%3];renderRecords();$(tab+'Tab').focus();});
   $('recordPanel').addEventListener('click',e=>{if(e.target.closest('#addNote'))openEditor('note');const b=e.target.closest('[data-edit-note]');if(b)openEditor('note',Number(b.dataset.editNote));});
   $('scenarioSelect').onchange=e=>{if(($('followNote').value||selectedGroup)&&!window.confirm(t('当前内容尚未保存，关闭后将丢失本次修改。'))){e.target.value=activeId;return;}activeId=e.target.value;expanded.add(active().intentions[0].id);resetFollow();render();};
-  $('languageSelect').onchange=e=>{readDraft();locale=e.target.value;try{localStorage.setItem('crmLocale',locale);}catch{}render();};
-  function refreshConfig(){const next=window.LEAD_FLOW_CONFIG.load();if(JSON.stringify(next)!==JSON.stringify(config)){config=next;selectedCode='';selectedGroup='';draft={};render();toast('后台配置已更新，请重新选择跟进结果');}}
+  $('languageSelect').onchange=e=>{readDraft();locale=e.target.value;try{localStorage.setItem('crmLocale',locale);}catch{}error('followError','');render();};
+  function refreshConfig(){const next=loadConfig();if(JSON.stringify(next)!==JSON.stringify(config)){config=next;selectedCode='';selectedGroup='';draft={};render();toast('后台配置已更新，请重新选择跟进结果');}}
   window.addEventListener('focus',refreshConfig);window.addEventListener('storage',e=>{if([window.LEAD_FLOW_CONFIG.storageKey,'autocava_admin_demo_config_v2'].includes(e.key))refreshConfig();});
   window.addEventListener('beforeunload',e=>{if($('followNote').value||selectedGroup||editorState&&editorState.type!=='report'&&JSON.stringify(editorValues())!==editorSnapshot){e.preventDefault();e.returnValue='';}});
   let storageWarning=false;
-  try{locale=localStorage.getItem('crmLocale')==='es-MX'?'es-MX':'zh-CN';const saved=JSON.parse(localStorage.getItem(UI.storageKey)||'null');if(saved?.version===UI.version&&Array.isArray(saved.users)&&saved.users.length)users=saved.users.map(C.normalize);}catch{storageWarning=true;}
+  try{locale=localStorage.getItem('crmLocale')==='es-MX'?'es-MX':'zh-CN';const saved=JSON.parse(localStorage.getItem(UI.storageKey)||'null');if(['2026.10.11.1',UI.version].includes(saved?.version)&&Array.isArray(saved.users)&&saved.users.length)users=saved.users.map(C.normalize);}catch{storageWarning=true;}
   if(!users)users=[UI.demoUser,...source.leads.map(l=>({...l,...window.CRM_CONFIG_TABLE?.leadProfiles?.[l.id]}))].map(C.normalize);
   const requested=new URLSearchParams(location.search).get('lead');activeId=users.some(u=>u.id===requested)?requested:(eligible()[0]||users[0]).id;expanded.add(active().intentions[0].id);$('salesperson').textContent=operator();render();if(storageWarning)toast('保存失败，内容已保留，请检查浏览器存储权限。');
 })();
