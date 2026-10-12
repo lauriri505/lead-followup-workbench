@@ -27,3 +27,26 @@
 .follow-hint.danger{background:#fef2f2;color:#c92222}
 .cooperation-status{color:var(--primary);font-weight:500}
 #submitFollowButton{width:100%;min-height:40px}
+/* Compact user information card, v2026.10.12.2. */
+.workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.workbench-left{display:flex;flex-direction:column;gap:20px;min-width:0}
+.user-panel{padding:20px}
+.user-card-heading{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.user-card-heading h2{font-size:14px;line-height:22px}
+.user-card-heading #leadId{font-size:12px;color:var(--primary);overflow-wrap:anywhere}
+.user-card-heading button{margin-left:auto;min-height:28px;padding:3px 12px;font-size:12px;line-height:20px;border-color:var(--primary);color:var(--primary);border-radius:6px}
+.user-identity{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+#userAvatar{display:grid;place-items:center;width:40px;height:40px;flex:none;background:var(--soft);color:var(--primary);border-radius:50%;font-size:12px}
+.user-identity strong{font-size:14px;line-height:22px;overflow-wrap:anywhere}
+.user-identity p{font-size:12px;line-height:20px;color:var(--secondary)}
+.user-summary,.user-field-group{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 16px;margin:0}
+.user-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+.user-panel dt{font-size:11px;line-height:18px;color:var(--muted);margin-bottom:3px}
+.user-panel dd{margin:0;font-size:12px;line-height:20px;overflow-wrap:anywhere}
+.other-intentions{font-size:12px;line-height:20px;margin:10px 0 8px;overflow-wrap:anywhere}
+.other-intentions>span:first-child{font-size:11px;color:var(--muted)}
+.user-field-group{padding:10px 0;border-top:1px solid var(--border)}
+.user-field-group:last-child{padding-bottom:0}
+.user-field-group .wide{grid-column:1/-1}
+.activity-panel{border-radius:8px}
+@media(max-width:760px){.workspace-grid{grid-template-columns:1fr}.user-panel{padding:16px}.user-field-group{gap:10px 12px}}

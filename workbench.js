@@ -1,9 +1,9 @@
-/* AutoCava v2026.10.12.1. Local prototype; never sends data externally. */
+/* AutoCava v2026.10.12.2. Local prototype; never sends data externally. */
 (() => {
   'use strict';
   const C=window.WorkbenchCore,UI=window.WORKBENCH_CONFIG,source=window.CRM_DEMO_DATA;
   const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const blank=v=>v===undefined||v===null||v===''||v==='—'?'--':v;
+  const blank=v=>v===undefined||v===null||v===''||v==='—'||v==='-'?'--':v;
   let locale='zh-CN',users,activeId,tab='operations',selectedGroup='',selectedCode='',draft={},editorState=null,editorSnapshot='',toastTimer;
   const expanded=new Set(),visited=new Set();
   const loadConfig=()=>window.WorkbenchFlow.configure(window.LEAD_FLOW_CONFIG.load());
@@ -28,6 +28,7 @@
     '试用期：按规则需邮件通知王龙。演示仅保存待通知记录，未发送。':'En prueba: requiere correo a Wang Long. Esta demo solo registra la notificación pendiente; no envía correos.',
     '未合作：提交后标记为待下发，不生成回访任务。':'Sin colaboración: quedará pendiente de envío, sin tarea de seguimiento.'
   });
+  Object.assign(strings,{'预计购车时间（UTC-6）':'Fecha estimada de compra (UTC-6)','用户所在城市':'Ciudad del cliente','其他留资车辆':'Otros vehículos consultados','贷款期数':'Plazo (meses)','请先保存或取消当前修改':'Guarda o cancela primero los cambios actuales'});
   const t=s=>locale==='es-MX'?(strings[s]||s):s;
   function translate(){document.documentElement.lang=locale;document.title=t('线索跟进工作台');document.querySelectorAll('[data-ui]').forEach(n=>n.textContent=t(n.dataset.ui));document.querySelectorAll('[data-placeholder]').forEach(n=>n.placeholder=t(n.dataset.placeholder));$('languageSelect').value=locale;$('closeEditor').ariaLabel=t('关闭');$('purchaseDate').ariaLabel=t('预计购车时间');}
   function toast(s){clearTimeout(toastTimer);$('toast').textContent=t(s);$('toast').classList.add('show');toastTimer=setTimeout(()=>$('toast').classList.remove('show'),4000);}
@@ -46,11 +47,15 @@
   function detailsGroup(title,values){return`<section class="detail-group"><h3>${esc(t(title))}</h3><dl>${values.map(([k,v])=>`<div><dt>${esc(t(k))}</dt><dd>${esc(blank(v))}</dd></div>`).join('')}</dl></section>`;}
   const kind=i=>/试驾/.test(i.leadType)?'预约试驾':/全款/.test(i.leadType)?'全款购车':/金融/.test(i.leadType)?'金融购车':i.leadType;
   function renderIntents(){
-    $('intentRows').innerHTML=active().intentions.map((i,index)=>{
-      const open=expanded.has(i.id),trial=kind(i)==='预约试驾';
-      const detail=detailsGroup('线索信息',[['线索来源',i.source],['线索类型',i.leadType],['创建时间（UTC-6）',i.createdAt]])+detailsGroup('车辆信息',[['品牌',i.brand],['车系',i.series],['车型',i.model],['车价格',i.price]])+detailsGroup('经销商信息',[['经销商',i.dealer],['州',i.province],['城市',i.city||i.region],['地址',i.address]])+(trial?detailsGroup('试驾信息',[['预约试驾时间',i.trialTime?.replace('T',' ')],['试驾说明',i.trialNote]]):detailsGroup('金融信息',[['首付比例',i.downPayment],['贷款期限',i.term],['贷款利率',i.rate],['月供',i.monthlyPayment],['金融机构',i.institution]]));
-      return`<tr><td>${index+1}</td><td class="brand-cell">${esc(i.brand)} · ${esc(i.series)}${i.changed?` <span class="pill orange">${esc(t('信息已修改'))}</span>`:''}</td><td><span class="pill ${trial?'purple':'blue'}">${esc(t(kind(i)))}</span></td><td>${esc(blank(i.source))}</td><td>${esc(blank(i.createdAt))}</td><td><div class="row-actions"><button class="text-button" data-edit-intent="${index}">${esc(t('编辑线索'))}</button><button class="icon-button chevron" data-expand="${esc(i.id)}" aria-expanded="${open}" aria-controls="detail-${index}" aria-label="${esc(t(open?'收起详情':'展开详情'))}"><img src="assets/figma-workbench/chevron-down.svg" width="24" height="24" alt=""></button></div></td></tr><tr id="detail-${index}" ${open?'':'hidden'}><td colspan="6" class="detail-cell"><div class="intent-detail">${detail}</div></td></tr>`;
-    }).join('');
+    const u=active(),i=u.intentions[0]||{};
+    const unit=(v,suffix)=>blank(v)==='--'?'--':/^\d+(\.\d+)?$/.test(String(v))?v+suffix:v;
+    $('otherVehicles').textContent=u.intentions.slice(1).map(v=>[v.brand,v.series].filter(Boolean).join(' ')).join('、')||'--';
+    const group=(label,values)=>`<dl class="user-field-group" aria-label="${esc(t(label))}">${values.map(([key,value,wide])=>`<div class="${wide?'wide':''}"><dt>${esc(t(key))}</dt><dd>${esc(blank(value))}</dd></div>`).join('')}</dl>`;
+    $('intentRows').innerHTML=group('线索信息',[['线索来源',i.source],['线索类型',i.leadType],['创建时间（UTC-6）',i.createdAt||u.createdAt]])+
+      group('车辆信息',[['品牌',i.brand],['车系',i.series],['车型',i.model],['车价格',unit(i.price,' MXN')]])+
+      group('经销商信息',[['经销商',i.dealer],['城市',i.city||i.region],['州',i.province],['地址',i.address,true]])+
+      (kind(i)==='预约试驾'?group('试驾信息',[['预约试驾时间',i.trialTime?.replace('T',' ')],['试驾说明',i.trialNote,true]]):
+      group('金融信息',[['首付比例',unit(i.downPayment,'%')],['贷款利率',unit(i.rate,'%')],['贷款期数',unit(i.term,locale==='es-MX'?' meses':'期')],['月供',unit(i.monthlyPayment,' MXN')],['金融机构',i.institution]]));
   }
   const groups=[['pause','暂存'],['lost','战败'],['dispatch','可下发']];
   const codesForGroup=group=>C.codes(active(),config).filter(c=>C.group(c,config)===group);
@@ -85,7 +90,7 @@
     if(tab==='edits'){const orig=u.originalSnapshot;rows=[{time:u.createdAt,title:t('原始信息'),detail:[orig.name,orig.phone,orig.city,...orig.intentions.map(i=>i.brand+' · '+i.series+' · '+blank(i.model))].join('\n'),by:'系统'},...u.editRecords.filter(r=>r.type!=='original').map(r=>({time:r.time,title:r.title||t('编辑记录'),by:r.operator,detail:(r.changes||[]).map(c=>t(c.field)+': '+t('修改前')+' '+blank(c.before)+' → '+t('修改后')+' '+blank(c.after)).join('\n')}))];}
     $('recordPanel').innerHTML=`<h3>${esc(t(title))}</h3><p class="activity-copy">${esc(t(copy))}</p>${tab==='notes'?`<button class="text-button" id="addNote">+ ${esc(t('添加记事'))}</button>`:''}<ol class="timeline">${rows.length?rows.map(r=>`<li><time>${esc(r.time)}</time>${r.title?`<strong>${esc(r.title)}</strong>`:''}<p>${esc(r.detail)}</p><small>${esc(t('操作人'))}：${esc(r.by||operator())}</small>${r.index!==undefined?`<button class="text-button" data-edit-note="${r.index}">${esc(t('编辑'))}</button>`:''}</li>`).join(''):`<li>${esc(t('暂无记录'))}</li>`}</ol>`;
   }
-  function render(){const u=active();if(!u)return;translate();const available=eligible();$('todayTaskCount').textContent=t('今日待处理任务')+' '+available.length;$('taskStatus').textContent=t(dueNow(u)&&!visited.has(u.id)?'处理中':u.task?'待处理':'已完成');$('taskTitle').textContent=available.length||dueNow(u)&&!visited.has(u.id)?taskName(u):t('今天的任务已处理完毕');$('taskId').textContent=u.task?.id||'--';$('taskGroup').textContent=taskName(u);$('userName').textContent=u.name;$('userPhone').textContent=u.phone;$('userState').textContent=stateName(u);$('userCity').textContent=blank(u.city);$('purchaseDate').value=u.purchaseDate||'';$('leadId').textContent=t('线索 ID')+' '+u.id;$('submitTopButton').disabled=!dueNow(u)||visited.has(u.id);$('scenarioSelect').innerHTML=users.map(x=>`<option value="${esc(x.id)}" ${x.id===activeId?'selected':''}>${esc(x.id+' · '+x.name+' · '+stateName(x))}</option>`).join('');renderIntents();renderResults();renderConditional();renderRecords();}
+  function render(){const u=active();if(!u)return;translate();const available=eligible();$('todayTaskCount').textContent=t('今日待处理任务')+' '+available.length;$('taskStatus').textContent=t(dueNow(u)&&!visited.has(u.id)?'处理中':u.task?'待处理':'已完成');$('taskTitle').textContent=available.length||dueNow(u)&&!visited.has(u.id)?taskName(u):t('今天的任务已处理完毕');$('taskId').textContent=u.task?.id||'--';$('taskGroup').textContent=taskName(u);$('userName').textContent=u.name;$('userPhone').textContent=u.phone;$('userAvatar').textContent=(u.name||'?').trim().split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();$('userCity').textContent=blank(u.city);$('purchaseDate').textContent=blank(u.purchaseDate);$('leadId').textContent=u.id;$('submitTopButton').disabled=!dueNow(u)||visited.has(u.id);$('scenarioSelect').innerHTML=users.map(x=>`<option value="${esc(x.id)}" ${x.id===activeId?'selected':''}>${esc(x.id+' · '+x.name+' · '+stateName(x))}</option>`).join('');renderIntents();renderResults();renderConditional();renderRecords();}
   function resetFollow(){selectedGroup='';selectedCode='';draft={};$('followNote').value='';error('followError','');}
   function changes(before,after,labels){return Object.keys(after).filter(k=>String(before[k]??'')!==String(after[k]??'')).map(k=>({field:labels[k]||k,before:before[k]??'',after:after[k]??''}));}
   function logEdit(u,title,diff){u.editRecords.unshift({title,time:stamp(),operator:operator(),changes:diff});u.operations.unshift([stamp(),title,diff.map(c=>c.field+'：'+blank(c.before)+' → '+blank(c.after)).join('；'),operator()]);}
@@ -113,7 +118,7 @@
   const editorValues=()=>Object.fromEntries(new FormData($('editorForm')));
   function openEditor(type,index){
     editorState={type,index};$('editor').className='editor'+(type==='intent'?' intent-editor'+(kind(active().intentions[index])==='预约试驾'?' trial-editor':''):'');error('editorError','');$('saveEditor').hidden=type==='report';$('cancelEditor').textContent=t(type==='report'?'关闭':'取消');
-    if(type==='user'){const u=active();$('editorTitle').textContent=t('编辑用户信息');$('editorBody').innerHTML=`<div class="single-column">${input('name','姓名',u.name,'text','required maxlength="100"')}${input('phone','手机号',u.phone,'tel','required maxlength="20"')}<p class="muted caption">${esc(t('修改手机号后需校验用户关联关系。'))}</p>${select('city','所在城市',[...new Set([...UI.cities,u.city].filter(Boolean))],u.city)}${input('purchaseDate','预计购车时间',u.purchaseDate,'date')}</div>`;}
+    if(type==='user'){const u=active();$('editorTitle').textContent=t('编辑用户信息');$('editorBody').innerHTML=`<div class="single-column">${input('name','姓名',u.name,'text','required maxlength="100"')}${input('phone','手机号',u.phone,'tel','required maxlength="20"')}<p class="muted caption">${esc(t('修改手机号后需校验用户关联关系。'))}</p>${select('city','所在城市',[...new Set([...UI.cities,u.city].filter(Boolean))],u.city)}${input('purchaseDate','预计购车时间',u.purchaseDate,'date')}</div><section class="editor-section"><h3>${esc(t('车辆信息'))}</h3>${u.intentions.map((i,index)=>`<div class="report-row"><span>${esc(i.brand+' '+i.series)}</span><button type="button" class="text-button" data-edit-intent="${index}">${esc(t('编辑线索'))}</button></div>`).join('')}</section>`;}
     else if(type==='intent')renderIntentEditor(index);
     else if(type==='note'){const note=index===undefined?'':active().notes[index][1];$('editorTitle').textContent=t(index===undefined?'添加记事':'编辑记事');$('editorBody').innerHTML=`<label class="field"><span>${esc(t('记事内容'))}</span><textarea name="note" rows="5" required maxlength="5000">${esc(note)}</textarea></label>`;}
     else{const u=active();$('editorTitle').textContent=t('购车报告');$('editorBody').innerHTML=`<h3>${esc(u.name)}</h3><p class="muted">${esc(u.phone)}</p><h3 class="editor-section">${esc(t('当前购车意向'))}（${u.intentions.length}）</h3>${u.intentions.map(i=>`<div class="report-row"><strong>${esc(i.brand+' · '+i.series)}</strong><span class="pill">${esc(t(kind(i)))}</span></div>`).join('')}<div class="report-empty">${esc(t('暂无已生成的购车报告'))}</div>`;}
@@ -136,9 +141,8 @@
   function requestClose(){if(editorState?.type!=='report'&&JSON.stringify(editorValues())!==editorSnapshot){$('discardDialog').showModal();return;}$('editor').close();editorState=null;}
   $('editorForm').addEventListener('submit',saveEditor);$('closeEditor').onclick=requestClose;$('cancelEditor').onclick=requestClose;$('editor').addEventListener('cancel',e=>{e.preventDefault();requestClose();});$('keepEditing').onclick=()=>$('discardDialog').close();$('discardChanges').onclick=()=>{$('discardDialog').close();$('editor').close();editorState=null;};
   $('editorBody').addEventListener('change',e=>{if(editorState?.type!=='intent')return;const f=$('editorForm').elements;if(e.target.name==='brand'){f.series.innerHTML=options(Object.keys(catalog[f.brand.value]||{}));f.model.innerHTML=options([]);f.dealer.innerHTML=options(dealers.filter(d=>d.brand===f.brand.value).map(d=>d.name));['province','city','address'].forEach(k=>f[k].value='');}if(e.target.name==='series')f.model.innerHTML=options(catalog[f.brand.value]?.[f.series.value]||[]);if(e.target.name==='dealer'){const d=dealers.find(d=>d.name===f.dealer.value);f.province.value=d?.province||'';f.city.value=d?.city||d?.region||'';f.address.value=d?.address||'';}});
-  $('intentRows').addEventListener('click',e=>{const expand=e.target.closest('[data-expand]'),edit=e.target.closest('[data-edit-intent]');if(expand){const id=expand.dataset.expand;expanded.has(id)?expanded.delete(id):expanded.add(id);renderIntents();$('intentRows').querySelector(`[data-expand="${CSS.escape(id)}"]`).focus();}if(edit)openEditor('intent',Number(edit.dataset.editIntent));});
+  $('editorBody').addEventListener('click',e=>{const edit=e.target.closest('[data-edit-intent]');if(!edit)return;if(JSON.stringify(editorValues())!==editorSnapshot){error('editorError','请先保存或取消当前修改');return;}$('editor').close();openEditor('intent',Number(edit.dataset.editIntent));});
   $('editUserButton').onclick=()=>openEditor('user');$('reportButton').onclick=()=>openEditor('report');
-  $('purchaseDate').onchange=()=>{const before=active().purchaseDate,after=$('purchaseDate').value;if(before===after)return;if(!transaction(u=>{u.purchaseDate=after;logEdit(u,'用户信息变更',[{field:'预计购车时间',before,after}]);}))$('purchaseDate').value=before;else{renderRecords();toast('已保存');}};
   $('resultList').onchange=e=>{selectedGroup=e.target.value;selectedCode='';draft={};error('followError','');renderConditional();};
   $('conditionalFields').addEventListener('input',e=>{if(e.target.name==='nextTime')draft.timeEdited=true;});
   $('conditionalFields').addEventListener('change',e=>{readDraft();if(e.target.name==='resultCode'){selectedCode=e.target.value;draft={resultCode:selectedCode};}if(e.target.name==='oem')delete draft.dispatchDealer;if(['resultCode','oem'].includes(e.target.name))renderConditional();});
@@ -153,7 +157,7 @@
   window.addEventListener('focus',refreshConfig);window.addEventListener('storage',e=>{if([window.LEAD_FLOW_CONFIG.storageKey,'autocava_admin_demo_config_v2'].includes(e.key))refreshConfig();});
   window.addEventListener('beforeunload',e=>{if($('followNote').value||selectedGroup||editorState&&editorState.type!=='report'&&JSON.stringify(editorValues())!==editorSnapshot){e.preventDefault();e.returnValue='';}});
   let storageWarning=false;
-  try{locale=localStorage.getItem('crmLocale')==='es-MX'?'es-MX':'zh-CN';const saved=JSON.parse(localStorage.getItem(UI.storageKey)||'null');if(['2026.10.11.1',UI.version].includes(saved?.version)&&Array.isArray(saved.users)&&saved.users.length)users=saved.users.map(C.normalize);}catch{storageWarning=true;}
+  try{locale=localStorage.getItem('crmLocale')==='es-MX'?'es-MX':'zh-CN';const saved=JSON.parse(localStorage.getItem(UI.storageKey)||'null');if(['2026.10.11.1','2026.10.12.1',UI.version].includes(saved?.version)&&Array.isArray(saved.users)&&saved.users.length)users=saved.users.map(C.normalize);}catch{storageWarning=true;}
   if(!users)users=[UI.demoUser,...source.leads.map(l=>({...l,...window.CRM_CONFIG_TABLE?.leadProfiles?.[l.id]}))].map(C.normalize);
   const requested=new URLSearchParams(location.search).get('lead');activeId=users.some(u=>u.id===requested)?requested:(eligible()[0]||users[0]).id;expanded.add(active().intentions[0].id);$('salesperson').textContent=operator();render();if(storageWarning)toast('保存失败，内容已保留，请检查浏览器存储权限。');
 })();
