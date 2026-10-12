@@ -9,7 +9,7 @@
     wrongNumber:{label:'号码错误',labelEs:'Número incorrecto',group:'lost',target:'lost',terminal:true,lostReason:'号码错误'},
     abandon:{label:'暂不买车',labelEs:'No comprará por ahora',group:'lost',target:'lost',terminal:true,lostReason:'暂不买车'},
     lostOther:{label:'其他',labelEs:'Otro',group:'lost',target:'lost',terminal:true,requireNote:true},
-    readyToDistribute:{label:'可下发',labelEs:'Listo para enviar',group:'dispatch',target:'pendingDispatch',requireDealer:true}
+    readyToDistribute:{label:'可下发',labelEs:'Listo para enviar',group:'dispatch',target:'pendingDispatch',requireDealer:false}
   };
   function configure(base){
     const cfg=JSON.parse(JSON.stringify(base));

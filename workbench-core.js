@@ -31,5 +31,14 @@
     if(value&&(!Number.isFinite(parseTime(value))||parseTime(value)<=now))throw Error('下一次联系时间必须晚于当前时间');
     return value||null;
   }
-  const api={clone,utc6,parseTime,codes,transition,group,normalize,nextContact};root.WorkbenchCore=api;if(typeof module!=='undefined')module.exports=api;
+  function buildDispatch(cooperation,email,recipients,lead,now=new Date()){
+    const group=Object.hasOwn(recipients,cooperation)&&recipients[cooperation];
+    if(!['active','trial','inactive'].includes(cooperation)||!group?.emails?.includes(email))throw Error('请选择合作类型及对应邮箱');
+    const recordedAt=now.toISOString(),id='DISPATCH-'+lead.id+'-'+now.getTime();
+    return {id,cooperation,email,method:{active:'email-and-api',trial:'email',inactive:'email-and-sale-table'}[cooperation],
+      status:'pending',demo:true,recordedAt,
+      actions:{email:'pending',api:cooperation==='active'?'pending':'not_applicable',saleTable:cooperation==='inactive'?'saved_locally':'not_applicable'},
+      saleListing:cooperation==='inactive'?{id:'SALE-'+id,leadId:lead.id,name:lead.name,phone:lead.phone,email,status:'pending_sale',createdAt:recordedAt,demo:true}:null};
+  }
+  const api={clone,utc6,parseTime,codes,transition,group,normalize,nextContact,buildDispatch};root.WorkbenchCore=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);

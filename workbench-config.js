@@ -1,7 +1,11 @@
 /* UI-only dictionaries; transitions still come from flow-config.js. */
 window.WORKBENCH_CONFIG = {
-  version:'2026.10.12.3',storageKey:'autocava.workbench.figma.v1',
-  partners:{BAIC:{status:'active'}}, // Demo fixture; other brands require explicit configuration.
+  version:'2026.10.12.4',storageKey:'autocava.workbench.figma.v1',
+  dispatchRecipients:{
+    active:{label:'已合作',emails:['baic.leads@example.com','partner.sales@example.com']},
+    trial:{label:'试用期',emails:['trial.sales@example.com','trial.store@example.com']},
+    inactive:{label:'未合作',emails:['new.partner@example.com','new.store@example.com']}
+  }, // Reserved example.com addresses; demo only, never sent.
   financeEvents:['补充金融资料','确认金融方案','跟进审批进度'],recipients:[],
   cities:['La Paz','Ciudad de México','Monterrey','Guadalajara','Mérida','Querétaro'],
   catalog:{MG:{MG5:['Excite','Elegance']},Chevrolet:{Onix:['LS','LT','Premier']},Renault:{Kwid:['Intens','Iconic']}},

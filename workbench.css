@@ -27,6 +27,12 @@
 .follow-hint.danger{background:#fef2f2;color:#c92222}
 .cooperation-status{color:var(--primary);font-weight:500}
 #submitFollowButton{width:100%;min-height:40px}
+.dispatch-selector{padding:16px;border:1px solid var(--border);border-radius:8px}
+.dispatch-cascade{display:grid;grid-template-columns:minmax(120px,1fr) minmax(0,2fr);gap:12px}
+.sale-table-scroll{overflow-x:auto;margin-top:12px}
+.sale-table-scroll table{width:100%;border-collapse:collapse;white-space:nowrap;background:white}
+.sale-table-scroll th,.sale-table-scroll td{text-align:left;padding:12px;border-bottom:1px solid var(--border)}
+@media(max-width:600px){.dispatch-cascade{grid-template-columns:1fr}}
 /* Compact user information card, v2026.10.12.2. */
 .workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .workbench-left{display:flex;flex-direction:column;gap:20px;min-width:0}
